@@ -34,7 +34,6 @@ const cookieOptions = {
     sameSite: "Strict",
 };
 
-// ✅ Register User
 const registerUser = asyncHandler(async (req, res) => {
     const { name, phone, pin, role } = req.body;
     // console.log("fweo",req.body);

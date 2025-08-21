@@ -21,19 +21,33 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                const savedTheme = localStorage.getItem('theme');
+                const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const theme = savedTheme === 'system' ? (systemDark ? 'dark' : 'light') : (savedTheme || 'system');
+                document.documentElement.classList.add(theme === 'system' ? (systemDark ? 'dark' : 'light') : theme);
+              })();
+            `,
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* <ThemeProvider
+        <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
-        > */}
-        <CheckUser>
-          <Navbar>{children}</Navbar>
-        </CheckUser>
-        {/* </ThemeProvider> */}
+        >
+          <CheckUser>
+            <Navbar>{children}</Navbar>
+          </CheckUser>
+        </ThemeProvider>
       </body>
     </html>
   );
