@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/table";
 import { SquarePen } from "lucide-react";
 import { Button } from "../ui/button";
+import { CustomPagination } from "..";
+import { Badge } from "../ui/badge";
 
 export function RoleSection({ isExpanded }) {
   // Sample data for demonstration
@@ -49,6 +51,10 @@ export function RoleSection({ isExpanded }) {
     },
   ];
 
+  const totalPages = 30;
+  const currentPage = 10;
+  const totalProducts = 100;
+  const itemsPerPage = 10;
   return (
     <div className="w-full">
       <SecondaryHeader
@@ -58,10 +64,26 @@ export function RoleSection({ isExpanded }) {
         tooltipText="Create New Role"
       />
 
+      {totalPages > 0 && (
+        <div className="px-1 flex justify-between items-center mt-4">
+          <div className="text-sm text-muted-foreground">
+            {totalProducts > 0 && (
+              <Badge className="bg-hoverBg">
+                Showing {(currentPage - 1) * itemsPerPage + 1}-
+                {Math.min(currentPage * itemsPerPage, totalProducts)} of{" "}
+                {totalProducts} Roles
+              </Badge>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="mt-6 rounded-md max-w-[99vw] border overflow-x-auto">
         <Table className="min-w-[800px] lg:min-w-full">
-          <TableCaption className="mb-2">A list of available user roles</TableCaption>
-          <TableHeader>
+          <TableCaption className="mb-2">
+            A list of available user roles
+          </TableCaption>
+          <TableHeader className="bg-hoverBg">
             <TableRow>
               <TableHead className="w-[200px]">Role Name</TableHead>
               <TableHead className="w-[300px]">Description</TableHead>
@@ -69,8 +91,8 @@ export function RoleSection({ isExpanded }) {
               <TableHead className="w-[120px] text-center">
                 Permissions
               </TableHead>
-              <TableHead className="w-[150px]">Last Updated</TableHead>
               <TableHead className="w-[100px] text-right">Actions</TableHead>
+              <TableHead className="w-[150px]">logs</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -84,17 +106,35 @@ export function RoleSection({ isExpanded }) {
                 <TableCell className="text-center">
                   {role.permissions}
                 </TableCell>
-                <TableCell>{role.lastUpdated}</TableCell>
                 <TableCell className="text-right">
                   <Button variant="ghost" size="icon">
                     <SquarePen className="h-4 w-4" />
                   </Button>
                 </TableCell>
+                <TableCell>{role.lastUpdated}</TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </div>
+
+      {totalPages > 0 && (
+        <div className=" flex justify-between items-center mt-4">
+          {/* <div className="text-sm text-muted-foreground">
+            {totalProducts > 0 &&
+              `Showing ${(currentPage - 1) * itemsPerPage + 1}-${Math.min(
+                currentPage * itemsPerPage,
+                totalProducts
+              )} of ${totalProducts} products`}
+          </div> */}
+          <CustomPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={() => {}}
+            className="justify-end"
+          />
+        </div>
+      )}
     </div>
   );
 }

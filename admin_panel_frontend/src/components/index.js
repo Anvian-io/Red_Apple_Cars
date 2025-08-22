@@ -8,6 +8,7 @@ import { Header } from "./Header/Header";
 import { RoleSection } from "./Role/RoleSection";
 import { SecondaryHeader } from "./custom_ui/SecondaryHeader";
 import { CustomTooltip } from "./custom_ui/CustomTooltip";
+import { CustomPagination } from "./custom_ui/CustomPagination";
 export {
   Navbar,
   Dashboard,
@@ -18,5 +19,6 @@ export {
   Header,
   RoleSection,
   SecondaryHeader,
-  CustomTooltip
+  CustomTooltip,
+  CustomPagination
 }

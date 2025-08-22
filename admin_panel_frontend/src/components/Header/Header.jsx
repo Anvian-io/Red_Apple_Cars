@@ -126,11 +126,9 @@ export function Header({ isExpanded, pages }) {
 
   return (
     <header
-      className={`h-16 transition-all duration-300 ease-in-out fixed top-0 left-0 w-full z-10 flex items-center justify-between px-4 py-2 border-border border bg-sidebar ${
-        isExpanded
-          ? "left-64 w-[calc(100%-16.00001rem)]"
-          : "left-16 w-[calc(100%-4.00001rem)]"
-      }`}
+      className={`h-16 transition-all duration-300 ease-in-out fixed top-0 left-0 z-10 flex items-center justify-between px-4 py-2 border-border border bg-sidebar ${
+        isExpanded ? "left-64" : "left-16"
+      } right-0`}
     >
       {/* Left - Breadcrumb */}
       <BreadcrumbWrapper pages={pages} />
