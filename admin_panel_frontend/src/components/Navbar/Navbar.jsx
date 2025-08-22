@@ -14,10 +14,13 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "../Theme/ThemeProvider";
-
+import { Header } from "..";
+import { navItems } from "@/lib/routes_variables";
+import Link from "next/link";
 export function Navbar({ children }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const { theme, setTheme } = useTheme();
+  const [pages, setPages] = useState("Home");
 
   const handleThemeChange = () => {
     const newTheme = theme === "dark" ? "light" : "dark";
@@ -25,15 +28,15 @@ export function Navbar({ children }) {
     localStorage.setItem("theme", newTheme);
   };
 
-  const navItems = [
-    { icon: Home, label: "Home", href: "/" },
-    { icon: User, label: "Dashboard", href: "/dashboard" },
-    { icon: FileText, label: "Cars", href: "/cars" },
-    { icon: Mail, label: "Invoices", href: "/invoices" },
-    { icon: Search, label: "Feedback", href: "/feedback" },
-    { icon: Settings, label: "Users", href: "/user_management" },
-    { icon: Settings, label: "Roles", href: "/roles" },
-  ];
+  // const navItems = [
+  //   { icon: Home, label: "Home", href: "/" },
+  //   { icon: User, label: "Dashboard", href: "/dashboard" },
+  //   { icon: FileText, label: "Cars", href: "/cars" },
+  //   { icon: Mail, label: "Invoices", href: "/invoices" },
+  //   { icon: Search, label: "Feedback", href: "/feedback" },
+  //   { icon: Settings, label: "Users", href: "/user_management" },
+  //   { icon: Settings, label: "Roles", href: "/roles" },
+  // ];
 
   return (
     <div className="h-screen bg-background text-text">
@@ -71,8 +74,9 @@ export function Navbar({ children }) {
                 const Icon = item.icon;
                 return (
                   <li key={index}>
-                    <a
+                    <Link
                       href={item.href}
+                      onClick={() => setPages(item.pages)}
                       className="flex items-center px-3 py-3 rounded-lg transition-all duration-200 text-text hover:text-hoverText hover:bg-hoverBg"
                     >
                       <Icon className="w-5 h-5 flex-shrink-0" />
@@ -85,7 +89,7 @@ export function Navbar({ children }) {
                       >
                         {item.label}
                       </span>
-                    </a>
+                    </Link>
                   </li>
                 );
               })}
@@ -98,7 +102,7 @@ export function Navbar({ children }) {
               onClick={handleThemeChange}
               variant="ghost"
               size="sm"
-              className="w-full justify-start px-3 py-3 h-auto text-text hover:text-hoverText hover:bg-hoverBg"
+              className="w-full justify-start px-3 py-3 h-auto text-text hover:text-hoverText hover:bg-secondaryBg"
             >
               {theme === "dark" ? (
                 <Sun className="w-5 h-5" />
@@ -120,24 +124,27 @@ export function Navbar({ children }) {
 
         {/* Main */}
         <main
-          className={`flex-1 transition-all duration-300 ease-in-out px-8 ${
+          className={`flex-1 transition-all duration-300 ease-in-out ${
             isExpanded ? "ml-64" : "ml-16"
           } background`}
         >
-          {React.isValidElement(children)
-            ? React.cloneElement(children, { isExpanded })
-            : children || (
-                <div className="p-8">
-                  <div className="rounded-lg p-8 text-center bg-cardBg text-cardText">
-                    <h1 className="text-3xl font-bold mb-4 text-heading">
-                      Welcome to Your Dashboard
-                    </h1>
-                    <p className="text-lg text-text">
-                      Hover over the sidebar to expand it.
-                    </p>
+          <>
+            <Header pages={pages} isExpanded={isExpanded} />
+            {React.isValidElement(children)
+              ? React.cloneElement(children, { isExpanded })
+              : children || (
+                  <div className="p-8">
+                    <div className="rounded-lg p-8 text-center bg-cardBg text-cardText">
+                      <h1 className="text-3xl font-bold mb-4 text-heading">
+                        Welcome to Your Dashboard
+                      </h1>
+                      <p className="text-lg text-text">
+                        Hover over the sidebar to expand it.
+                      </p>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+          </>
         </main>
       </div>
     </div>

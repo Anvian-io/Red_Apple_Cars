@@ -25,12 +25,13 @@
 
   .dark {
     --background: #0a0a0a;
-    --sidebar-bg: #450a0a;
+    --sidebar-bg: #250303;
     --sidebar-border: #991b1b;
     --text: #e5e7eb;
     --heading: #f87171;
     --hover-text: #f87171;
-    --hover-bg: #5f0009;
+    --secondary-bg: #420108;
+    --hover-bg: #420108;
     --border: #991b1b;
     --card-bg: #111827;
     --card-text: #fca5a5;

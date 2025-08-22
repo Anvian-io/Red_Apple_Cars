@@ -15,6 +15,7 @@ module.exports = {
         text: "var(--text)",
         heading: "var(--heading)",
         hoverText: "var(--hover-text)",
+        secondaryBg: "var(--secondary-bg)",
         hoverBg: "var(--hover-bg)",
         border: "var(--border)",
         cardBg: "var(--card-bg)",
