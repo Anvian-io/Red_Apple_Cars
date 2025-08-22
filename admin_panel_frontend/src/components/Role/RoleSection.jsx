@@ -58,9 +58,9 @@ export function RoleSection({ isExpanded }) {
         tooltipText="Create New Role"
       />
 
-      <div className="mt-6 rounded-md border overflow-x-auto">
+      <div className="mt-6 rounded-md max-w-[99vw] border overflow-x-auto">
         <Table className="min-w-[800px] lg:min-w-full">
-          <TableCaption>A list of available user roles</TableCaption>
+          <TableCaption className="mb-2">A list of available user roles</TableCaption>
           <TableHeader>
             <TableRow>
               <TableHead className="w-[200px]">Role Name</TableHead>
