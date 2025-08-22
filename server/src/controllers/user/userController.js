@@ -1,11 +1,10 @@
-import User from "../models/user.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
+import User from "../../models/user.js";
+import { asyncHandler } from "../../utils/asyncHandler.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { sendResponse } from "../utils/apiResonse.js";
-import { statusType } from "../utils/statusType.js";
-import { validatePhone } from "../helper/common.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { sendResponse } from "../../utils/apiResonse.js";
+import { statusType } from "../../utils/statusType.js";
+import { uploadOnCloudinary } from "../../utils/cloudinary.js";
 
 // Token generator functions
 const generateAccessToken = (user) => {
@@ -35,9 +34,8 @@ const cookieOptions = {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-    const { name, phone, pin, role } = req.body;
-    // console.log("fweo",req.body);
-    if (!name || !phone || !pin || !role) {
+    const { name, email, password, role } = req.body;
+    if (!name || !email || !password || !role) {
         return sendResponse(res, false, null, "Fields cannot be empty", statusType.BAD_REQUEST);
     }
     let image = null;
@@ -47,21 +45,17 @@ const registerUser = asyncHandler(async (req, res) => {
         image = image_temp?.secure_url;
     }
 
-    if (!validatePhone(phone)) {
-        return sendResponse(res, false, null, "Invalid phone number", statusType.BAD_REQUEST);
-    }
-
-    let user = await User.findOne({ phone });
+    let user = await User.findOne({ email });
     if (user) {
         return sendResponse(res, false, null, "User already exists, please login", statusType.BAD_REQUEST);
     }
 
     // Hash PIN
     const salt = await bcrypt.genSalt(10);
-    const hashedPin = await bcrypt.hash(pin, salt);
+    const hashedPin = await bcrypt.hash(password, salt);
 
     // Save User
-    user = await User.create({ name, phone, pin: hashedPin, role, image });
+    user = await User.create({ name, email, password: hashedPin, role, image });
 
     // Generate Tokens
     const accessToken = generateAccessToken(user);
@@ -90,24 +84,20 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 const loginUser = asyncHandler(async (req, res) => {
-    const { phone, pin } = req.body;
+    const { email, pin } = req.body;
 
-    if (!phone || !pin) {
-        return sendResponse(res, false, null, "Phone and PIN are required", statusType.BAD_REQUEST);
+    if (!email || !pin) {
+        return sendResponse(res, false, null, "email and PIN are required", statusType.BAD_REQUEST);
     }
 
-    if (!validatePhone(phone)) {
-        return sendResponse(res, false, null, "Invalid phone number", statusType.BAD_REQUEST);
-    }
-
-    const user = await User.findOne({ phone });
+    const user = await User.findOne({ email });
     if (!user) {
         return sendResponse(res, false, null, "User does not exist", statusType.BAD_REQUEST);
     }
 
     const isMatch = await bcrypt.compare(pin, user.pin);
     if (!isMatch) {
-        return sendResponse(res, false, null, "Phone or PIN is incorrect", statusType.BAD_REQUEST);
+        return sendResponse(res, false, null, "email or PIN is incorrect", statusType.BAD_REQUEST);
     }
 
     const accessToken = generateAccessToken(user);

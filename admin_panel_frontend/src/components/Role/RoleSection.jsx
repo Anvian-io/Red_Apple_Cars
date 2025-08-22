@@ -13,9 +13,13 @@ import { SquarePen } from "lucide-react";
 import { Button } from "../ui/button";
 import { CustomPagination } from "..";
 import { Badge } from "../ui/badge";
+import { AddRoleForm } from "./AddRoleForm";
+import React,{useState} from "react";
 
 export function RoleSection({ isExpanded }) {
   // Sample data for demonstration
+  const [add_or_update_role, set_add_or_update_role] = useState(false);
+
   const roles = [
     {
       id: 1,
@@ -55,6 +59,12 @@ export function RoleSection({ isExpanded }) {
   const currentPage = 10;
   const totalProducts = 100;
   const itemsPerPage = 10;
+
+  //functions
+  const handle_add_or_update_form=()=>{
+    console.log('hoifdhfie')
+    set_add_or_update_role(true);
+  }
   return (
     <div className="w-full">
       <SecondaryHeader
@@ -62,8 +72,9 @@ export function RoleSection({ isExpanded }) {
         searchPlaceholder="Search Roles"
         buttonText="Create New Role"
         tooltipText="Create New Role"
+        onButtonClick={handle_add_or_update_form}
+        onMobileButtonClick={handle_add_or_update_form}
       />
-
       {totalPages > 0 && (
         <div className="px-1 flex justify-between items-center mt-4">
           <div className="text-sm text-muted-foreground">
@@ -77,8 +88,7 @@ export function RoleSection({ isExpanded }) {
           </div>
         </div>
       )}
-
-      <div className="mt-6 rounded-md max-w-[99vw] border overflow-x-auto">
+      <div className="mx-1 mt-6 rounded-md max-w-[99vw] border overflow-x-auto">
         <Table className="min-w-[800px] lg:min-w-full">
           <TableCaption className="mb-2">
             A list of available user roles
@@ -117,7 +127,6 @@ export function RoleSection({ isExpanded }) {
           </TableBody>
         </Table>
       </div>
-
       {totalPages > 0 && (
         <div className=" flex justify-between items-center mt-4">
           {/* <div className="text-sm text-muted-foreground">
@@ -134,6 +143,9 @@ export function RoleSection({ isExpanded }) {
             className="justify-end"
           />
         </div>
+      )}
+      {add_or_update_role && (
+        <AddRoleForm open={add_or_update_role} onOpenChange={set_add_or_update_role} />
       )}
     </div>
   );
