@@ -54,7 +54,7 @@ export function Header({ isExpanded, pages }) {
 
   // Skeleton component for loading state
   const TimerSkeleton = () => (
-    <div className="flex items-center gap-2">
+    <div className="sm:flex items-center gap-2 hidden">
       {/* Date */}
       <div className="lg:flex-col items-center hidden lg:flex">
         <span className="text-xs font-medium text-muted-foreground">{""}</span>
@@ -98,7 +98,7 @@ export function Header({ isExpanded, pages }) {
       </div>
 
       {/* Time blocks */}
-      <div className="flex items-center gap-1">
+      <div className="sm:flex items-center gap-1 hidden">
         {/* Hours */}
         <div className="flex flex-col items-center bg-primary/10 rounded-lg p-2 min-w-[3rem] border-border border">
           <span className="text-lg font-bold text-text">{time.hours}</span>
@@ -128,8 +128,8 @@ export function Header({ isExpanded, pages }) {
     <header
       className={`transition-all duration-300 ease-in-out fixed top-0 left-0 w-full z-50 flex items-center justify-between px-4 py-2 border-border border bg-sidebar ${
         isExpanded
-          ? "left-64 w-[calc(100%-16rem)]"
-          : "left-16 w-[calc(100%-4rem)]"
+          ? "left-64 w-[calc(100%-16.0001rem)]"
+          : "left-16 w-[calc(100%-4.0001rem)]"
       }`}
     >
       {/* Left - Breadcrumb */}

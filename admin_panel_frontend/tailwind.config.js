@@ -21,6 +21,7 @@ module.exports = {
         cardBg: "var(--card-bg)",
         cardText: "var(--card-text)",
         primary: "var(--primary)",
+        header:"var(--header)",
       },
     },
   },

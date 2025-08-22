@@ -1,9 +1,11 @@
 "use client";
-
-export default function Role() {
+import { RoleSection } from "@/components";
+export default function Role({ isExpanded }) {
   return (
-    <div>
-      roles
+    <div
+    className="overflow-auto w-full"
+    >
+      <RoleSection isExpanded={isExpanded} />
     </div>
-  )
+  );
 }

@@ -130,20 +130,22 @@ export function Navbar({ children }) {
         >
           <>
             <Header pages={pages} isExpanded={isExpanded} />
-            {React.isValidElement(children)
-              ? React.cloneElement(children, { isExpanded })
-              : children || (
-                  <div className="p-8">
-                    <div className="rounded-lg p-8 text-center bg-cardBg text-cardText">
-                      <h1 className="text-3xl font-bold mb-4 text-heading">
-                        Welcome to Your Dashboard
-                      </h1>
-                      <p className="text-lg text-text">
-                        Hover over the sidebar to expand it.
-                      </p>
+            <div className="mt-20 mx-1 sm:mx-2 min-w-400">
+              {React.isValidElement(children)
+                ? React.cloneElement(children, { isExpanded })
+                : children || (
+                    <div className="p-8">
+                      <div className="rounded-lg p-8 text-center bg-cardBg text-cardText">
+                        <h1 className="text-3xl font-bold mb-4 text-heading">
+                          Welcome to Your Dashboard
+                        </h1>
+                        <p className="text-lg text-text">
+                          Hover over the sidebar to expand it.
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+            </div>
           </>
         </main>
       </div>

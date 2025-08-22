@@ -5,6 +5,9 @@ import { CheckUser } from "./AuthGaurds/CheckUser";
 import { HomePage } from "./HomePage/HomePage";
 import { BreadcrumbWrapper } from "./custom_ui/CustomBreadCrumb";
 import { Header } from "./Header/Header";
+import { RoleSection } from "./Role/RoleSection";
+import { SecondaryHeader } from "./custom_ui/SecondaryHeader";
+import { CustomTooltip } from "./custom_ui/CustomTooltip";
 export {
   Navbar,
   Dashboard,
@@ -12,5 +15,8 @@ export {
   CheckUser,
   HomePage,
   BreadcrumbWrapper,
-  Header
+  Header,
+  RoleSection,
+  SecondaryHeader,
+  CustomTooltip
 }
