@@ -14,57 +14,63 @@ import { Button } from "../ui/button";
 import { CustomPagination } from "..";
 import { Badge } from "../ui/badge";
 import { AddRoleForm } from "./AddRoleForm";
-import React,{useState} from "react";
+import React, { useState, useEffect } from "react";
+import { get_all_roles } from "@/services/roles/roleServices";
 
 export function RoleSection({ isExpanded }) {
-  // Sample data for demonstration
   const [add_or_update_role, set_add_or_update_role] = useState(false);
+  const [roles, setRoles] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const roles = [
-    {
-      id: 1,
-      name: "Administrator",
-      description: "Full system access with all permissions",
-      users: 5,
-      permissions: 28,
-      lastUpdated: "2023-10-15",
-    },
-    {
-      id: 2,
-      name: "Editor",
-      description: "Can create and edit content but not manage users",
-      users: 12,
-      permissions: 15,
-      lastUpdated: "2023-11-02",
-    },
-    {
-      id: 3,
-      name: "Viewer",
-      description: "Read-only access to content",
-      users: 24,
-      permissions: 8,
-      lastUpdated: "2023-09-20",
-    },
-    {
-      id: 4,
-      name: "Moderator",
-      description: "Can manage user content and comments",
-      users: 7,
-      permissions: 12,
-      lastUpdated: "2023-10-28",
-    },
-  ];
-
+  // Static pagination data (replace with actual API data when available)
   const totalPages = 30;
   const currentPage = 10;
   const totalProducts = 100;
   const itemsPerPage = 10;
 
-  //functions
-  const handle_add_or_update_form=()=>{
-    console.log('hoifdhfie')
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const response = await get_all_roles();
+        if (response.data.status) {
+          setRoles(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching roles:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRoles();
+  }, []);
+
+  // Calculate permissions count for each role
+  const getPermissionsCount = (permissions) => {
+    return permissions.reduce((count, permission) => {
+      return (
+        count +
+        (permission.read ? 1 : 0) +
+        (permission.edit ? 1 : 0) +
+        (permission.delete ? 1 : 0) +
+        (permission.download ? 1 : 0)
+      );
+    }, 0);
+  };
+
+  // Format date to display only date part
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  const handle_add_or_update_form = () => {
     set_add_or_update_role(true);
+  };
+
+  if (loading) {
+    return <div>Loading roles...</div>;
   }
+
   return (
     <div className="w-full">
       <SecondaryHeader
@@ -102,40 +108,39 @@ export function RoleSection({ isExpanded }) {
                 Permissions
               </TableHead>
               <TableHead className="w-[100px] text-right">Actions</TableHead>
-              <TableHead className="w-[150px]">logs</TableHead>
+              <TableHead className="w-[150px]">Last Updated</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {roles.map((role) => (
-              <TableRow key={role.id}>
-                <TableCell className="font-medium">{role.name}</TableCell>
-                <TableCell className="text-muted-foreground">
-                  {role.description}
-                </TableCell>
-                <TableCell className="text-center">{role.users}</TableCell>
-                <TableCell className="text-center">
-                  {role.permissions}
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="icon">
-                    <SquarePen className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-                <TableCell>{role.lastUpdated}</TableCell>
-              </TableRow>
-            ))}
+            {roles.map((roleData) => {
+              const { role, permissions } = roleData;
+              return (
+                <TableRow key={role._id}>
+                  <TableCell className="font-medium">{role.name}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {/* Description not in API - keeping static */}
+                    No description available
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {/* Users count not in API - keeping static */}0
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {getPermissionsCount(permissions)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="icon">
+                      <SquarePen className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                  <TableCell>{formatDate(role.updatedAt)}</TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>
       {totalPages > 0 && (
-        <div className=" flex justify-between items-center mt-4">
-          {/* <div className="text-sm text-muted-foreground">
-            {totalProducts > 0 &&
-              `Showing ${(currentPage - 1) * itemsPerPage + 1}-${Math.min(
-                currentPage * itemsPerPage,
-                totalProducts
-              )} of ${totalProducts} products`}
-          </div> */}
+        <div className="flex justify-between items-center mt-4">
           <CustomPagination
             currentPage={currentPage}
             totalPages={totalPages}
@@ -145,7 +150,10 @@ export function RoleSection({ isExpanded }) {
         </div>
       )}
       {add_or_update_role && (
-        <AddRoleForm open={add_or_update_role} onOpenChange={set_add_or_update_role} />
+        <AddRoleForm
+          open={add_or_update_role}
+          onOpenChange={set_add_or_update_role}
+        />
       )}
     </div>
   );

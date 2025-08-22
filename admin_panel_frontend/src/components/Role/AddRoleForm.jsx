@@ -72,8 +72,9 @@ export function AddRoleForm({ open, onOpenChange }) {
           };
         }),
       };
-      console.log(formattedData)
-      // const response = await save_role(formattedData);
+      // console.log(formattedData)
+      const response = await save_role(formattedData);
+      console.log(response)
       toast.success("Role saved successfully!");
     } catch (error) {
       console.error(error);

@@ -1,17 +1,14 @@
 import User from "../../models/user.js";
-import { asyncHandler } from "../../utils/asyncHandler.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { sendResponse } from "../../utils/apiResonse.js";
-import { statusType } from "../../utils/statusType.js";
-import { uploadOnCloudinary } from "../../utils/cloudinary.js";
+import { asyncHandler,uploadOnCloudinary,deleteOnCloudinary,statusType,sendResponse } from "../../utils/index.js";
 
 // Token generator functions
 const generateAccessToken = (user) => {
     return jwt.sign(
         { user_id: user._id, role: user.role },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: "15m" }
+        { expiresIn: "1d" }
     );
 };
 
@@ -33,7 +30,7 @@ const cookieOptions = {
     sameSite: "Strict",
 };
 
-const registerUser = asyncHandler(async (req, res) => {
+export const createUser = asyncHandler(async (req, res) => {
     const { name, email, password, role } = req.body;
     if (!name || !email || !password || !role) {
         return sendResponse(res, false, null, "Fields cannot be empty", statusType.BAD_REQUEST);
@@ -50,12 +47,11 @@ const registerUser = asyncHandler(async (req, res) => {
         return sendResponse(res, false, null, "User already exists, please login", statusType.BAD_REQUEST);
     }
 
-    // Hash PIN
     const salt = await bcrypt.genSalt(10);
-    const hashedPin = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     // Save User
-    user = await User.create({ name, email, password: hashedPin, role, image });
+    user = await User.create({ name, email, password: hashedPassword, role, image });
 
     // Generate Tokens
     const accessToken = generateAccessToken(user);
@@ -70,24 +66,14 @@ const registerUser = asyncHandler(async (req, res) => {
     delete userData.pin;
     delete userData.refresh_token;
 
-    return res
-        .status(201)
-        .cookie("accessToken", accessToken, cookieOptions)
-        .cookie("refreshToken", refreshToken, cookieOptions)
-        .json({
-            status: true,
-            success: true,
-            accessToken,
-            message: "User registered successfully",
-            data: userData,
-        });
+    return sendResponse(res, true,userData,"User registered successfully",statusType.CREATED);
 });
 
-const loginUser = asyncHandler(async (req, res) => {
-    const { email, pin } = req.body;
+export const loginUser = asyncHandler(async (req, res) => {
+    const { email, password } = req.body;
 
-    if (!email || !pin) {
-        return sendResponse(res, false, null, "email and PIN are required", statusType.BAD_REQUEST);
+    if (!email || !password) {
+        return sendResponse(res, false, null, "Email and Password are required", statusType.BAD_REQUEST);
     }
 
     const user = await User.findOne({ email });
@@ -95,9 +81,9 @@ const loginUser = asyncHandler(async (req, res) => {
         return sendResponse(res, false, null, "User does not exist", statusType.BAD_REQUEST);
     }
 
-    const isMatch = await bcrypt.compare(pin, user.pin);
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-        return sendResponse(res, false, null, "email or PIN is incorrect", statusType.BAD_REQUEST);
+        return sendResponse(res, false, null, "Email or Password is incorrect", statusType.BAD_REQUEST);
     }
 
     const accessToken = generateAccessToken(user);
@@ -107,20 +93,9 @@ const loginUser = asyncHandler(async (req, res) => {
     await user.save();
 
     const userData = user.toObject();
-    delete userData.pin;
+    delete userData.password;
     delete userData.refresh_token;
 
-    return res
-        .status(200)
-        .cookie("accessToken", accessToken, cookieOptions)
-        .cookie("refreshToken", refreshToken, cookieOptions)
-        .json({
-            status: true,
-            success: true,
-            accessToken,
-            message: "Login successful",
-            data: userData,
-        });
+    return sendResponse(res,true,userData,"Login Successful",statusType.OK)
 });
 
-export { registerUser, loginUser };
