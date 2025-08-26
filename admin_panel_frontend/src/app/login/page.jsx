@@ -42,7 +42,7 @@ export default function Login() {
 
   return (
     <div className={`min-h-screen flex items-center justify-center ${theme.background} ${theme.text}`}>
-      <div className={`w-full max-w-md p-8 rounded-lg shadow-lg ${theme.cardBg} border ${theme.border}`}>
+      {/* <div className={`w-full max-w-md p-8 rounded-lg shadow-lg ${theme.cardBg} border ${theme.border}`}>
         <div className="flex justify-between items-center mb-6">
           <h1 className={`text-2xl font-bold ${theme.heading}`}>Login</h1>
           <button
@@ -158,13 +158,13 @@ export default function Login() {
           </div>
         </div> */}
         
-        <p className={`mt-8 text-center text-sm ${theme.text}`}>
+        {/* <p className={`mt-8 text-center text-sm ${theme.text}`}>
           Don't have an account?{' '}
           <a href="#" className={`font-medium ${theme.link}`}>
             Sign up
           </a>
         </p>
-      </div>
+      </div> */}
     </div>
   );
 }
