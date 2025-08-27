@@ -9,5 +9,7 @@ export const delete_role = (roleId) => {
 };
 
 export const get_all_roles = (payload) => {
-  return apiClient.get(`/role/all`,payload);
+  return apiClient.get(`/role/all`,{
+    params:payload
+  });
 };

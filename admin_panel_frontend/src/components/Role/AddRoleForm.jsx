@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import {
@@ -24,7 +24,7 @@ import {
 import { navItems } from "@/lib/routes_variables";
 import { save_role } from "@/services/roles/roleServices";
 import { toast } from "sonner";
-export function AddRoleForm({ open, onOpenChange }) {
+export function AddRoleForm({ open, onOpenChange, onRoleCreated }) {
   const {
     register,
     handleSubmit,
@@ -59,10 +59,10 @@ export function AddRoleForm({ open, onOpenChange }) {
 
   const onSubmit = async (data) => {
     try {
-      
       const formattedData = {
         role_name: data.roleName,
-        permissions: permissions.map((p)=>{
+        description: data.description,
+        permissions: permissions.map((p) => {
           return {
             page: p.id,
             read: p.read,
@@ -74,8 +74,11 @@ export function AddRoleForm({ open, onOpenChange }) {
       };
       // console.log(formattedData)
       const response = await save_role(formattedData);
-      console.log(response)
+      console.log(response);
       toast.success("Role saved successfully!");
+      if (onRoleCreated) {
+        onRoleCreated();
+      }
     } catch (error) {
       console.error(error);
       toast.error(error?.response?.data?.message || "Failed to save role.");
@@ -92,9 +95,9 @@ export function AddRoleForm({ open, onOpenChange }) {
   };
 
   return (
-    <Dialog className="text-text" open={open} onOpenChange={onOpenChange}>
+    <Dialog className="" open={open} onOpenChange={onOpenChange}>
       <DialogOverlay className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-4xl bg-cardBg h-[calc(100vh-5rem)] flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-text">Add New Role</DialogTitle>
           <DialogDescription className="text-text">
@@ -102,9 +105,14 @@ export function AddRoleForm({ open, onOpenChange }) {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex-1 overflow-y-auto space-y-6 px-4"
+        >
           <div className="space-y-2">
-            <Label htmlFor="role-name">Role Name</Label>
+            <Label className={"text-text"} htmlFor="role-name ">
+              Role Name
+            </Label>
             <Input
               id="role-name"
               {...register("roleName", {
@@ -115,7 +123,23 @@ export function AddRoleForm({ open, onOpenChange }) {
                 },
               })}
               placeholder="Enter role name"
-              className="text-text bg-hoverBg"
+              className="text-text bg-cardBg border-border"
+            />
+            {errors.roleName && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.roleName.message}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label className={"text-text"} htmlFor="description ">
+              Description
+            </Label>
+            <Input
+              id="description"
+              placeholder="Enter description"
+              {...register("description")}
+              className="text-text bg-cardBg border-border"
             />
             {errors.roleName && (
               <p className="text-red-500 text-sm mt-1">
@@ -151,7 +175,7 @@ export function AddRoleForm({ open, onOpenChange }) {
                             onCheckedChange={() =>
                               handlePermissionToggle(permission.id, action)
                             }
-                            className="bg-hoverBg"
+                            className="bg-bgSwitch"
                           />
                         </TableCell>
                       ))}

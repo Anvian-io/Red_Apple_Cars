@@ -41,8 +41,8 @@ export default function Login() {
   };
 
   return (
-    <div className={`min-h-screen flex items-center justify-center ${theme.background} ${theme.text}`}>
-      <div className={`w-full max-w-md p-8 rounded-lg shadow-lg ${theme.cardBg} border ${theme.border}`}>
+    <div className={`min-h-screen flex  items-center justify-center ${theme.background} ${theme.text}`}>
+      <div className={` w-full max-w-md p-8 rounded-lg shadow-lg ${theme.cardBg} border ${theme.border}`}>
         <div className="flex justify-between items-center mb-6">
           <h1 className={`text-2xl font-bold ${theme.heading}`}>Login</h1>
           <button
@@ -64,7 +64,7 @@ export default function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={`mt-1 block w-full px-3 py-2 rounded-md ${theme.inputBg} ${theme.inputText} border ${theme.inputBorder} focus:outline-none focus:ring-2 focus:ring-red-500`}
+              className={` mt-1 block w-full px-3 py-2  rounded-md ${theme.inputBg} ${theme.inputText} border ${theme.inputBorder} focus:outline-none focus:ring-2 focus:ring-red-500`}
               placeholder="Enter your email"
             />
             {errors.email && (

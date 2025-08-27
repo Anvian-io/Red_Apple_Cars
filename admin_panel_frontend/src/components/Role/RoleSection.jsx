@@ -16,46 +16,56 @@ import { Badge } from "../ui/badge";
 import { AddRoleForm } from "./AddRoleForm";
 import React, { useState, useEffect } from "react";
 import { get_all_roles } from "@/services/roles/roleServices";
-
 export function RoleSection({ isExpanded }) {
   const [add_or_update_role, set_add_or_update_role] = useState(false);
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [totalPages, setTotalPages] = useState(30);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(100);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState("");
   // Static pagination data (replace with actual API data when available)
-  const totalPages = 30;
-  const currentPage = 10;
-  const totalProducts = 100;
-  const itemsPerPage = 10;
+  // const totalPages = 30;
+  // const currentPage = 10;
+  // const totalProducts = 100;
+  // const itemsPerPage = 10;
 
-  useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const response = await get_all_roles();
-        if (response.data.status) {
-          setRoles(response.data.data);
-        }
-      } catch (error) {
-        console.error("Error fetching roles:", error);
-      } finally {
-        setLoading(false);
+  const fetchRoles = async () => {
+    try {
+      console.log("hifehif");
+      const payload = {
+        search: searchTerm ?? " ",
+        limit: itemsPerPage,
+        page: currentPage,
+      };
+      const response = await get_all_roles(payload);
+      console.log("response", response);
+      if (response.data.status) {
+        setRoles(response.data.data.roles);
+        console.log(response.data.data.roles);
+        const pagination_data = response.data.data.pagination;
+        setItemsPerPage(pagination_data.itemsPerPage);
+        setTotalProducts(pagination_data.totalRoles);
+        setCurrentPage(pagination_data.currentPage);
+        setTotalPages(pagination_data.totalPages);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching roles:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // RoleSection.js
+  useEffect(() => {
     fetchRoles();
-  }, []);
+  }, [searchTerm, currentPage, itemsPerPage]);
 
-  // Calculate permissions count for each role
-  const getPermissionsCount = (permissions) => {
-    return permissions.reduce((count, permission) => {
-      return (
-        count +
-        (permission.read ? 1 : 0) +
-        (permission.edit ? 1 : 0) +
-        (permission.delete ? 1 : 0) +
-        (permission.download ? 1 : 0)
-      );
-    }, 0);
+  const handleSearch = (term) => {
+    // fetchRoles(term);
+    setSearchTerm(term);
+    setCurrentPage(1);
   };
 
   // Format date to display only date part
@@ -72,7 +82,7 @@ export function RoleSection({ isExpanded }) {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full h-full">
       <SecondaryHeader
         title="Roles"
         searchPlaceholder="Search Roles"
@@ -80,6 +90,7 @@ export function RoleSection({ isExpanded }) {
         tooltipText="Create New Role"
         onButtonClick={handle_add_or_update_form}
         onMobileButtonClick={handle_add_or_update_form}
+        onSearch={handleSearch}
       />
       {totalPages > 0 && (
         <div className="px-1 flex justify-between items-center mt-4">
@@ -94,7 +105,7 @@ export function RoleSection({ isExpanded }) {
           </div>
         </div>
       )}
-      <div className="mx-1 mt-6 rounded-md max-w-[99vw] border overflow-x-auto">
+      <div className="mx-1 mt-6 rounded-md max-w-[99vw] border overflow-x-auto bg-tableBg">
         <Table className="min-w-[800px] lg:min-w-full">
           <TableCaption className="mb-2">
             A list of available user roles
@@ -113,26 +124,28 @@ export function RoleSection({ isExpanded }) {
           </TableHeader>
           <TableBody>
             {roles.map((roleData) => {
-              const { role, permissions } = roleData;
+              // const { role, permissions } = roleData;
               return (
-                <TableRow key={role._id}>
-                  <TableCell className="font-medium">{role.name}</TableCell>
+                <TableRow key={roleData?._id}>
+                  <TableCell className="font-medium">
+                    {roleData?.name}
+                  </TableCell>
                   <TableCell className="text-muted-foreground">
                     {/* Description not in API - keeping static */}
-                    No description available
+                    {roleData?.description ?? "No description"}
                   </TableCell>
                   <TableCell className="text-center">
                     {/* Users count not in API - keeping static */}0
                   </TableCell>
                   <TableCell className="text-center">
-                    {getPermissionsCount(permissions)}
+                    {roleData?.totalPermissionNo}
                   </TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="icon">
                       <SquarePen className="h-4 w-4" />
                     </Button>
                   </TableCell>
-                  <TableCell>{formatDate(role.updatedAt)}</TableCell>
+                  <TableCell>{formatDate(roleData?.updatedAt)}</TableCell>
                 </TableRow>
               );
             })}
@@ -153,6 +166,7 @@ export function RoleSection({ isExpanded }) {
         <AddRoleForm
           open={add_or_update_role}
           onOpenChange={set_add_or_update_role}
+          onRoleCreated={fetchRoles}
         />
       )}
     </div>

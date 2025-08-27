@@ -48,7 +48,7 @@ export const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
   };
 
   return (
-    <Pagination>
+    <Pagination className={"mb-10"}>
       <PaginationContent>
         {/* Previous Arrow */}
         <PaginationItem>

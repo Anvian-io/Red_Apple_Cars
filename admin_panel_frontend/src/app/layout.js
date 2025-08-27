@@ -37,7 +37,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`bg-cardBg ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider
           attribute="class"
@@ -45,9 +45,9 @@ export default function RootLayout({ children }) {
           enableSystem
           disableTransitionOnChange
         >
-          <CheckUser>
+          {/* <CheckUser> */}
             <Navbar>{children}</Navbar>
-          </CheckUser>
+          {/* </CheckUser> */}
         </ThemeProvider>
         <NormalToaster position="top-center" richColors />
       </body>
