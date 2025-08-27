@@ -16,34 +16,28 @@ import { Badge } from "../ui/badge";
 import { AddRoleForm } from "./AddRoleForm";
 import React, { useState, useEffect } from "react";
 import { get_all_roles } from "@/services/roles/roleServices";
+import { Skeleton } from "@/components/ui/skeleton"; // Import shadcn Skeleton
+
 export function RoleSection({ isExpanded }) {
   const [add_or_update_role, set_add_or_update_role] = useState(false);
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [totalPages, setTotalPages] = useState(30);
+  const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalProducts, setTotalProducts] = useState(100);
+  const [totalProducts, setTotalProducts] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
-  // Static pagination data (replace with actual API data when available)
-  // const totalPages = 30;
-  // const currentPage = 10;
-  // const totalProducts = 100;
-  // const itemsPerPage = 10;
 
   const fetchRoles = async () => {
     try {
-      console.log("hifehif");
       const payload = {
-        search: searchTerm ?? " ",
+        search: searchTerm || "",
         limit: itemsPerPage,
         page: currentPage,
       };
       const response = await get_all_roles(payload);
-      console.log("response", response);
       if (response.data.status) {
         setRoles(response.data.data.roles);
-        console.log(response.data.data.roles);
         const pagination_data = response.data.data.pagination;
         setItemsPerPage(pagination_data.itemsPerPage);
         setTotalProducts(pagination_data.totalRoles);
@@ -57,18 +51,15 @@ export function RoleSection({ isExpanded }) {
     }
   };
 
-  // RoleSection.js
   useEffect(() => {
     fetchRoles();
-  }, [searchTerm, currentPage, itemsPerPage]);
+  }, [searchTerm, currentPage]);
 
   const handleSearch = (term) => {
-    // fetchRoles(term);
     setSearchTerm(term);
     setCurrentPage(1);
   };
 
-  // Format date to display only date part
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString();
   };
@@ -77,9 +68,33 @@ export function RoleSection({ isExpanded }) {
     set_add_or_update_role(true);
   };
 
-  if (loading) {
-    return <div>Loading roles...</div>;
-  }
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  // Skeleton rows matching the table structure
+  const skeletonRows = Array.from({ length: itemsPerPage }, (_, i) => (
+    <TableRow key={i}>
+      <TableCell>
+        <Skeleton className="h-4 w-32 bg-border" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-48 bg-border" />
+      </TableCell>
+      <TableCell className="text-center">
+        <Skeleton className="h-4 w-8 bg-border mx-auto" />
+      </TableCell>
+      <TableCell className="text-center">
+        <Skeleton className="h-4 w-12 bg-border mx-auto" />
+      </TableCell>
+      <TableCell className="text-right">
+        <Skeleton className="h-8 w-8 bg-border ml-auto" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-24 bg-border" />
+      </TableCell>
+    </TableRow>
+  ));
 
   return (
     <div className="w-full h-full">
@@ -92,19 +107,22 @@ export function RoleSection({ isExpanded }) {
         onMobileButtonClick={handle_add_or_update_form}
         onSearch={handleSearch}
       />
-      {totalPages > 0 && (
-        <div className="px-1 flex justify-between items-center mt-4">
-          <div className="text-sm text-muted-foreground">
-            {totalProducts > 0 && (
+      <div className="px-1 flex justify-between items-center mt-4">
+        <div className="text-sm text-muted-foreground">
+          {loading ? (
+            <Skeleton className="h-5 w-40 bg-border rounded-md" />
+          ) : (
+            totalProducts > 0 && (
               <Badge className="bg-hoverBg">
                 Showing {(currentPage - 1) * itemsPerPage + 1}-
                 {Math.min(currentPage * itemsPerPage, totalProducts)} of{" "}
                 {totalProducts} Roles
               </Badge>
-            )}
-          </div>
+            )
+          )}
         </div>
-      )}
+      </div>
+
       <div className="mx-1 mt-6 rounded-md max-w-[99vw] border overflow-x-auto bg-tableBg">
         <Table className="min-w-[800px] lg:min-w-full">
           <TableCaption className="mb-2">
@@ -123,32 +141,28 @@ export function RoleSection({ isExpanded }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {roles.map((roleData) => {
-              // const { role, permissions } = roleData;
-              return (
-                <TableRow key={roleData?._id}>
-                  <TableCell className="font-medium">
-                    {roleData?.name}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {/* Description not in API - keeping static */}
-                    {roleData?.description ?? "No description"}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {/* Users count not in API - keeping static */}0
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {roleData?.totalPermissionNo}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon">
-                      <SquarePen className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                  <TableCell>{formatDate(roleData?.updatedAt)}</TableCell>
-                </TableRow>
-              );
-            })}
+            {loading
+              ? skeletonRows
+              : roles.map((roleData) => (
+                  <TableRow key={roleData?._id}>
+                    <TableCell className="font-medium">
+                      {roleData?.name}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {roleData?.description ?? "No description"}
+                    </TableCell>
+                    <TableCell className="text-center">0</TableCell>
+                    <TableCell className="text-center">
+                      {roleData?.totalPermissionNo}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="icon">
+                        <SquarePen className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                    <TableCell>{formatDate(roleData?.updatedAt)}</TableCell>
+                  </TableRow>
+                ))}
           </TableBody>
         </Table>
       </div>
@@ -157,7 +171,7 @@ export function RoleSection({ isExpanded }) {
           <CustomPagination
             currentPage={currentPage}
             totalPages={totalPages}
-            onPageChange={() => {}}
+            onPageChange={handlePageChange}
             className="justify-end"
           />
         </div>

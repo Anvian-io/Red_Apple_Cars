@@ -20,7 +20,12 @@ export const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
     }
   };
 
-  // Full version (desktop/tablet)
+  const handlePageClick = (page) => {
+    if (page !== "...") {
+      onPageChange(page);
+    }
+  };
+
   const getDesktopPages = () => {
     let pages = [];
     pages.push(1);
@@ -35,7 +40,6 @@ export const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
     return pages;
   };
 
-  // Simplified version (mobile)
   const getMobilePages = () => {
     let pages = [1];
     if (currentPage !== 1 && currentPage !== totalPages) {
@@ -48,18 +52,16 @@ export const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
   };
 
   return (
-    <Pagination className={"mb-10"}>
+    <Pagination className="mb-10">
       <PaginationContent>
-        {/* Previous Arrow */}
         <PaginationItem>
           <PaginationPrevious
             onClick={handlePrevious}
             disabled={currentPage === 1}
-            className="px-2 sm:px-4" // smaller on mobile
+            className="px-2 sm:px-4 cursor-pointer"
           />
         </PaginationItem>
 
-        {/* Desktop Pagination */}
         <div className="hidden sm:flex">
           {getDesktopPages().map((page, idx) => (
             <PaginationItem key={idx}>
@@ -68,7 +70,8 @@ export const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
               ) : (
                 <PaginationLink
                   isActive={currentPage === page}
-                  onClick={() => onPageChange(page)}
+                  onClick={() => handlePageClick(page)}
+                  className="cursor-pointer"
                 >
                   {page}
                 </PaginationLink>
@@ -77,7 +80,6 @@ export const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
           ))}
         </div>
 
-        {/* Mobile Pagination */}
         <div className="flex sm:hidden">
           {getMobilePages().map((page, idx) => (
             <PaginationItem key={idx}>
@@ -86,7 +88,8 @@ export const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
               ) : (
                 <PaginationLink
                   isActive={currentPage === page}
-                  onClick={() => onPageChange(page)}
+                  onClick={() => handlePageClick(page)}
+                  className="cursor-pointer"
                 >
                   {page}
                 </PaginationLink>
@@ -95,12 +98,11 @@ export const CustomPagination = ({ currentPage, totalPages, onPageChange }) => {
           ))}
         </div>
 
-        {/* Next Arrow */}
         <PaginationItem>
           <PaginationNext
             onClick={handleNext}
             disabled={currentPage === totalPages}
-            className="px-2 sm:px-4"
+            className="px-2 sm:px-4 cursor-pointer"
           />
         </PaginationItem>
       </PaginationContent>
