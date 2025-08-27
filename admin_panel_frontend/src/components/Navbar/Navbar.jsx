@@ -37,7 +37,6 @@ export function Navbar({ children }) {
 
   const handleNavItemClick = (item) => {
     setPages(item.pages);
-    // Close mobile menu when item is clicked
     setIsMobileMenuOpen(false);
   };
 
@@ -58,8 +57,8 @@ export function Navbar({ children }) {
           {/* Header */}
           <div className="flex items-center justify-start h-16 px-4 border-b border-border">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-hoverBg">
-                <Menu className="w-5 h-5 text-text" />
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-accent">
+                <Menu className="w-5 h-5 text-white" />
               </div>
               <span
                 className={`font-semibold text-lg text-heading transition-opacity duration-300 ${
@@ -81,7 +80,7 @@ export function Navbar({ children }) {
                     <Link
                       href={item.href}
                       onClick={() => setPages(item.pages)}
-                      className="flex items-center px-3 py-3 rounded-lg transition-all duration-200 text-text hover:text-hoverText hover:bg-hoverBg"
+                      className="flex items-center px-3 py-3 rounded-lg transition-all duration-200 text-text hover:text-primary hover:bg-muted"
                     >
                       <Icon className="w-5 h-5 flex-shrink-0" />
                       <span
@@ -106,7 +105,7 @@ export function Navbar({ children }) {
               onClick={handleThemeChange}
               variant="ghost"
               size="sm"
-              className="w-full justify-start px-3 py-3 h-auto text-text hover:text-hoverText hover:bg-secondaryBg"
+              className="w-full justify-start px-3 py-3 h-auto text-text hover:text-primary hover:bg-muted"
             >
               {theme === "dark" ? (
                 <Sun className="w-5 h-5" />
@@ -147,8 +146,8 @@ export function Navbar({ children }) {
             {/* Header with Close Button */}
             <div className="flex items-center justify-between h-16 px-4 border-b border-border">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-hoverBg">
-                  <Menu className="w-5 h-5 text-text" />
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-accent">
+                  <Menu className="w-5 h-5 text-white" />
                 </div>
                 <span className="font-semibold text-lg text-heading">
                   Dashboard
@@ -158,7 +157,7 @@ export function Navbar({ children }) {
                 onClick={toggleMobileMenu}
                 variant="ghost"
                 size="sm"
-                className="p-2 hover:bg-hoverBg"
+                className="p-2 hover:bg-muted"
               >
                 <X className="w-5 h-5 text-text" />
               </Button>
@@ -174,7 +173,7 @@ export function Navbar({ children }) {
                       <Link
                         href={item.href}
                         onClick={() => handleNavItemClick(item)}
-                        className="flex items-center px-3 py-3 rounded-lg transition-all duration-200 text-text hover:text-hoverText hover:bg-hoverBg"
+                        className="flex items-center px-3 py-3 rounded-lg transition-all duration-200 text-text hover:text-primary hover:bg-muted"
                       >
                         <Icon className="w-5 h-5 flex-shrink-0" />
                         <span className="ml-3 whitespace-nowrap">
@@ -193,7 +192,7 @@ export function Navbar({ children }) {
                 onClick={handleThemeChange}
                 variant="ghost"
                 size="sm"
-                className="w-full justify-start px-3 py-3 h-auto text-text hover:text-hoverText hover:bg-secondaryBg"
+                className="w-full justify-start px-3 py-3 h-auto text-text hover:text-primary hover:bg-muted"
               >
                 {theme === "dark" ? (
                   <Sun className="w-5 h-5" />
@@ -215,8 +214,8 @@ export function Navbar({ children }) {
           variant="ghost"
           size="sm"
         >
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-hoverBg">
-            <Menu className="w-5 h-5 text-text" />
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-accent">
+            <Menu className="w-5 h-5 text-white" />
           </div>
         </Button>
 

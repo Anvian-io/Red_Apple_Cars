@@ -68,7 +68,7 @@ export function RoleSection({ isExpanded }) {
   };
 
   if (loading) {
-    return <div>Loading roles...</div>;
+    return <div className="text-text">Loading roles...</div>;
   }
 
   return (
@@ -83,9 +83,9 @@ export function RoleSection({ isExpanded }) {
       />
       {totalPages > 0 && (
         <div className="px-1 flex justify-between items-center mt-4">
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-text">
             {totalProducts > 0 && (
-              <Badge className="bg-hoverBg">
+              <Badge className="bg-border text-text">
                 Showing {(currentPage - 1) * itemsPerPage + 1}-
                 {Math.min(currentPage * itemsPerPage, totalProducts)} of{" "}
                 {totalProducts} Roles
@@ -94,45 +94,42 @@ export function RoleSection({ isExpanded }) {
           </div>
         </div>
       )}
-      <div className="mx-1 mt-6 rounded-md max-w-[99vw] border overflow-x-auto">
+      <div className="mx-1 mt-6 rounded-md max-w-[99vw] border border-border overflow-x-auto">
         <Table className="min-w-[800px] lg:min-w-full">
-          <TableCaption className="mb-2">
+          <TableCaption className="mb-2 text-text">
             A list of available user roles
           </TableCaption>
-          <TableHeader className="bg-hoverBg">
+          <TableHeader className="bg-cardBg">
             <TableRow>
-              <TableHead className="w-[200px]">Role Name</TableHead>
-              <TableHead className="w-[300px]">Description</TableHead>
-              <TableHead className="w-[100px] text-center">Users</TableHead>
-              <TableHead className="w-[120px] text-center">
+              <TableHead className="w-[200px] text-text">Role Name</TableHead>
+              <TableHead className="w-[300px] text-text">Description</TableHead>
+              <TableHead className="w-[100px] text-center text-text">Users</TableHead>
+              <TableHead className="w-[120px] text-center text-text">
                 Permissions
               </TableHead>
-              <TableHead className="w-[100px] text-right">Actions</TableHead>
-              <TableHead className="w-[150px]">Last Updated</TableHead>
+              <TableHead className="w-[100px] text-right text-text">Actions</TableHead>
+              <TableHead className="w-[150px] text-text">Last Updated</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {roles.map((roleData) => {
               const { role, permissions } = roleData;
               return (
-                <TableRow key={role._id}>
-                  <TableCell className="font-medium">{role.name}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {/* Description not in API - keeping static */}
+                <TableRow key={role._id} className="border-border">
+                  <TableCell className="font-medium text-text">{role.name}</TableCell>
+                  <TableCell className="text-text/70">
                     No description available
                   </TableCell>
-                  <TableCell className="text-center">
-                    {/* Users count not in API - keeping static */}0
-                  </TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="text-center text-text">0</TableCell>
+                  <TableCell className="text-center text-text">
                     {getPermissionsCount(permissions)}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon">
+                    <Button variant="ghost" size="icon" className="text-text hover:text-primary">
                       <SquarePen className="h-4 w-4" />
                     </Button>
                   </TableCell>
-                  <TableCell>{formatDate(role.updatedAt)}</TableCell>
+                  <TableCell className="text-text">{formatDate(role.updatedAt)}</TableCell>
                 </TableRow>
               );
             })}

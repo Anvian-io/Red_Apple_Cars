@@ -24,19 +24,20 @@
     --header: #b91c1c;
   }
 
+ 
   .dark {
-    --background: #0a0a0a;
-    --sidebar-bg: #250303;
-    --sidebar-border: #991b1b;
-    --text: #e5e7eb;
+    --hover-bg: #475569;
+    --background: #0f172a;
+    --sidebar-bg: #1e293b;
+    --sidebar-border: #334155;
+    --text: #e2e8f0;
     --heading: #f87171;
-    --hover-text: #f87171;
-    --secondary-bg: #420108;
-    --hover-bg: #420108;
-    --border: #991b1b;
-    --card-bg: #111827;
-    --card-text: #fca5a5;
-    --primary: #dc2626;
+    --muted: #334155;
+    --accent: #dc2626;
+    --primary: #f87171;
+    --border: #475569;
+    --card-bg: #1e293b;
+    --card-text: #f1f5f9;
     --header: #f87171;
   }
 }

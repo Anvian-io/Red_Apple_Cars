@@ -24,6 +24,7 @@ import {
 import { navItems } from "@/lib/routes_variables";
 import { save_role } from "@/services/roles/roleServices";
 import { toast } from "sonner";
+
 export function AddRoleForm({ open, onOpenChange }) {
   const {
     register,
@@ -59,7 +60,6 @@ export function AddRoleForm({ open, onOpenChange }) {
 
   const onSubmit = async (data) => {
     try {
-      
       const formattedData = {
         role_name: data.roleName,
         permissions: permissions.map((p)=>{
@@ -72,7 +72,6 @@ export function AddRoleForm({ open, onOpenChange }) {
           };
         }),
       };
-      // console.log(formattedData)
       const response = await save_role(formattedData);
       console.log(response)
       toast.success("Role saved successfully!");
@@ -88,15 +87,15 @@ export function AddRoleForm({ open, onOpenChange }) {
 
   const handleCancel = () => {
     onOpenChange(false);
-    reset(); // Reset form fields
+    reset();
   };
 
   return (
-    <Dialog className="text-text" open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogOverlay className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-3xl bg-cardBg border-border">
         <DialogHeader>
-          <DialogTitle className="text-text">Add New Role</DialogTitle>
+          <DialogTitle className="text-heading">Add New Role</DialogTitle>
           <DialogDescription className="text-text">
             Create a new role and set permissions for different pages.
           </DialogDescription>
@@ -104,7 +103,7 @@ export function AddRoleForm({ open, onOpenChange }) {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="role-name">Role Name</Label>
+            <Label htmlFor="role-name" className="text-text">Role Name</Label>
             <Input
               id="role-name"
               {...register("roleName", {
@@ -115,7 +114,7 @@ export function AddRoleForm({ open, onOpenChange }) {
                 },
               })}
               placeholder="Enter role name"
-              className="text-text bg-hoverBg"
+              className="text-text bg-hoverBg border-border"
             />
             {errors.roleName && (
               <p className="text-red-500 text-sm mt-1">
@@ -125,33 +124,33 @@ export function AddRoleForm({ open, onOpenChange }) {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-medium text-text">Permissions</h3>
+            <h3 className="text-lg font-medium text-heading">Permissions</h3>
 
-            <div className="rounded-md border">
-              <Table className="text-text">
+            <div className="rounded-md border border-border">
+              <Table>
                 <TableHeader className="bg-hoverBg">
                   <TableRow>
-                    <TableHead className="w-[200px]">Page Name</TableHead>
-                    <TableHead>Read</TableHead>
-                    <TableHead>Edit</TableHead>
-                    <TableHead>Delete</TableHead>
-                    <TableHead>Download</TableHead>
+                    <TableHead className="w-[200px] text-text">Page Name</TableHead>
+                    <TableHead className="text-text">Read</TableHead>
+                    <TableHead className="text-text">Edit</TableHead>
+                    <TableHead className="text-text">Delete</TableHead>
+                    <TableHead className="text-text">Download</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {permissions.map((permission) => (
-                    <TableRow key={permission.id}>
-                      <TableCell className="font-medium">
+                    <TableRow key={permission.id} className="border-border">
+                      <TableCell className="font-medium text-text">
                         {permission.page}
                       </TableCell>
                       {["read", "edit", "delete", "download"].map((action) => (
                         <TableCell key={action}>
                           <Switch
+                            className="bg-hoverBg"
                             checked={permission[action]}
                             onCheckedChange={() =>
                               handlePermissionToggle(permission.id, action)
                             }
-                            className="bg-hoverBg"
                           />
                         </TableCell>
                       ))}
@@ -164,14 +163,14 @@ export function AddRoleForm({ open, onOpenChange }) {
 
           <div className="flex justify-end space-x-2">
             <Button
-              className="text-text"
               type="button"
               variant="outline"
               onClick={handleCancel}
+              className="border-border text-text hover:bg-muted"
             >
               Cancel
             </Button>
-            <Button className="text-text" type="submit">
+            <Button type="submit" className="bg-primary text-white hover:bg-primary/90">
               Save Role
             </Button>
           </div>
