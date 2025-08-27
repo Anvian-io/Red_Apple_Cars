@@ -94,7 +94,7 @@ export function RoleSection({ isExpanded }) {
           </div>
         </div>
       )}
-      <div className="mx-1 mt-6 rounded-md max-w-[99vw] border overflow-x-auto">
+      <div className="mx-1 mt-6 rounded-md max-w-[99vw] border overflow-x-auto bg-tableBg">
         <Table className="min-w-[800px] lg:min-w-full">
           <TableCaption className="mb-2">
             A list of available user roles

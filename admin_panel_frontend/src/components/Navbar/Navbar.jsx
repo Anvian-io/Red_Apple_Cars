@@ -81,7 +81,7 @@ export function Navbar({ children }) {
                     <Link
                       href={item.href}
                       onClick={() => setPages(item.pages)}
-                      className="flex items-center px-3 py-3 rounded-lg transition-all duration-200 text-text hover:text-hoverText hover:bg-hoverBg"
+                      className="flex items-center px-3 py-3 rounded-lg transition-all duration-200 text-text hover:text-heading hover:bg-secondaryBg"
                     >
                       <Icon className="w-5 h-5 flex-shrink-0" />
                       <span
@@ -147,7 +147,7 @@ export function Navbar({ children }) {
             {/* Header with Close Button */}
             <div className="flex items-center justify-between h-16 px-4 border-b border-border">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-hoverBg">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-buttonBg">
                   <Menu className="w-5 h-5 text-text" />
                 </div>
                 <span className="font-semibold text-lg text-heading">
@@ -158,7 +158,7 @@ export function Navbar({ children }) {
                 onClick={toggleMobileMenu}
                 variant="ghost"
                 size="sm"
-                className="p-2 hover:bg-hoverBg"
+                className="p-2 hover:bg-buttonBg"
               >
                 <X className="w-5 h-5 text-text" />
               </Button>
@@ -174,7 +174,7 @@ export function Navbar({ children }) {
                       <Link
                         href={item.href}
                         onClick={() => handleNavItemClick(item)}
-                        className="flex items-center px-3 py-3 rounded-lg transition-all duration-200 text-text hover:text-hoverText hover:bg-hoverBg"
+                        className="flex items-center px-3 py-3 rounded-lg transition-all duration-200 text-text hover:text-hoverText hover:bg-buttonBg"
                       >
                         <Icon className="w-5 h-5 flex-shrink-0" />
                         <span className="ml-3 whitespace-nowrap">
@@ -215,7 +215,7 @@ export function Navbar({ children }) {
           variant="ghost"
           size="sm"
         >
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-hoverBg">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-buttonBg">
             <Menu className="w-5 h-5 text-text" />
           </div>
         </Button>
@@ -225,7 +225,7 @@ export function Navbar({ children }) {
           className={`flex-1 transition-all duration-300 ease-in-out 
             ${isExpanded ? "sm:ml-64" : "sm:ml-16"} 
             ml-0 
-            background`}
+            background bg-cardBg`}
         >
           <Header
             pages={pages}

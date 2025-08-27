@@ -22,22 +22,33 @@
     --card-text: #7f1d1d;
     --primary: #dc2626;
     --header: #b91c1c;
+    --input-text-bg: #1f2937;
+    --input-bg: #f3f4f6;
+    --table-bg: #ffffff;
+    --button-bg: #dc2626;
+    --secondary-bg: #fee2e2;
+    --bgSwitch: #121010;
   }
 
   .dark {
-    --background: #0a0a0a;
-    --sidebar-bg: #250303;
+    --background: #000000;
+    --sidebar-bg: #030712;
     --sidebar-border: #991b1b;
     --text: #e5e7eb;
     --heading: #f87171;
     --hover-text: #f87171;
-    --secondary-bg: #420108;
-    --hover-bg: #420108;
+    --secondary-bg: #61010b60;
+    --hover-bg: #69000b;
     --border: #991b1b;
-    --card-bg: #111827;
+    --card-bg: #030712;
+    --table-bg: #111827c6;
     --card-text: #fca5a5;
     --primary: #dc2626;
     --header: #f87171;
+    --input-text-bg: #1f2937;
+    --input-bg: #f3f4f6;
+    --button-bg: #dc2626;
+    --bgSwitch: #232020;
   }
 }
 

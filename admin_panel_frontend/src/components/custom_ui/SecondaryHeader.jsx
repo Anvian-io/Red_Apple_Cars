@@ -23,7 +23,7 @@ export function SecondaryHeader({
     <div className="flex justify-between items-center sm:p-2 rounded-md">
       {/* Left Title */}
       <div className="hidden md:flex bg-hoverBg py-2 pl-4 pr-8 rounded-r-3xl">
-        <span className="hidden md:flex text-hoverText">{title}</span>
+        <span className="hidden md:flex text-black dark:text-white">{title}</span>
       </div>
 
       {/* Search Input */}
