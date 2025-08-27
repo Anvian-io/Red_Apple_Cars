@@ -3,8 +3,8 @@ import Role_Mapper from "../../models/role_mapper.js";
 import { asyncHandler, sendResponse, statusType } from "../../utils/index.js";
 import User from "../../models/user.js";
 // Create Role
-export const createRole = asyncHandler(async (req, res) => {
-    const { role_name,description, permissions } = req.body;
+export const createOrUpdateRole = asyncHandler(async (req, res) => {
+    const { role_id, role_name, description, permissions } = req.body;
 
     // Validate input
     if (!role_name || !permissions) {
@@ -17,16 +17,33 @@ export const createRole = asyncHandler(async (req, res) => {
         );
     }
 
-    // Check if role already exists
-    const existingRole = await Role.findOne({ name: role_name.toLowerCase() });
-    if (existingRole) {
-        return sendResponse(res, false, null, "Role already exists", statusType.BAD_REQUEST);
+    let role;
+    if (role_id) {
+        // Update existing role
+        role = await Role.findById(role_id);
+        if (!role) {
+            return sendResponse(res, false, null, "Role not found", statusType.NOT_FOUND);
+        }
+
+        // Update role details
+        role.name = role_name.toLowerCase();
+        role.description = description;
+        await role.save();
+
+        // Remove existing permissions
+        await Role_Mapper.deleteMany({ role_id: role_id });
+    } else {
+        // Check if role already exists (for creation only)
+        const existingRole = await Role.findOne({ name: role_name.toLowerCase() });
+        if (existingRole) {
+            return sendResponse(res, false, null, "Role already exists", statusType.BAD_REQUEST);
+        }
+
+        // Create new role
+        role = await Role.create({ name: role_name.toLowerCase(), description: description });
     }
 
-    // Create new role
-    const role = await Role.create({ name: role_name, description:description});
-
-    // Prepare role mapper entries
+    // Prepare new role mapper entries
     const roleMappers = permissions.map((permission) => ({
         role_id: role._id,
         page: permission.page.toLowerCase(),
@@ -36,10 +53,11 @@ export const createRole = asyncHandler(async (req, res) => {
         download: permission.download || false
     }));
 
-    // Insert all permissions
+    // Insert updated permissions
     await Role_Mapper.insertMany(roleMappers);
 
-    return sendResponse(res, true, null, "Role created successfully", statusType.CREATED);
+    const message = role_id ? "Role updated successfully" : "Role created successfully";
+    return sendResponse(res, true, null, message, statusType.SUCCESS);
 });
 
 export const getAllRoles = asyncHandler(async (req, res) => {

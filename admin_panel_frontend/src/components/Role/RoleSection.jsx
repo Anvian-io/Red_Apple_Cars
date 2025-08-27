@@ -14,9 +14,10 @@ import { Button } from "../ui/button";
 import { CustomPagination } from "..";
 import { Badge } from "../ui/badge";
 import { AddRoleForm } from "./AddRoleForm";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { get_all_roles } from "@/services/roles/roleServices";
-import { Skeleton } from "@/components/ui/skeleton"; // Import shadcn Skeleton
+import { Skeleton } from "@/components/ui/skeleton";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export function RoleSection({ isExpanded }) {
   const [add_or_update_role, set_add_or_update_role] = useState(false);
@@ -28,10 +29,15 @@ export function RoleSection({ isExpanded }) {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const fetchRoles = async () => {
+  // Debounce the search term
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  // Use useCallback to memoize the fetchRoles function
+  const fetchRoles = useCallback(async () => {
     try {
+      console.log("Fetching roles with search term:", debouncedSearchTerm);
       const payload = {
-        search: searchTerm || "",
+        search: debouncedSearchTerm,
         limit: itemsPerPage,
         page: currentPage,
       };
@@ -49,11 +55,12 @@ export function RoleSection({ isExpanded }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [debouncedSearchTerm, currentPage, itemsPerPage]);
 
   useEffect(() => {
+    setLoading(true);
     fetchRoles();
-  }, [searchTerm, currentPage]);
+  }, [fetchRoles]);
 
   const handleSearch = (term) => {
     setSearchTerm(term);
@@ -72,7 +79,6 @@ export function RoleSection({ isExpanded }) {
     setCurrentPage(page);
   };
 
-  // Skeleton rows matching the table structure
   const skeletonRows = Array.from({ length: itemsPerPage }, (_, i) => (
     <TableRow key={i}>
       <TableCell>
