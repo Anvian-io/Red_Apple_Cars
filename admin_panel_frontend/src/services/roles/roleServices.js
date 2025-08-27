@@ -13,3 +13,7 @@ export const get_all_roles = (payload) => {
     params:payload
   });
 };
+
+export const get_role = (id) =>{
+  return apiClient.get(`/role/${id}`);
+}

@@ -21,6 +21,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 
 export function RoleSection({ isExpanded }) {
   const [add_or_update_role, set_add_or_update_role] = useState(false);
+  const [currentRoleId, setCurrentRoleId] = useState(null);
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(0);
@@ -29,13 +30,10 @@ export function RoleSection({ isExpanded }) {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Debounce the search term
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-  // Use useCallback to memoize the fetchRoles function
   const fetchRoles = useCallback(async () => {
     try {
-      console.log("Fetching roles with search term:", debouncedSearchTerm);
       const payload = {
         search: debouncedSearchTerm,
         limit: itemsPerPage,
@@ -71,7 +69,13 @@ export function RoleSection({ isExpanded }) {
     return new Date(dateString).toLocaleDateString();
   };
 
-  const handle_add_or_update_form = () => {
+  const handleEditRole = (roleId) => {
+    setCurrentRoleId(roleId);
+    set_add_or_update_role(true);
+  };
+
+  const handleAddRole = () => {
+    setCurrentRoleId(null);
     set_add_or_update_role(true);
   };
 
@@ -109,8 +113,8 @@ export function RoleSection({ isExpanded }) {
         searchPlaceholder="Search Roles"
         buttonText="Create New Role"
         tooltipText="Create New Role"
-        onButtonClick={handle_add_or_update_form}
-        onMobileButtonClick={handle_add_or_update_form}
+        onButtonClick={handleAddRole}
+        onMobileButtonClick={handleAddRole}
         onSearch={handleSearch}
       />
       <div className="px-1 flex justify-between items-center mt-4">
@@ -162,7 +166,11 @@ export function RoleSection({ isExpanded }) {
                       {roleData?.totalPermissionNo}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="icon">
+                      <Button
+                        onClick={() => handleEditRole(roleData._id)}
+                        variant="ghost"
+                        size="icon"
+                      >
                         <SquarePen className="h-4 w-4" />
                       </Button>
                     </TableCell>
@@ -187,6 +195,7 @@ export function RoleSection({ isExpanded }) {
           open={add_or_update_role}
           onOpenChange={set_add_or_update_role}
           onRoleCreated={fetchRoles}
+          roleId={currentRoleId}
         />
       )}
     </div>

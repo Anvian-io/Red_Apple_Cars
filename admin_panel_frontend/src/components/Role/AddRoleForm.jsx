@@ -24,17 +24,27 @@ import {
 import { navItems } from "@/lib/routes_variables";
 import { save_role } from "@/services/roles/roleServices";
 import { toast } from "sonner";
-export function AddRoleForm({ open, onOpenChange, onRoleCreated }) {
+import { get_role } from "@/services/roles/roleServices";
+
+export function AddRoleForm({ open, onOpenChange, onRoleCreated, roleId }) {
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
   } = useForm();
   const [permissions, setPermissions] = useState([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (open) {
+    if (open && roleId) {
+      // Fetch role data when editing
+      fetchRoleData();
+      setIsEditing(true);
+    } else if (open) {
+      // Reset for new role creation
       const initialPermissions = navItems.map((item) => ({
         id: item.id,
         page: item.label,
@@ -44,8 +54,44 @@ export function AddRoleForm({ open, onOpenChange, onRoleCreated }) {
         download: false,
       }));
       setPermissions(initialPermissions);
+      setIsEditing(false);
+      reset();
     }
-  }, [open]);
+  }, [open, roleId]);
+
+  const fetchRoleData = async () => {
+    try {
+      const response = await get_role(roleId);
+      if (response.data.status) {
+        const roleData = response.data.data;
+
+        // Set form values
+        setValue("roleName", roleData.role.name);
+        setValue("description", roleData.role.description || "");
+
+        // Set permissions
+        const formattedPermissions = navItems.map((item) => {
+          const existingPermission = roleData.permissions.find(
+            (p) => p.page === item.id
+          );
+
+          return {
+            id: item.id,
+            page: item.label,
+            read: existingPermission?.read || false,
+            edit: existingPermission?.edit || false,
+            delete: existingPermission?.delete || false,
+            download: existingPermission?.download || false,
+          };
+        });
+
+        setPermissions(formattedPermissions);
+      }
+    } catch (error) {
+      console.error("Error fetching role data:", error);
+      toast.error("Failed to load role data");
+    }
+  };
 
   const handlePermissionToggle = (id, permissionType) => {
     setPermissions(
@@ -58,40 +104,48 @@ export function AddRoleForm({ open, onOpenChange, onRoleCreated }) {
   };
 
   const onSubmit = async (data) => {
+    setIsSubmitting(true);
     try {
       const formattedData = {
         role_name: data.roleName,
         description: data.description,
-        permissions: permissions.map((p) => {
-          return {
-            page: p.id,
-            read: p.read,
-            edit: p.edit,
-            delete: p.delete,
-            download: p.download,
-          };
-        }),
+        permissions: permissions.map((p) => ({
+          page: p.id,
+          read: p.read,
+          edit: p.edit,
+          delete: p.delete,
+          download: p.download,
+        })),
       };
-      // console.log(formattedData)
-      const response = await save_role(formattedData);
-      console.log(response);
-      toast.success("Role saved successfully!");
+
+      // For updates, include role_id in the request body
+      if (isEditing) {
+        formattedData.role_id = roleId;
+      }
+
+      await save_role(formattedData);
+      toast.success(
+        isEditing ? "Role updated successfully!" : "Role saved successfully!"
+      );
+
       if (onRoleCreated) {
         onRoleCreated();
       }
+      onOpenChange(false);
+      reset();
+      setPermissions([]);
     } catch (error) {
       console.error(error);
       toast.error(error?.response?.data?.message || "Failed to save role.");
     } finally {
-      onOpenChange(false);
-      reset();
-      setPermissions([]);
+      setIsSubmitting(false);
     }
   };
 
   const handleCancel = () => {
     onOpenChange(false);
-    reset(); // Reset form fields
+    reset();
+    setPermissions([]);
   };
 
   return (
@@ -99,9 +153,13 @@ export function AddRoleForm({ open, onOpenChange, onRoleCreated }) {
       <DialogOverlay className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
       <DialogContent className="max-w-4xl bg-cardBg h-[calc(100vh-5rem)] flex flex-col">
         <DialogHeader>
-          <DialogTitle className="text-text">Add New Role</DialogTitle>
+          <DialogTitle className="text-text">
+            {isEditing ? "Edit Role" : "Add New Role"}
+          </DialogTitle>
           <DialogDescription className="text-text">
-            Create a new role and set permissions for different pages.
+            {isEditing
+              ? "Edit the role and update permissions."
+              : "Create a new role and set permissions for different pages."}
           </DialogDescription>
         </DialogHeader>
 
@@ -141,11 +199,6 @@ export function AddRoleForm({ open, onOpenChange, onRoleCreated }) {
               {...register("description")}
               className="text-text bg-cardBg border-border"
             />
-            {errors.roleName && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.roleName.message}
-              </p>
-            )}
           </div>
 
           <div className="space-y-4">
@@ -192,11 +245,16 @@ export function AddRoleForm({ open, onOpenChange, onRoleCreated }) {
               type="button"
               variant="outline"
               onClick={handleCancel}
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
-            <Button className="text-text" type="submit">
-              Save Role
+            <Button className="text-text" type="submit" disabled={isSubmitting}>
+              {isSubmitting
+                ? "Processing..."
+                : isEditing
+                ? "Update Role"
+                : "Save Role"}
             </Button>
           </div>
         </form>
