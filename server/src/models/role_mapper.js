@@ -16,11 +16,6 @@ const rolemapperSchema = new mongoose.Schema(
             required: true,
             default: false
         },
-        read: {
-            type: Boolean,
-            required: true,
-            default: false
-        },
         edit: {
             type: Boolean,
             required: true,
@@ -49,3 +44,7 @@ const rolemapperSchema = new mongoose.Schema(
 );
 
 export default mongoose.model("Role_Mapper", rolemapperSchema);
+
+// Add to your rolemapperSchema
+rolemapperSchema.index({ page: "text" });
+rolemapperSchema.index({ role_id: 1 });
