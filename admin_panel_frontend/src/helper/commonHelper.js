@@ -64,4 +64,16 @@ export const apiClient = {
     ),
 };
 
+// helper/responseHandler.js
+export const handleApiResponse = (response, router) => {
+  // console.log(response.data,"reohweoihgoei")
+  if (response?.error == "Unauthorized request: Token missing") {
+    localStorage.removeItem("User");
+    router.push("/login"); // redirect to login
+    return null;
+  }
+  return response;
+};
+
+
 export { asyncHandler, getCookie };

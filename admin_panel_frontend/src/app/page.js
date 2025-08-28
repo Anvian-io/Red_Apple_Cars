@@ -1,5 +1,6 @@
 import { Navbar,Dashboard } from "@/components";
-export default function Home() {
+import { Children } from "react";
+export default function Home({Children}) {
 
-  return <div className="min-h-screen bg-background">{/* <Dashboard/> */}</div>;
+  return <div className="min-h-screen bg-background"><Navbar>{Children}</Navbar></div>;
 }

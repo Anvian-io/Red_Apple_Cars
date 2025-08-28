@@ -19,7 +19,7 @@ import { get_all_roles } from "@/services/roles/roleServices";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/useDebounce";
 import SearchLoader from "@/components/custom_ui/SearchLoader"; // Import the SearchLoader
-import { set } from "react-hook-form";
+import { useRouter } from "next/navigation";
 
 export function RoleSection({ isExpanded }) {
   const [add_or_update_role, set_add_or_update_role] = useState(false);
@@ -33,7 +33,7 @@ export function RoleSection({ isExpanded }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [isInitial, setIsInitial] = useState(true);
-
+  const router = useRouter();
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const fetchRoles = useCallback(async () => {
@@ -44,7 +44,7 @@ export function RoleSection({ isExpanded }) {
         limit: itemsPerPage,
         page: currentPage,
       };
-      const response = await get_all_roles(payload);
+      const response = await get_all_roles(payload,router);
       if (response.data.status) {
         setRoles(response.data.data.roles);
         const pagination_data = response.data.data.pagination;

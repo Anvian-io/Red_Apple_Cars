@@ -45,9 +45,9 @@ export default function RootLayout({ children }) {
           enableSystem
           disableTransitionOnChange
         >
-          {/* <CheckUser> */}
-            <Navbar>{children}</Navbar>
-          {/* </CheckUser> */}
+          <CheckUser>
+            {children}
+          </CheckUser>
         </ThemeProvider>
         <NormalToaster position="top-center" richColors />
       </body>

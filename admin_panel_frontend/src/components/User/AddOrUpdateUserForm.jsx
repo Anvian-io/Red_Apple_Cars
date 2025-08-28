@@ -23,6 +23,7 @@ import { get_all_roles } from "@/services/roles/roleServices";
 import { createOrUpdateUser, getUser } from "@/services/user/userServices";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react"; // Add eye icons
+import { useRouter } from "next/navigation";
 
 export function AddOrUpdateUserForm({
   open,
@@ -42,7 +43,7 @@ export function AddOrUpdateUserForm({
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false); // Add visibility state
-
+  const router = useRouter();
   useEffect(() => {
     if (open) {
       fetchRoles();
@@ -58,7 +59,7 @@ export function AddOrUpdateUserForm({
 
   const fetchRoles = async () => {
     try {
-      const response = await get_all_roles({ limit: 100, page: 1 });
+      const response = await get_all_roles({ limit: 100, page: 1 },router);
       if (response.data.status) {
         setRoles(response.data.data.roles);
       }
@@ -70,7 +71,7 @@ export function AddOrUpdateUserForm({
 
   const fetchUserData = async () => {
     try {
-      const response = await getUser(userId);
+      const response = await getUser(userId,router);
       if (response.data.status) {
         const userData = response.data.data;
         setValue("name", userData.name);
@@ -107,7 +108,7 @@ export function AddOrUpdateUserForm({
         formattedData.user_id = userId;
       }
 
-      await createOrUpdateUser(formattedData);
+      await createOrUpdateUser(formattedData,router);
       toast.success(
         isEditing ? "User updated successfully!" : "User created successfully!"
       );

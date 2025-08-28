@@ -21,6 +21,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { ConfirmDialog } from "@/components/custom_ui/confirm-dialog";
 import { toast } from "sonner";
 import SearchLoader from "@/components/custom_ui/SearchLoader"; // Import the SearchLoader
+import { useRouter } from "next/navigation";
 
 export function UserSection({ isExpanded }) {
   const [add_or_update_user, set_add_or_update_user] = useState(false);
@@ -36,7 +37,7 @@ export function UserSection({ isExpanded }) {
   const [userToDelete, setUserToDelete] = useState(null);
   const [isSearching, setIsSearching] = useState(false); // Add this state
   const [isInitial, setIsInitial] = useState(true);
-
+  const router = useRouter();
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const fetchUsers = useCallback(async () => {
@@ -48,7 +49,7 @@ export function UserSection({ isExpanded }) {
         limit: itemsPerPage,
         page: currentPage,
       };
-      const response = await getAllUsers(payload);
+      const response = await getAllUsers(payload,router);
       console.log(response, "foiewjfoij");
       if (response.data.status) {
         setUsers(response.data.data.users);
@@ -98,7 +99,7 @@ export function UserSection({ isExpanded }) {
 
   const confirmDelete = async () => {
     try {
-      const response = await deleteUser(userToDelete);
+      const response = await deleteUser(userToDelete,router);
       if (response.data.status) {
         toast.success("User deleted successfully");
         fetchUsers();

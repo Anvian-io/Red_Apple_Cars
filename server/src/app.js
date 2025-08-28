@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import { userRoute } from "./controllers/user/userRoutes.js";
 import roleRouter from "./controllers/roles/rolesRouter.js"
 import userRouter from "./controllers/user_management/user_managementRoute.js";
+import { verifyJWT } from "./middlewares/auth.middleware.js";
 const app = express();
 
 app.use(
@@ -19,7 +20,8 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
 app.use("/api/users", userRoute);
-app.use("/api/role",roleRouter);
+app.use(verifyJWT);
+app.use("/api/role", roleRouter);
 app.use("/api/user_management", userRouter);
 
 export { app };

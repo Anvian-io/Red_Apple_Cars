@@ -10,7 +10,7 @@ const sendResponse = function (
     status,
     data,
     message,
-    // statusCode,
+    statusCode,
     apiVersion: apiVersion || "No Version",
   };
   return res.status(statusCode).json(obj);

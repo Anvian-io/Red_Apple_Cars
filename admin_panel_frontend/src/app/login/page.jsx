@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { loginUser } from "@/services/user/userServices";
+import { toast } from "sonner";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -27,17 +29,26 @@ export default function Login() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
 
     if (validateForm()) {
       // In a real app, you would make an API call here
-      console.log("Login successful");
-      router.push("/");
+      // console.log("Login successful");
+      const response = await loginUser({ email, password });
+      console.log(response.data,"fewiofhwio")
+      if (response.data.status) {
+              toast.success(
+                "Login successful"
+              );
+        localStorage.setItem("User", JSON.stringify(response.data.data));
+        router.push("/");
+      } else {
+        setErrors({ email: response.data.message });
+      }
     }
   };
 
-  // Toggle dark mode by adding/removing the class from the HTML element
   const toggleDarkMode = () => {
     const newDarkMode = !isDarkMode;
     setIsDarkMode(newDarkMode);

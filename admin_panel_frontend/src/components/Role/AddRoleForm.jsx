@@ -25,7 +25,7 @@ import { navItems } from "@/lib/routes_variables";
 import { save_role } from "@/services/roles/roleServices";
 import { toast } from "sonner";
 import { get_role } from "@/services/roles/roleServices";
-
+import { useRouter } from "next/navigation";
 export function AddRoleForm({ open, onOpenChange, onRoleCreated, roleId }) {
   const {
     register,
@@ -37,7 +37,7 @@ export function AddRoleForm({ open, onOpenChange, onRoleCreated, roleId }) {
   const [permissions, setPermissions] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const router = useRouter();
   useEffect(() => {
     if (open && roleId) {
       // Fetch role data when editing
@@ -61,7 +61,7 @@ export function AddRoleForm({ open, onOpenChange, onRoleCreated, roleId }) {
 
   const fetchRoleData = async () => {
     try {
-      const response = await get_role(roleId);
+      const response = await get_role(roleId,router);
       if (response.data.status) {
         const roleData = response.data.data;
 
@@ -123,7 +123,7 @@ export function AddRoleForm({ open, onOpenChange, onRoleCreated, roleId }) {
         formattedData.role_id = roleId;
       }
 
-      await save_role(formattedData);
+      await save_role(formattedData,router);
       toast.success(
         isEditing ? "Role updated successfully!" : "Role saved successfully!"
       );

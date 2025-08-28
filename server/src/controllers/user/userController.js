@@ -25,55 +25,22 @@ const generateRefreshToken = (user) => {
 };
 
 const cookieOptions = {
-    httpOnly: false,
-    secure: true,
-    sameSite: "Strict",
+    httpOnly: true, // Prevent XSS access
+    secure: process.env.NODE_ENV === "production", // Only send over HTTPS in production
+    sameSite: "Strict" // CSRF protection
 };
-
-export const createUser = asyncHandler(async (req, res) => {
-    const { name, email, password, role } = req.body;
-    if (!name || !email || !password || !role) {
-        return sendResponse(res, false, null, "Fields cannot be empty", statusType.BAD_REQUEST);
-    }
-    let image = null;
-    if (req.files && req.files.image) {
-        const avatarLocalPath = req.files.image[0].path;
-        const image_temp = await uploadOnCloudinary(avatarLocalPath, { secure: true });
-        image = image_temp?.secure_url;
-    }
-
-    let user = await User.findOne({ email });
-    if (user) {
-        return sendResponse(res, false, null, "User already exists, please login", statusType.BAD_REQUEST);
-    }
-
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Save User
-    user = await User.create({ name, email, password: hashedPassword, role, image });
-
-    // Generate Tokens
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
-
-    // Store refreshToken in DB
-    user.refresh_token = refreshToken;
-    await user.save();
-
-    // Prepare response
-    const userData = user.toObject();
-    delete userData.pin;
-    delete userData.refresh_token;
-
-    return sendResponse(res, true,userData,"User registered successfully",statusType.CREATED);
-});
 
 export const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-        return sendResponse(res, false, null, "Email and Password are required", statusType.BAD_REQUEST);
+        return sendResponse(
+            res,
+            false,
+            null,
+            "Email and Password are required",
+            statusType.BAD_REQUEST
+        );
     }
 
     const user = await User.findOne({ email });
@@ -81,9 +48,15 @@ export const loginUser = asyncHandler(async (req, res) => {
         return sendResponse(res, false, null, "User does not exist", statusType.BAD_REQUEST);
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = password === user.password;
     if (!isMatch) {
-        return sendResponse(res, false, null, "Email or Password is incorrect", statusType.BAD_REQUEST);
+        return sendResponse(
+            res,
+            false,
+            null,
+            "Email or Password is incorrect",
+            statusType.BAD_REQUEST
+        );
     }
 
     const accessToken = generateAccessToken(user);
@@ -92,10 +65,24 @@ export const loginUser = asyncHandler(async (req, res) => {
     user.refresh_token = refreshToken;
     await user.save();
 
+    // Set cookies with tokens
+    res.cookie("accessToken", accessToken, {
+        ...cookieOptions,
+        maxAge: 24 * 60 * 60 * 1000 // 1 day
+    });
+    res.cookie("refreshToken", refreshToken, {
+        ...cookieOptions,
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+
     const userData = user.toObject();
     delete userData.password;
     delete userData.refresh_token;
-
-    return sendResponse(res,true,userData,"Login Successful",statusType.OK)
+    return sendResponse(
+        res,
+        true,
+        { ...userData, accessToken }, // Still return accessToken in response body if needed
+        "Login Successful",
+        statusType.OK
+    );
 });
-
