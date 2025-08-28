@@ -22,6 +22,7 @@ import {
 import { get_all_roles } from "@/services/roles/roleServices";
 import { createOrUpdateUser, getUser } from "@/services/user/userServices";
 import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react"; // Add eye icons
 
 export function AddOrUpdateUserForm({
   open,
@@ -40,6 +41,7 @@ export function AddOrUpdateUserForm({
   const [roles, setRoles] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // Add visibility state
 
   useEffect(() => {
     if (open) {
@@ -75,6 +77,7 @@ export function AddOrUpdateUserForm({
         setValue("email", userData.email);
         setValue("role", String(userData.role._id));
         setValue("image", userData.image || "");
+        setValue("password", userData.password);
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -84,19 +87,20 @@ export function AddOrUpdateUserForm({
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
-    console.log('fwoeihfio')
+    console.log("fwoeihfio");
     try {
       const formattedData = {
         name: data.name,
         email: data.email,
         role: data.role,
         image: data.image || null,
+        password: data.password,
       };
 
       // For new users, include password
-      if (!isEditing) {
-        formattedData.password = data.password;
-      }
+      // if (!isEditing) {
+      formattedData.password = data.password;
+      // }
 
       // For updates, include user_id
       if (isEditing) {
@@ -187,14 +191,15 @@ export function AddOrUpdateUserForm({
             )}
           </div>
 
-          {!isEditing && (
-            <div className="space-y-2">
-              <Label className={"text-text"} htmlFor="password">
-                Password
-              </Label>
+          {/* Password Field - Always Visible */}
+          <div className="space-y-2">
+            <Label className={"text-text"} htmlFor="password">
+              Password {isEditing && "(Leave blank to keep current)"}
+            </Label>
+            <div className="relative">
               <Input
                 id="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 {...register("password", {
                   required: "Password is required",
                   minLength: {
@@ -203,15 +208,28 @@ export function AddOrUpdateUserForm({
                   },
                 })}
                 placeholder="Enter password"
-                className="text-text bg-cardBg border-border"
+                className="text-text bg-cardBg border-border pr-10"
               />
-              {errors.password && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.password.message}
-                </p>
-              )}
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </Button>
             </div>
-          )}
+            {errors.password && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.password.message}
+              </p>
+            )}
+          </div>
 
           <div className="space-y-2">
             <Label className={"text-text"} htmlFor="role">

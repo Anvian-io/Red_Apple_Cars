@@ -39,9 +39,10 @@ export const createOrUpdateUser = asyncHandler(async (req, res) => {
         if (image) user.image = image;
 
         // Update password if provided
-        if (password) {
-            user.password = await bcrypt.hash(password, 12);
-        }
+        // if (password) {
+            // user.password = await bcrypt.hash(password, 12);
+            user.password = password;
+        // }
 
         await user.save();
     } else {
@@ -52,11 +53,11 @@ export const createOrUpdateUser = asyncHandler(async (req, res) => {
         }
 
         // Create new user
-        const hashedPassword = await bcrypt.hash(password, 12);
+        // const hashedPassword = await bcrypt.hash(password, 12);
         user = await User.create({
             name,
             email,
-            password: hashedPassword,
+            password: password,
             role,
             image: image || null
         });
