@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/useDebounce";
 import { ConfirmDialog } from "@/components/custom_ui/confirm-dialog";
 import { toast } from "sonner";
+import SearchLoader from "@/components/custom_ui/SearchLoader"; // Import the SearchLoader
 
 export function UserSection({ isExpanded }) {
   const [add_or_update_user, set_add_or_update_user] = useState(false);
@@ -33,18 +34,22 @@ export function UserSection({ isExpanded }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
+  const [isSearching, setIsSearching] = useState(false); // Add this state
+  const [isInitial, setIsInitial] = useState(true);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const fetchUsers = useCallback(async () => {
     try {
+      setIsSearching(isInitial == false ? true : false); // Set isSearching based on whether there's a search term
+
       const payload = {
         search: debouncedSearchTerm,
         limit: itemsPerPage,
         page: currentPage,
       };
       const response = await getAllUsers(payload);
-      console.log(response,"foiewjfoij")
+      console.log(response, "foiewjfoij");
       if (response.data.status) {
         setUsers(response.data.data.users);
         const pagination_data = response.data.data.pagination;
@@ -56,13 +61,15 @@ export function UserSection({ isExpanded }) {
     } catch (error) {
       console.error("Error fetching users:", error);
     } finally {
+      setIsSearching(false); // Reset isSearching after fetch completes
       setLoading(false);
     }
   }, [debouncedSearchTerm, currentPage, itemsPerPage]);
 
   useEffect(() => {
-    setLoading(true);
+    setLoading(isInitial == true ? true : false);
     fetchUsers();
+    setIsInitial(false);
   }, [fetchUsers]);
 
   const handleSearch = (term) => {
@@ -146,94 +153,113 @@ export function UserSection({ isExpanded }) {
         onMobileButtonClick={handleAddUser}
         onSearch={handleSearch}
       />
-      <div className="px-1 flex justify-between items-center mt-4">
-        <div className="text-sm text-muted-foreground">
-          {loading ? (
-            <Skeleton className="h-5 w-40 bg-border rounded-md" />
-          ) : (
-            totalUsers > 0 && (
-              <Badge className="bg-hoverBg">
-                Showing {(currentPage - 1) * itemsPerPage + 1}-
-                {Math.min(currentPage * itemsPerPage, totalUsers)} of{" "}
-                {totalUsers} Users
-              </Badge>
-            )
-          )}
-        </div>
-      </div>
 
-      <div className="mx-1 mt-6 rounded-md max-w-[99vw] border overflow-x-auto bg-tableBg">
-        <Table className="min-w-[800px] lg:min-w-full">
-          <TableCaption className="mb-2">
-            A list of system users
-          </TableCaption>
-          <TableHeader className="bg-hoverBg">
-            <TableRow>
-              <TableHead className="w-[60px]">Image</TableHead>
-              <TableHead className="w-[200px]">Name</TableHead>
-              <TableHead className="w-[250px]">Email</TableHead>
-              <TableHead className="w-[150px]">Role</TableHead>
-              <TableHead className="w-[120px] text-right">Actions</TableHead>
-              <TableHead className="w-[150px]">Last Updated</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading
-              ? skeletonRows
-              : users.map((user) => (
-                  <TableRow key={user._id}>
-                    <TableCell>
-                      {user.image ? (
-                        <img
-                          src={user.image}
-                          alt={user.name}
-                          className="h-10 w-10 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
-                          {user.name.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="font-medium">{user.name}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{user.role?.name}</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end space-x-2">
-                        <Button
-                          onClick={() => handleEditUser(user._id)}
-                          variant="ghost"
-                          size="icon"
-                        >
-                          <SquarePen className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          onClick={() => handleDeleteUser(user._id)}
-                          variant="ghost"
-                          size="icon"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>{formatDate(user.updatedAt)}</TableCell>
-                  </TableRow>
-                ))}
-          </TableBody>
-        </Table>
-      </div>
-      {totalPages > 0 && (
-        <div className="flex justify-between items-center mt-4">
-          <CustomPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-            className="justify-end"
-          />
-        </div>
+      {/* Show search loader when searching */}
+      {isSearching && (
+        // <div className="flex justify-center items-center p-8">
+          <SearchLoader />
+        // </div>
       )}
+
+      {/* Only show content when not searching */}
+      {/* {!isSearching && ( */}
+        <>
+          <div className="px-1 flex justify-between items-center mt-4">
+            <div className="text-sm text-muted-foreground">
+              {loading ? (
+                <Skeleton className="h-5 w-40 bg-border rounded-md" />
+              ) : (
+                totalUsers > 0 ? (
+                  <Badge className="bg-hoverBg">
+                    Showing {(currentPage - 1) * itemsPerPage + 1}-
+                    {Math.min(currentPage * itemsPerPage, totalUsers)} of{" "}
+                    {totalUsers} Users
+                  </Badge>
+                ) : (
+                  <Badge className="bg-hoverBg">No Users Found</Badge>
+                )
+              )}
+            </div>
+          </div>
+
+          <div className="mx-1 mt-6 rounded-md max-w-[99vw] border overflow-x-auto bg-tableBg">
+            <Table className="min-w-[800px] lg:min-w-full">
+              <TableCaption className="mb-2">
+                A list of system users
+              </TableCaption>
+              <TableHeader className="bg-hoverBg">
+                <TableRow>
+                  <TableHead className="w-[60px]">Image</TableHead>
+                  <TableHead className="w-[200px]">Name</TableHead>
+                  <TableHead className="w-[250px]">Email</TableHead>
+                  <TableHead className="w-[150px]">Role</TableHead>
+                  <TableHead className="w-[120px] text-right">
+                    Actions
+                  </TableHead>
+                  <TableHead className="w-[150px]">Last Updated</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading
+                  ? skeletonRows
+                  : users.map((user) => (
+                      <TableRow key={user._id}>
+                        <TableCell>
+                          {user.image ? (
+                            <img
+                              src={user.image}
+                              alt={user.name}
+                              className="h-10 w-10 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                              {user.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {user.name}
+                        </TableCell>
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{user.role?.name}</Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end space-x-2">
+                            <Button
+                              onClick={() => handleEditUser(user._id)}
+                              variant="ghost"
+                              size="icon"
+                            >
+                              <SquarePen className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              onClick={() => handleDeleteUser(user._id)}
+                              variant="ghost"
+                              size="icon"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                        <TableCell>{formatDate(user.updatedAt)}</TableCell>
+                      </TableRow>
+                    ))}
+              </TableBody>
+            </Table>
+          </div>
+          {totalPages > 0 && (
+            <div className="flex justify-between items-center mt-4">
+              <CustomPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                className="justify-end"
+              />
+            </div>
+          )}
+        </>
+      {/* )} */}
       {add_or_update_user && (
         <AddOrUpdateUserForm
           open={add_or_update_user}

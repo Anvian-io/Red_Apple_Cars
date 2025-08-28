@@ -145,7 +145,7 @@ export default function Login() {
         </form>
 
         <p className="mt-8 text-center text-sm text-text">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <a className="font-medium text-primary hover:text-heading">
             Contact the owner
           </a>

@@ -73,7 +73,7 @@ export function AddOrUpdateUserForm({
         const userData = response.data.data;
         setValue("name", userData.name);
         setValue("email", userData.email);
-        setValue("role", userData.role._id);
+        setValue("role", String(userData.role._id));
         setValue("image", userData.image || "");
       }
     } catch (error) {
@@ -84,6 +84,7 @@ export function AddOrUpdateUserForm({
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
+    console.log('fwoeihfio')
     try {
       const formattedData = {
         name: data.name,

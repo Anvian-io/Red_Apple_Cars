@@ -116,7 +116,7 @@ export const getAllUsers = asyncHandler(async (req, res) => {
 export const getUser = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    const user = await User.findById(id).populate("role", "name description").select("-password");
+    const user = await User.findById(id).populate("role", "name description");
 
     if (!user) {
         return sendResponse(res, false, null, "User not found", statusType.NOT_FOUND);

@@ -18,6 +18,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { get_all_roles } from "@/services/roles/roleServices";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/useDebounce";
+import SearchLoader from "@/components/custom_ui/SearchLoader"; // Import the SearchLoader
+import { set } from "react-hook-form";
 
 export function RoleSection({ isExpanded }) {
   const [add_or_update_role, set_add_or_update_role] = useState(false);
@@ -29,11 +31,14 @@ export function RoleSection({ isExpanded }) {
   const [totalProducts, setTotalProducts] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [isInitial, setIsInitial] = useState(true);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const fetchRoles = useCallback(async () => {
     try {
+      setIsSearching(isInitial == false ? true : false); // Set isSearching based on whether there's a search term
       const payload = {
         search: debouncedSearchTerm,
         limit: itemsPerPage,
@@ -52,12 +57,14 @@ export function RoleSection({ isExpanded }) {
       console.error("Error fetching roles:", error);
     } finally {
       setLoading(false);
+      setIsSearching(false); // Reset isSearching after fetch completes
     }
   }, [debouncedSearchTerm, currentPage, itemsPerPage]);
 
   useEffect(() => {
-    setLoading(true);
+    setLoading(isInitial == true ? true : false);
     fetchRoles();
+    setIsInitial(false);
   }, [fetchRoles]);
 
   const handleSearch = (term) => {
@@ -108,6 +115,11 @@ export function RoleSection({ isExpanded }) {
 
   return (
     <div className="w-full h-full">
+      {isSearching && (
+        // <div className="flex justify-center items-center p-8">
+        <SearchLoader />
+        // </div>
+      )}
       <SecondaryHeader
         title="Roles"
         searchPlaceholder="Search Roles"
@@ -121,14 +133,14 @@ export function RoleSection({ isExpanded }) {
         <div className="text-sm text-muted-foreground">
           {loading ? (
             <Skeleton className="h-5 w-40 bg-border rounded-md" />
+          ) : totalProducts > 0 ? (
+            <Badge className="bg-hoverBg">
+              Showing {(currentPage - 1) * itemsPerPage + 1}-
+              {Math.min(currentPage * itemsPerPage, totalProducts)} of{" "}
+              {totalProducts} Roles
+            </Badge>
           ) : (
-            totalProducts > 0 && (
-              <Badge className="bg-hoverBg">
-                Showing {(currentPage - 1) * itemsPerPage + 1}-
-                {Math.min(currentPage * itemsPerPage, totalProducts)} of{" "}
-                {totalProducts} Roles
-              </Badge>
-            )
+            <Badge className="bg-hoverBg">No Roles Found</Badge>
           )}
         </div>
       </div>

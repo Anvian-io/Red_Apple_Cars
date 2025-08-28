@@ -7,6 +7,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogOverlay,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
@@ -19,17 +20,24 @@ export function ConfirmDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogOverlay className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
+      <DialogContent className="bg-cardBg">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogTitle className="text-text">{title}</DialogTitle>
+          <DialogDescription className="text-text">
+            {description}
+          </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button
+            className="text-text"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
             Cancel
           </Button>
           <Button
-            variant="destructive"
+            className="text-text"
             onClick={() => {
               onConfirm();
               onOpenChange(false);
