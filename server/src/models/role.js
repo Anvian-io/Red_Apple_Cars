@@ -7,6 +7,10 @@ const roleSchema = new mongoose.Schema(
             required: true,
             unique: true
         },
+        description:{
+            type:String,
+            required:false
+        }
         // created_by: {
         //     type: mongoose.Schema.Types.ObjectId,
         //     ref: "User"
@@ -20,3 +24,5 @@ const roleSchema = new mongoose.Schema(
 );
 
 export default mongoose.model("Role", roleSchema);
+
+roleSchema.index({ name: "text" });

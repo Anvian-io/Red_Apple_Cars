@@ -61,9 +61,8 @@ export function Navbar({ children }) {
                 <Menu className="w-5 h-5 text-white" />
               </div>
               <span
-                className={`font-semibold text-lg text-heading transition-opacity duration-300 ${
-                  isExpanded ? "opacity-100" : "opacity-0"
-                }`}
+                className={`font-semibold text-lg text-heading transition-opacity duration-300 ${isExpanded ? "opacity-100" : "opacity-0"
+                  }`}
               >
                 Dashboard
               </span>
@@ -84,11 +83,10 @@ export function Navbar({ children }) {
                     >
                       <Icon className="w-5 h-5 flex-shrink-0" />
                       <span
-                        className={`ml-3 transition-all duration-300 whitespace-nowrap ${
-                          isExpanded
+                        className={`ml-3 transition-all duration-300 whitespace-nowrap ${isExpanded
                             ? "opacity-100 translate-x-0"
                             : "opacity-0 -translate-x-2"
-                        }`}
+                          }`}
                       >
                         {item.label}
                       </span>
@@ -113,11 +111,10 @@ export function Navbar({ children }) {
                 <Moon className="w-5 h-5" />
               )}
               <span
-                className={`ml-3 transition-all duration-300 whitespace-nowrap ${
-                  isExpanded
+                className={`ml-3 transition-all duration-300 whitespace-nowrap ${isExpanded
                     ? "opacity-100 translate-x-0"
                     : "opacity-0 -translate-x-2"
-                }`}
+                  }`}
               >
                 {theme === "dark" ? "Light Mode" : "Dark Mode"}
               </span>
@@ -127,9 +124,8 @@ export function Navbar({ children }) {
 
         {/* Mobile Sidebar Overlay */}
         <div
-          className={`sm:hidden fixed inset-0 z-40 transition-opacity duration-300 ${
-            isMobileMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-          }`}
+          className={`sm:hidden fixed inset-0 z-40 transition-opacity duration-300 ${isMobileMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+            }`}
         >
           {/* Backdrop */}
           <div
@@ -139,9 +135,8 @@ export function Navbar({ children }) {
 
           {/* Mobile Sidebar */}
           <nav
-            className={`fixed left-0 top-0 h-full w-64 z-50 bg-sidebar border-r border-sidebarBorder shadow-lg transform transition-transform duration-300 ease-in-out ${
-              isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-            }`}
+            className={`fixed left-0 top-0 h-full w-64 z-50 bg-sidebar border-r border-sidebarBorder shadow-lg transform transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+              }`}
           >
             {/* Header with Close Button */}
             <div className="flex items-center justify-between h-16 px-4 border-b border-border">
@@ -224,7 +219,7 @@ export function Navbar({ children }) {
           className={`flex-1 transition-all duration-300 ease-in-out 
             ${isExpanded ? "sm:ml-64" : "sm:ml-16"} 
             ml-0 
-            background`}
+            background bg-cardBg`}
         >
           <Header
             pages={pages}
@@ -236,22 +231,22 @@ export function Navbar({ children }) {
             {React.isValidElement(children)
               ? React.cloneElement(children, { isExpanded })
               : children || (
-                  <div className="p-8">
-                    <div className="rounded-lg p-8 text-center bg-cardBg text-cardText">
-                      <h1 className="text-3xl font-bold mb-4 text-heading">
-                        Welcome to Your Dashboard
-                      </h1>
-                      <p className="text-lg text-text">
-                        <span className="hidden sm:inline">
-                          Hover over the sidebar to expand it.
-                        </span>
-                        <span className="sm:hidden">
-                          Tap the menu icon to open the sidebar.
-                        </span>
-                      </p>
-                    </div>
+                <div className="p-8">
+                  <div className="rounded-lg p-8 text-center bg-cardBg text-cardText">
+                    <h1 className="text-3xl font-bold mb-4 text-heading">
+                      Welcome to Your Dashboard
+                    </h1>
+                    <p className="text-lg text-text">
+                      <span className="hidden sm:inline">
+                        Hover over the sidebar to expand it.
+                      </span>
+                      <span className="sm:hidden">
+                        Tap the menu icon to open the sidebar.
+                      </span>
+                    </p>
                   </div>
-                )}
+                </div>
+              )}
           </div>
         </main>
       </div>

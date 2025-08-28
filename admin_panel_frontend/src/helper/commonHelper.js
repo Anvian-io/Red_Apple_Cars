@@ -32,10 +32,10 @@ const handleRequest = async (axiosCall) => {
 const base_url = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export const apiClient = {
-  get: async (url, headers = {}) =>
+  get: async (url, config = {}) =>
     handleRequest(() =>
       axios.get(`${base_url}${url}`, {
-        ...headers,
+        ...config,
         withCredentials: true,
       })
     ),

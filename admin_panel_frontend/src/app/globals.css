@@ -22,6 +22,12 @@
     --card-text: #7f1d1d;
     --primary: #dc2626;
     --header: #b91c1c;
+    --input-text-bg: #1f2937;
+    --input-bg: #f3f4f6;
+    --table-bg: #ffffff;
+    --button-bg: #dc2626;
+    --secondary-bg: #fee2e2;
+    --bgSwitch: #121010;
   }
 
  
@@ -39,6 +45,10 @@
     --card-bg: #1e293b;
     --card-text: #f1f5f9;
     --header: #f87171;
+    --input-text-bg: #1f2937;
+    --input-bg: #f3f4f6;
+    --button-bg: #dc2626;
+    --bgSwitch: #232020;
   }
 }
 
@@ -50,38 +60,32 @@
 }
 
 /* Add this to your global.css or styles.css */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: #888 #f1f1f1;
+
+@layer base {
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 10px; /* width of vertical scrollbar */
+    height: 8px; /* height of horizontal scrollbar */
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--background); /* scrollbar track */
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--border); /* scrollbar handle */
+    border-radius: 9999px; /* rounded corners */
+    border: 2px solid var(--background); /* space around thumb */
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--primary); /* hover effect */
+  }
+
+  /* Firefox scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) var(--background);
+  }
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  height: 8px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-/* Dark theme variants */
-.dark .custom-scrollbar::-webkit-scrollbar-track {
-  background: #2d3748;
-}
-
-.dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #4a5568;
-}
-
-.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #718096;
-}

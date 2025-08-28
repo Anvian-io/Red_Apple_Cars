@@ -3,8 +3,8 @@ import Role_Mapper from "../../models/role_mapper.js";
 import { asyncHandler, sendResponse, statusType } from "../../utils/index.js";
 import User from "../../models/user.js";
 // Create Role
-export const createRole = asyncHandler(async (req, res) => {
-    const { role_name, permissions } = req.body;
+export const createOrUpdateRole = asyncHandler(async (req, res) => {
+    const { role_id, role_name, description, permissions } = req.body;
 
     // Validate input
     if (!role_name || !permissions) {
@@ -17,16 +17,33 @@ export const createRole = asyncHandler(async (req, res) => {
         );
     }
 
-    // Check if role already exists
-    const existingRole = await Role.findOne({ name: role_name.toLowerCase() });
-    if (existingRole) {
-        return sendResponse(res, false, null, "Role already exists", statusType.BAD_REQUEST);
+    let role;
+    if (role_id) {
+        // Update existing role
+        role = await Role.findById(role_id);
+        if (!role) {
+            return sendResponse(res, false, null, "Role not found", statusType.NOT_FOUND);
+        }
+
+        // Update role details
+        role.name = role_name.toLowerCase();
+        role.description = description;
+        await role.save();
+
+        // Remove existing permissions
+        await Role_Mapper.deleteMany({ role_id: role_id });
+    } else {
+        // Check if role already exists (for creation only)
+        const existingRole = await Role.findOne({ name: role_name.toLowerCase() });
+        if (existingRole) {
+            return sendResponse(res, false, null, "Role already exists", statusType.BAD_REQUEST);
+        }
+
+        // Create new role
+        role = await Role.create({ name: role_name.toLowerCase(), description: description });
     }
 
-    // Create new role
-    const role = await Role.create({ name: role_name.toLowerCase() });
-
-    // Prepare role mapper entries
+    // Prepare new role mapper entries
     const roleMappers = permissions.map((permission) => ({
         role_id: role._id,
         page: permission.page.toLowerCase(),
@@ -36,38 +53,103 @@ export const createRole = asyncHandler(async (req, res) => {
         download: permission.download || false
     }));
 
-    // Insert all permissions
+    // Insert updated permissions
     await Role_Mapper.insertMany(roleMappers);
 
-    return sendResponse(
-        res,
-        true,
-        null,
-        "Role created successfully",
-        statusType.CREATED
-    );
+    const message = role_id ? "Role updated successfully" : "Role created successfully";
+    return sendResponse(res, true, null, message, statusType.SUCCESS);
 });
 
-// Get All Roles with Permissions
 export const getAllRoles = asyncHandler(async (req, res) => {
-    // Get all roles
-    const roles = await Role.find({});
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || "";
+    const skip = (page - 1) * limit;
 
-    // For each role, get its permissions
-    const rolesWithPermissions = await Promise.all(
-        roles.map(async (role) => {
-            const permissions = await Role_Mapper.find({ role_id: role._id });
-            return {
-                role: role,
-                permissions: permissions
-            };
-        })
-    );
+    // Build search filter
+    const searchFilter = search
+        ? {
+              $or: [
+                  { name: { $regex: search, $options: "i" } },
+                  { "permissions.page": { $regex: search, $options: "i" } }
+              ]
+          }
+        : {};
+
+    // Get roles with search, pagination, and permission count
+    const roles = await Role.aggregate([
+        {
+            $lookup: {
+                from: "role_mappers",
+                localField: "_id",
+                foreignField: "role_id",
+                as: "permissions"
+            }
+        },
+        { $match: searchFilter },
+        // Preserve roles with no permissions using preserveNullAndEmptyArrays
+        { $unwind: { path: "$permissions", preserveNullAndEmptyArrays: true } },
+        {
+            $project: {
+                name: 1,
+                description: 1,
+                createdAt: 1,
+                updatedAt: 1,
+                permissionCount: {
+                    $sum: [
+                        { $cond: [{ $ifNull: ["$permissions.read", false] }, 1, 0] },
+                        { $cond: [{ $ifNull: ["$permissions.write", false] }, 1, 0] },
+                        { $cond: [{ $ifNull: ["$permissions.edit", false] }, 1, 0] },
+                        { $cond: [{ $ifNull: ["$permissions.delete", false] }, 1, 0] },
+                        { $cond: [{ $ifNull: ["$permissions.download", false] }, 1, 0] }
+                    ]
+                }
+            }
+        },
+        {
+            $group: {
+                _id: "$_id",
+                name: { $first: "$name" },
+                description: { $first: "$description" },
+                createdAt: { $first: "$createdAt" },
+                updatedAt: { $first: "$updatedAt" },
+                totalPermissionNo: { $sum: "$permissionCount" }
+            }
+        },
+        { $sort: { updatedAt: -1 } },
+        { $skip: skip },
+        { $limit: limit }
+    ]);
+
+    // Get total count of matching documents
+    const totalRoles = await Role.aggregate([
+        {
+            $lookup: {
+                from: "role_mappers",
+                localField: "_id",
+                foreignField: "role_id",
+                as: "permissions"
+            }
+        },
+        { $match: searchFilter },
+        { $count: "total" }
+    ]);
+
+    const total = totalRoles[0]?.total || 0;
+    const totalPages = Math.ceil(total / limit);
 
     return sendResponse(
         res,
         true,
-        rolesWithPermissions,
+        {
+            roles,
+            pagination: {
+                totalPages,
+                currentPage: page,
+                totalRoles: total,
+                itemsPerPage: limit
+            }
+        },
         "Roles fetched successfully",
         statusType.OK
     );

@@ -9,6 +9,7 @@ import { RoleSection } from "./Role/RoleSection";
 import { SecondaryHeader } from "./custom_ui/SecondaryHeader";
 import { CustomTooltip } from "./custom_ui/CustomTooltip";
 import { CustomPagination } from "./custom_ui/CustomPagination";
+import { UserSection } from "./User/UserSection";
 export {
   Navbar,
   Dashboard,
@@ -20,5 +21,6 @@ export {
   RoleSection,
   SecondaryHeader,
   CustomTooltip,
-  CustomPagination
+  CustomPagination,
+  UserSection
 }

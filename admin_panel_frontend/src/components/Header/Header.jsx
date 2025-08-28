@@ -30,18 +30,17 @@ export function Header({ isExpanded, pages }) {
           hour: "2-digit",
           hour12: false,
           ...options,
-        })
-        .split(":")[0];
+        }) 
+        .split(":")[0].padStart(2, "0");
 
       const minutes = now.toLocaleString("en-GB", {
         minute: "2-digit",
         ...options,
-      });
+      }).padStart(2, "0");
 
-      const seconds = now.toLocaleString("en-GB", {
-        second: "2-digit",
-        ...options,
-      });
+      const seconds = String(
+        now.toLocaleString("en-GB", { second: "numeric", ...options })
+      ).padStart(2, "0");
 
       setTime({ date, hours, minutes, seconds });
     };
@@ -126,9 +125,9 @@ export function Header({ isExpanded, pages }) {
 
   return (
     <header
-      className={`h-16 transition-all duration-300 ease-in-out fixed top-0 left-0 z-10 flex items-center justify-between px-4 py-2 border-border border bg-sidebar ${
-        isExpanded ? "left-64" : "left-16"
-      } right-0`}
+      className={`h-16 transition-all duration-300 ease-in-out fixed top-0 left-0 z-10 flex items-center justify-between px-4 py-2 border-border border bg-sidebar ${isExpanded ? "left-64" : "left-16"
+        
+              } right-0`}
     >
       {/* Left - Breadcrumb */}
       <BreadcrumbWrapper pages={pages} />
@@ -136,14 +135,16 @@ export function Header({ isExpanded, pages }) {
       {/* Right - Icons & Time */}
       <div className="flex items-center gap-4">
         {/* Notification */}
-        <Button variant="ghost" size="icon">
-          <Bell className="h-5 w-5" />
+        <Button variant="ghost" size="icon"
+          className="w-8 h-8 rounded-lg flex items-center justify-center bg-hoverBg">
+          <Bell className="h-5 w-5 " />
         </Button>
 
         {/* Profile */}
-        <Avatar>
+        <Avatar className="w-8 h-8 rounded-lg flex items-center justify-center bg-hoverBg">
           <AvatarImage src="/profile.jpg" alt="@user" />
           <AvatarFallback>U</AvatarFallback>
+
         </Avatar>
 
         {/* Timer Clock */}

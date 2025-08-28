@@ -10,12 +10,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { CustomTooltip } from "..";
+import { debounce } from "@/helper/zindex";
 export function SecondaryHeader({
   title = "Roles",
   searchPlaceholder = "Search",
   buttonText = "Create New Role",
   tooltipText = "Add New",
-  onSearchChange,
+  onSearch,
   onButtonClick,
   onMobileButtonClick,
 }) {
@@ -31,7 +32,7 @@ export function SecondaryHeader({
         className="mx-2 w-[90%] md:w-[60%] border-border focus:outline-none focus:ring-0 focus:border-border"
         type="text"
         placeholder={searchPlaceholder}
-        onChange={(e) => onSearchChange?.(e.target.value)}
+        onChange={(e) => onSearch(e.target.value)}
       />
 
       {/* Desktop Button */}

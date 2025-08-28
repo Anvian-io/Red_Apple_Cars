@@ -14,56 +14,68 @@ import { Button } from "../ui/button";
 import { CustomPagination } from "..";
 import { Badge } from "../ui/badge";
 import { AddRoleForm } from "./AddRoleForm";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { get_all_roles } from "@/services/roles/roleServices";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export function RoleSection({ isExpanded }) {
   const [add_or_update_role, set_add_or_update_role] = useState(false);
+  const [currentRoleId, setCurrentRoleId] = useState(null);
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // Static pagination data (replace with actual API data when available)
-  const totalPages = 30;
-  const currentPage = 10;
-  const totalProducts = 100;
-  const itemsPerPage = 10;
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  const fetchRoles = useCallback(async () => {
+    try {
+      const payload = {
+        search: debouncedSearchTerm,
+        limit: itemsPerPage,
+        page: currentPage,
+      };
+      const response = await get_all_roles(payload);
+      if (response.data.status) {
+        setRoles(response.data.data.roles);
+        const pagination_data = response.data.data.pagination;
+        setItemsPerPage(pagination_data.itemsPerPage);
+        setTotalProducts(pagination_data.totalRoles);
+        setCurrentPage(pagination_data.currentPage);
+        setTotalPages(pagination_data.totalPages);
+      }
+    } catch (error) {
+      console.error("Error fetching roles:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [debouncedSearchTerm, currentPage, itemsPerPage]);
 
   useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const response = await get_all_roles();
-        if (response.data.status) {
-          setRoles(response.data.data);
-        }
-      } catch (error) {
-        console.error("Error fetching roles:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
+    setLoading(true);
     fetchRoles();
-  }, []);
+  }, [fetchRoles]);
 
-  // Calculate permissions count for each role
-  const getPermissionsCount = (permissions) => {
-    return permissions.reduce((count, permission) => {
-      return (
-        count +
-        (permission.read ? 1 : 0) +
-        (permission.edit ? 1 : 0) +
-        (permission.delete ? 1 : 0) +
-        (permission.download ? 1 : 0)
-      );
-    }, 0);
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+    setCurrentPage(1);
   };
 
-  // Format date to display only date part
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString();
   };
 
-  const handle_add_or_update_form = () => {
+  const handleEditRole = (roleId) => {
+    setCurrentRoleId(roleId);
+    set_add_or_update_role(true);
+  };
+
+  const handleAddRole = () => {
+    setCurrentRoleId(null);
     set_add_or_update_role(true);
   };
 
@@ -72,14 +84,15 @@ export function RoleSection({ isExpanded }) {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full h-full">
       <SecondaryHeader
         title="Roles"
         searchPlaceholder="Search Roles"
         buttonText="Create New Role"
         tooltipText="Create New Role"
-        onButtonClick={handle_add_or_update_form}
-        onMobileButtonClick={handle_add_or_update_form}
+        onButtonClick={handleAddRole}
+        onMobileButtonClick={handleAddRole}
+        onSearch={handleSearch}
       />
       {totalPages > 0 && (
         <div className="px-1 flex justify-between items-center mt-4">
@@ -141,7 +154,7 @@ export function RoleSection({ isExpanded }) {
           <CustomPagination
             currentPage={currentPage}
             totalPages={totalPages}
-            onPageChange={() => {}}
+            onPageChange={handlePageChange}
             className="justify-end"
           />
         </div>
@@ -150,6 +163,8 @@ export function RoleSection({ isExpanded }) {
         <AddRoleForm
           open={add_or_update_role}
           onOpenChange={set_add_or_update_role}
+          onRoleCreated={fetchRoles}
+          roleId={currentRoleId}
         />
       )}
     </div>

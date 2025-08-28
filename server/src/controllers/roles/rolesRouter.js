@@ -1,9 +1,9 @@
 import express from "express";
-import { createRole, getAllRoles, deleteRole, getRole } from "./rolesController.js";
+import { createOrUpdateRole, getAllRoles, deleteRole, getRole } from "./rolesController.js";
 
 const router = express.Router();
 
-router.post("/create", createRole);
+router.post("/create", createOrUpdateRole);
 router.get("/all", getAllRoles);
 router.get("/:id", getRole);
 router.delete("/:id", deleteRole);

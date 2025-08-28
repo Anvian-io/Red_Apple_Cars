@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import {
@@ -31,11 +31,19 @@ export function AddRoleForm({ open, onOpenChange }) {
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
   } = useForm();
   const [permissions, setPermissions] = useState([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (open) {
+    if (open && roleId) {
+      // Fetch role data when editing
+      fetchRoleData();
+      setIsEditing(true);
+    } else if (open) {
+      // Reset for new role creation
       const initialPermissions = navItems.map((item) => ({
         id: item.id,
         page: item.label,
@@ -45,8 +53,44 @@ export function AddRoleForm({ open, onOpenChange }) {
         download: false,
       }));
       setPermissions(initialPermissions);
+      setIsEditing(false);
+      reset();
     }
-  }, [open]);
+  }, [open, roleId]);
+
+  const fetchRoleData = async () => {
+    try {
+      const response = await get_role(roleId);
+      if (response.data.status) {
+        const roleData = response.data.data;
+
+        // Set form values
+        setValue("roleName", roleData.role.name);
+        setValue("description", roleData.role.description || "");
+
+        // Set permissions
+        const formattedPermissions = navItems.map((item) => {
+          const existingPermission = roleData.permissions.find(
+            (p) => p.page === item.id
+          );
+
+          return {
+            id: item.id,
+            page: item.label,
+            read: existingPermission?.read || false,
+            edit: existingPermission?.edit || false,
+            delete: existingPermission?.delete || false,
+            download: existingPermission?.download || false,
+          };
+        });
+
+        setPermissions(formattedPermissions);
+      }
+    } catch (error) {
+      console.error("Error fetching role data:", error);
+      toast.error("Failed to load role data");
+    }
+  };
 
   const handlePermissionToggle = (id, permissionType) => {
     setPermissions(
@@ -59,6 +103,7 @@ export function AddRoleForm({ open, onOpenChange }) {
   };
 
   const onSubmit = async (data) => {
+    setIsSubmitting(true);
     try {
       const formattedData = {
         role_name: data.roleName,
@@ -79,9 +124,7 @@ export function AddRoleForm({ open, onOpenChange }) {
       console.error(error);
       toast.error(error?.response?.data?.message || "Failed to save role.");
     } finally {
-      onOpenChange(false);
-      reset();
-      setPermissions([]);
+      setIsSubmitting(false);
     }
   };
 
@@ -97,11 +140,16 @@ export function AddRoleForm({ open, onOpenChange }) {
         <DialogHeader>
           <DialogTitle className="text-heading">Add New Role</DialogTitle>
           <DialogDescription className="text-text">
-            Create a new role and set permissions for different pages.
+            {isEditing
+              ? "Edit the role and update permissions."
+              : "Create a new role and set permissions for different pages."}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex-1 overflow-y-auto space-y-6 px-4"
+        >
           <div className="space-y-2">
             <Label htmlFor="role-name" className="text-text">Role Name</Label>
             <Input
@@ -121,6 +169,17 @@ export function AddRoleForm({ open, onOpenChange }) {
                 {errors.roleName.message}
               </p>
             )}
+          </div>
+          <div className="space-y-2">
+            <Label className={"text-text"} htmlFor="description ">
+              Description
+            </Label>
+            <Input
+              id="description"
+              placeholder="Enter description"
+              {...register("description")}
+              className="text-text bg-cardBg border-border"
+            />
           </div>
 
           <div className="space-y-4">
