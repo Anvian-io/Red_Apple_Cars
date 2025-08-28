@@ -1,5 +1,10 @@
 "use client";
+import { UserSection } from "@/components";
 
 export default function User_Management() {
-  return <div>User Management</div>;
+  return (
+    <div>
+      <UserSection />
+    </div>
+  );
 }
