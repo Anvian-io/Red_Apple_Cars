@@ -4,9 +4,9 @@ import { Navbar } from "@/components";
 export default function User_Management() {
   return (
     <div>
-      <Navbar>
+      {/* <Navbar> */}
         <UserSection />
-      </Navbar>
+      {/* </Navbar> */}
     </div>
   );
 }

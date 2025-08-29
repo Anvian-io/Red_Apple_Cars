@@ -66,8 +66,12 @@ export const apiClient = {
 
 // helper/responseHandler.js
 export const handleApiResponse = (response, router) => {
-  // console.log(response.data,"reohweoihgoei")
-  if (response?.error == "Unauthorized request: Token missing") {
+  console.log(response,"reohweoihgoei")
+  if (
+    response?.error == "Unauthorized request: Invalid access token" ||
+    response?.error == "Unauthorized request: Token missing" ||
+    response?.error == "Unauthorized request: Token verification failed"
+  ) {
     localStorage.removeItem("User");
     router.push("/login"); // redirect to login
     return null;
