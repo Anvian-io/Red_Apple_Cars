@@ -42,6 +42,7 @@ export default function Login() {
                 "Login successful"
               );
         localStorage.setItem("User", JSON.stringify(response.data.data));
+        localStorage.setItem("accessToken", response.data.data.accessToken);
         router.push("/");
       } else {
         setErrors({ email: response.data.message });
