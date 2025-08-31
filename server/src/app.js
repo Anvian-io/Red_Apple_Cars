@@ -6,6 +6,7 @@ import roleRouter from "./controllers/roles/rolesRouter.js"
 import userRouter from "./controllers/user_management/user_managementRoute.js";
 import feedbackRoute from "./controllers/feedback/feedbackRouter.js";
 import { verifyJWT } from "./middlewares/auth.middleware.js";
+import carsRouter from "./controllers/cars/CarsRouter.js"
 const app = express();
 
 app.use(
@@ -25,5 +26,6 @@ app.use("/api/feedback", feedbackRoute);
 app.use(verifyJWT);
 app.use("/api/role", roleRouter);
 app.use("/api/user_management", userRouter);
+app.use("/api/cars", carsRouter);
 
 export { app };
