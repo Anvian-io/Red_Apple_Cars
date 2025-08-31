@@ -4,12 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { loginUser } from "@/services/user/userServices";
 import { toast } from "sonner";
+import { ButtonLoader } from "@/components";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const router = useRouter();
 
   const validateForm = () => {
@@ -29,23 +32,27 @@ export default function Login() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (validateForm()) {
-      // In a real app, you would make an API call here
-      // console.log("Login successful");
-      const response = await loginUser({ email, password });
-      console.log(response.data,"fewiofhwio")
-      if (response.data.status) {
-              toast.success(
-                "Login successful"
-              );
-        localStorage.setItem("User", JSON.stringify(response.data.data));
-        localStorage.setItem("accessToken", response.data.data.accessToken);
-        router.push("/");
-      } else {
-        setErrors({ email: response.data.message });
+      setLoading(true); // start loader
+      try {
+        const response = await loginUser({ email, password });
+        console.log(response.data, "fewiofhwio");
+
+        if (response.data.status) {
+          toast.success("Login successful");
+          localStorage.setItem("User", JSON.stringify(response.data.data));
+          localStorage.setItem("accessToken", response.data.data.accessToken);
+          router.push("/");
+        } else {
+          setErrors({ email: response.data.message });
+        }
+      } catch (error) {
+        toast.error("Something went wrong");
+      } finally {
+        setLoading(false); // stop loader
       }
     }
   };
@@ -149,9 +156,10 @@ export default function Login() {
           <div>
             <button
               type="submit"
-              className="w-full flex justify-center py-2 px-4 rounded-md text-sm font-medium bg-primary text-white hover:bg-heading"
+              disabled={loading} // disable while loading
+              className="w-full flex justify-center items-center gap-2 py-2 px-4 rounded-md text-sm font-medium bg-primary text-white hover:bg-heading disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              Sign in
+              {loading ? <ButtonLoader /> : "Sign in"}
             </button>
           </div>
         </form>
