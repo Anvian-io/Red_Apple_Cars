@@ -73,13 +73,13 @@ export default function Login() {
       <div className="w-full max-w-md p-8 rounded-lg shadow-lg bg-cardBg border border-border">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-heading">Login</h1>
-          <button
+          {/* <button
             onClick={toggleDarkMode}
             className="p-2 rounded-full bg-muted hover:bg-hoverBg"
             aria-label="Toggle dark mode"
           >
             {isDarkMode ? "☀️" : "🌙"}
-          </button>
+          </button> */}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
