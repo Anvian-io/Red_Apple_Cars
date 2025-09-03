@@ -90,7 +90,8 @@ export const handleApiResponse = (response, router) => {
   if (
     response?.error == "Unauthorized request: Invalid access token" ||
     response?.error == "Unauthorized request: Token missing" ||
-    response?.error == "Unauthorized request: Token verification failed"
+    response?.error == "Unauthorized request: Token verification failed" ||
+    response?.error == "jwt expired"
   ) {
     localStorage.removeItem("User");
     router.push("/login"); // redirect to login
