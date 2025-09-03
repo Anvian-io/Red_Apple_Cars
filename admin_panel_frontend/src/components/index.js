@@ -10,6 +10,7 @@ import { SecondaryHeader } from "./custom_ui/SecondaryHeader";
 import { CustomTooltip } from "./custom_ui/CustomTooltip";
 import { CustomPagination } from "./custom_ui/CustomPagination";
 import { UserSection } from "./User/UserSection";
+import { InvoiceSection } from "./invoices/invoiceSection";
 import ButtonLoader from "./ButtonLoader/ButtonLoader";
 export {
   Navbar,
@@ -24,5 +25,6 @@ export {
   CustomTooltip,
   CustomPagination,
   UserSection,
-  ButtonLoader
+  ButtonLoader,
+  InvoiceSection
 }
