@@ -51,6 +51,7 @@ export function CompanyInvoice() {
             </div>
           </div>
 
+          <div className="bg-red-500 h-1 my-2"></div>
           <div className="flex justify-between border border-b border-gray-400/40 my-4 w-full">
             <div className="w-[40%] m-2">
               <h2 className="font-bold text-lg">Customer Details</h2>
@@ -194,6 +195,8 @@ export function CompanyInvoice() {
               </tbody>
             </table>
           </div>
+
+          <div className="bg-red-500 h-[2px] my-2"></div>
 
           {/* Payment Instructions */}
           <div className="my-6 p-4 bg-yellow-50 border border-yellow-200 rounded">
