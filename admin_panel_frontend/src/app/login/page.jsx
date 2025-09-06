@@ -39,15 +39,17 @@ export default function Login() {
       setLoading(true); // start loader
       try {
         const response = await loginUser({ email, password });
-        console.log(response.data, "fewiofhwio");
+        // console.log(response.data, "fewiofhwio");
 
-        if (response.data.status) {
+        if (response.data) {
           toast.success("Login successful");
           localStorage.setItem("User", JSON.stringify(response.data.data));
           localStorage.setItem("accessToken", response.data.data.accessToken);
           router.push("/");
         } else {
-          setErrors({ email: response.data.message });
+          console.log(response,"fewoifhwefowfoifi")
+          toast.error(`${response.error}`);
+          // setErrors({ email:  });
         }
       } catch (error) {
         toast.error("Something went wrong");
