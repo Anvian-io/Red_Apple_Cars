@@ -11,8 +11,72 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { lobster } from "@/lib/fonts";
+import { createAndDownloadInvoice } from "@/services/invoice/invoiceServices";
+import { useRouter } from "next/navigation";
 
 export function CompanyInvoice() {
+  const router = useRouter();
+
+  const handle_generate_invoice = async () => {
+    console.log("wewewrewrew");
+    try {
+      const payload = {
+        company: {
+          name: "Red Apple Cars",
+          regNumber: "2019/475390/07",
+          vatNumber: "4190288680",
+        },
+        invoice: {
+          date: "2025-06-23",
+          documentNumber: "166810710",
+          reference: "A80503080",
+        },
+        customer: {
+          name: "Dream drive motor",
+          number: "988738379",
+          bondStore: "Value Marketing (PTY) LTD",
+          address: "Gaborone, Botswana.",
+        },
+        banking: {
+          bankName: "Bidvest Bank",
+          accountName: "Red Apple Cars (Pty) Ltd",
+          accountNumber: "31400008206",
+          branchCode: "462-005",
+          swiftCode: "BIDBZAJJ",
+          address:
+            "Unit 6, No 56 Shepstone Place, Westville 3630, South Africa",
+        },
+        vehicle: {
+          chassisNo: "A80503080",
+          makeModel: "HONDA FIT",
+          borderPost: "KFN",
+          country: "GE6-1079193",
+          color: "Blue",
+          engineNo: "L13A 4088336",
+          doors: "5",
+          condition: "Used",
+          engineCapacity: "2008",
+          seats: "5",
+          fuelType: "Petrol",
+          grossMass: "-",
+          carrierDetails: "Automatic",
+        },
+        price: {
+          vehiclePrice: "1200",
+          transport: "200",
+          total: "1400",
+        },
+      };
+      const response = await createAndDownloadInvoice(payload,router);
+      console.log(response, "iouiuioere");
+      if (response.data) {
+      } else {
+        console.error("Failed to generate PDF");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -264,7 +328,7 @@ export function CompanyInvoice() {
           <DialogClose asChild>
             <Button variant="outline">Close</Button>
           </DialogClose>
-          <Button>Print Invoice</Button>
+          <Button onClick={handle_generate_invoice}>Print Invoice</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
