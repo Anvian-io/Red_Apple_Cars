@@ -2,6 +2,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Navbar, ThemeProvider, CheckUser } from "@/components";
 import { NormalToaster } from "@/components/ui/sonner";
+import { Lobster } from "next/font/google";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -18,6 +19,11 @@ export const metadata = {
   title: "Red Apple Cars",
   description: "Admin Dashboard",
 };
+
+const lobster = Lobster({
+  weight: "400",
+  subsets: ["latin"],
+});
 
 export default function RootLayout({ children }) {
   return (
