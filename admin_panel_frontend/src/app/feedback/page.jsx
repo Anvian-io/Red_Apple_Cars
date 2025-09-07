@@ -7,9 +7,9 @@ export default function Role({ isExpanded }) {
     <div
     className="overflow-auto w-full "
     >
-      <Navbar>
+      {/* <Navbar> */}
         <FeedbackSection isExpanded={isExpanded} />
-      </Navbar>
+      {/* </Navbar> */}
     </div>
   );
 }

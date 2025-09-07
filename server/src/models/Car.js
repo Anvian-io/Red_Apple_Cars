@@ -10,7 +10,7 @@ const carSchema = new mongoose.Schema(
             trim: true
         },
         car_index_id: {
-            type: String, // Keep string if you want "C0001"
+            type: String, // Keep string if you want "C00001"
             unique: true
         },
         description: {

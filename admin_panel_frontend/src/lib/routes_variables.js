@@ -2,13 +2,13 @@ import { Home, User, FileText, Mail, Search, Settings } from "lucide-react";
 
 export const navItems = [
   { icon: Home, label: "Home", href: "/", id: "home", pages: "Home" },
-  {
-    icon: User,
-    label: "Dashboard",
-    href: "/dashboard",
-    id: "dashboard",
-    pages: "Home, Dashboard",
-  },
+  // {
+  //   icon: User,
+  //   label: "Dashboard",
+  //   href: "/dashboard",
+  //   id: "dashboard",
+  //   pages: "Home, Dashboard",
+  // },
   {
     icon: FileText,
     label: "Cars",

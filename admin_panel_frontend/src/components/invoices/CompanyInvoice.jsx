@@ -13,6 +13,8 @@ import {
 import { lobster } from "@/lib/fonts";
 import { createAndDownloadInvoice } from "@/services/invoice/invoiceServices";
 import { useRouter } from "next/navigation";
+import { File } from "lucide-react";
+
 
 export function CompanyInvoice() {
   const router = useRouter();
@@ -47,6 +49,7 @@ export function CompanyInvoice() {
             "Unit 6, No 56 Shepstone Place, Westville 3630, South Africa",
         },
         vehicle: {
+          carId:"68bd6331a4ab7c5b68df10eb",
           chassisNo: "A80503080",
           makeModel: "HONDA FIT",
           borderPost: "KFN",
@@ -80,7 +83,9 @@ export function CompanyInvoice() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline">View Invoice</Button>
+        <div className="flex justify-center cursor-pointer">
+          <File size={20} />
+        </div>
       </DialogTrigger>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -276,8 +281,8 @@ export function CompanyInvoice() {
             <h2 className="font-bold text-lg mb-2">Terms & Conditions</h2>
             <ol className="list-decimal pl-5 space-y-2">
               <li>
-                All cars sold "AS IS" and Does not include any warranty or
-                Guarantee
+                All cars sold &quot;AS IS&quot; and Does not include any
+                warranty or Guarantee
               </li>
               <li>
                 If paying in ZAR Rates of Exchange will have to be obtained on
@@ -299,8 +304,8 @@ export function CompanyInvoice() {
               </li>
               <li>
                 The Pictures and Information given are to the best of our
-                ability in the event they don't match the product in the exact
-                manner UFS Africa cannot be held liable.
+              ability in the event they don&apos;t match the product in the
+                exact manner UFS Africa cannot be held liable.
               </li>
               <li>
                 In the event of hijack or an accident where the vehicle is
@@ -328,7 +333,7 @@ export function CompanyInvoice() {
           <DialogClose asChild>
             <Button variant="outline">Close</Button>
           </DialogClose>
-          <Button onClick={handle_generate_invoice}>Print Invoice</Button>
+          <Button onClick={handle_generate_invoice}>Generate Invoice</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
