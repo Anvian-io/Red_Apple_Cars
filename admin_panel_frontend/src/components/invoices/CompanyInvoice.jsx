@@ -333,7 +333,7 @@ export function CompanyInvoice() {
           <DialogClose asChild>
             <Button variant="outline">Close</Button>
           </DialogClose>
-          <Button onClick={handle_generate_invoice}>Print Invoice</Button>
+          <Button onClick={handle_generate_invoice}>Generate Invoice</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

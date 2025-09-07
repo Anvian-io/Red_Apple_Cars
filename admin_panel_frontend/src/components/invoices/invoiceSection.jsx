@@ -273,14 +273,14 @@ export function InvoiceSection({ isExpanded }) {
                         > 
                           <SquarePen className="h-4 w-4" />
                         </Button> */}
-                        <Button
+                        {/* <Button
                           onClick={() => handleDownloadInvoice(invoice.pdf_url)}
                           variant="ghost"
                           size="icon"
                           title="Download invoice"
                         >
                           <Download className="h-4 w-4" />
-                        </Button>
+                        </Button> */}
                         <Button
                           onClick={() => handleDeleteClick(invoice)}
                           variant="ghost"
