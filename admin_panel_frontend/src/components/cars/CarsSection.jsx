@@ -15,6 +15,7 @@ import { SquarePen } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { AddCarForm } from "./AddCarForm";
+import { getAllCars,deleteCar } from "@/services/cars/carsServices";
 
 export function CarSection() {
   const [addOrUpdateCar, setAddOrUpdateCar] = useState(false);
