@@ -1,4 +1,5 @@
 import axios from "axios";
+
 const asyncHandler = (fn) => {
   return async (...args) => {
     try {
@@ -9,11 +10,10 @@ const asyncHandler = (fn) => {
     }
   };
 };
+
 const getCookie = (name) => {
   const value = `; ${document.cookie}`;
-  // console.log(document.cookie)
   const parts = value.split(`; ${name}=`);
-  // console.log(parts)
   if (parts.length === 2) return parts.pop().split(";").shift();
 };
 
@@ -31,12 +31,26 @@ const handleRequest = async (axiosCall) => {
 
 const base_url = process.env.NEXT_PUBLIC_BACKEND_URL;
 
+// 🔑 Function to get access token from localStorage
+const getAccessToken = () => {
+  try {
+    const user = JSON.parse(localStorage.getItem("User"));
+    return user?.accessToken || null;
+  } catch (err) {
+    return null;
+  }
+};
+
 export const apiClient = {
   get: async (url, config = {}) =>
     handleRequest(() =>
       axios.get(`${base_url}${url}`, {
         ...config,
         withCredentials: true,
+        headers: {
+          ...(config.headers || {}),
+          Authorization: `Bearer ${getAccessToken()}`, // ✅ attach token
+        },
       })
     ),
 
@@ -49,7 +63,10 @@ export const apiClient = {
 
     return handleRequest(() =>
       axios.post(`${base_url}${url}`, data, {
-        ...headers,
+        headers: {
+          ...headers,
+          Authorization: `Bearer ${getAccessToken()}`, // ✅ attach token
+        },
         withCredentials: true,
       })
     );
@@ -58,7 +75,10 @@ export const apiClient = {
   delete: async (url, headers = {}) =>
     handleRequest(() =>
       axios.delete(`${base_url}${url}`, {
-        ...headers,
+        headers: {
+          ...headers,
+          Authorization: `Bearer ${getAccessToken()}`, // ✅ attach token
+        },
         withCredentials: true,
       })
     ),
@@ -66,14 +86,18 @@ export const apiClient = {
 
 // helper/responseHandler.js
 export const handleApiResponse = (response, router) => {
-  // console.log(response.data,"reohweoihgoei")
-  if (response?.error == "Unauthorized request: Token missing") {
+  console.log(response, "reohweoihgoei");
+  if (
+    response?.error == "Unauthorized request: Invalid access token" ||
+    response?.error == "Unauthorized request: Token missing" ||
+    response?.error == "Unauthorized request: Token verification failed" ||
+    response?.error == "jwt expired"
+  ) {
     localStorage.removeItem("User");
     router.push("/login"); // redirect to login
     return null;
   }
   return response;
 };
-
 
 export { asyncHandler, getCookie };
