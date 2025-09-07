@@ -5,6 +5,7 @@ import CarMoreInfo from "../../models/CarMoreInfo.js";
 import CarImage from "../../models/CarImage.js";
 import { asyncHandler, sendResponse, statusType } from "../../utils/index.js";
 import { deleteOnCloudinary, uploadOnCloudinary } from "../../utils/cloudinary.js";
+import mongoose from "mongoose";
 
 // Create or Update Car
 export const createOrUpdateCar = asyncHandler(async (req, res) => {
@@ -116,7 +117,6 @@ export const createOrUpdateCar = asyncHandler(async (req, res) => {
                     location,
                     condition,
                     duty,
-                    status: status || "available",
                     stock_no
                 },
                 { upsert: true, session }
@@ -185,21 +185,19 @@ export const createOrUpdateCar = asyncHandler(async (req, res) => {
         } else {
             // Create new car
             // Check if car with same name already exists
-            const existingCar = await Car.findOne({
-                name: { $regex: new RegExp(`^${name}$`, "i") }
-            }).session(session);
+            // const existingCar = await Car.findOne({ car_index_id }).session(session);
 
-            if (existingCar) {
-                await session.abortTransaction();
-                session.endSession();
-                return sendResponse(
-                    res,
-                    false,
-                    null,
-                    "Car with this name already exists",
-                    statusType.BAD_REQUEST
-                );
-            }
+            // if (existingCar) {
+            //     await session.abortTransaction();
+            //     session.endSession();
+            //     return sendResponse(
+            //         res,
+            //         false,
+            //         null,
+            //         "Car with this name already exists",
+            //         statusType.BAD_REQUEST
+            //     );
+            // }
 
             // Handle main image upload
             let mainImageUrl = null;
