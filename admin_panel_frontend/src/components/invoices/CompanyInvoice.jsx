@@ -13,6 +13,8 @@ import {
 import { lobster } from "@/lib/fonts";
 import { createAndDownloadInvoice } from "@/services/invoice/invoiceServices";
 import { useRouter } from "next/navigation";
+import { File } from "lucide-react";
+
 
 export function CompanyInvoice() {
   const router = useRouter();
@@ -47,6 +49,7 @@ export function CompanyInvoice() {
             "Unit 6, No 56 Shepstone Place, Westville 3630, South Africa",
         },
         vehicle: {
+          carId:"68bd6331a4ab7c5b68df10eb",
           chassisNo: "A80503080",
           makeModel: "HONDA FIT",
           borderPost: "KFN",
@@ -80,7 +83,9 @@ export function CompanyInvoice() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline">View Invoice</Button>
+        <div className="flex justify-center cursor-pointer">
+          <File size={20} />
+        </div>
       </DialogTrigger>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>

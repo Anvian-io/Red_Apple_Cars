@@ -6,3 +6,15 @@ export const createAndDownloadInvoice = async (formData, router) => {
   const response = await apiClient.post("/invoice/generate", formData);
   return handleApiResponse(response, router);
 };
+export const getAllInvoices = async (payload, router) => {
+  const response = await apiClient.get("/invoice", { params: payload });
+  return handleApiResponse(response, router);
+};
+export const getInvoice = async (id, router) => {
+  const response = await apiClient.get(`/invoice/${id}`);
+  return handleApiResponse(response, router);
+};
+export const deleteInvoice = async (id, router) => {
+  const response = await apiClient.get(`/invoice/${id}`);
+  return handleApiResponse(response, router);
+};

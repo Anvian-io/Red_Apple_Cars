@@ -8,7 +8,7 @@ export const createOrUpdateCar = async (formData, router) => {
 };
 
 export const getAllCars = async (payload, router) => {
-  const response = await apiClient.get("/cars/all", { params: payload });
+  const response = await apiClient.get("/cars", { params: payload });
   return handleApiResponse(response, router);
 };
 
