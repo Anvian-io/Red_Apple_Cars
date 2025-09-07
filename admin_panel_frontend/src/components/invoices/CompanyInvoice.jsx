@@ -281,8 +281,8 @@ export function CompanyInvoice() {
             <h2 className="font-bold text-lg mb-2">Terms & Conditions</h2>
             <ol className="list-decimal pl-5 space-y-2">
               <li>
-                All cars sold "AS IS" and Does not include any warranty or
-                Guarantee
+                All cars sold &quot;AS IS&quot; and Does not include any
+                warranty or Guarantee
               </li>
               <li>
                 If paying in ZAR Rates of Exchange will have to be obtained on
@@ -304,8 +304,8 @@ export function CompanyInvoice() {
               </li>
               <li>
                 The Pictures and Information given are to the best of our
-                ability in the event they don't match the product in the exact
-                manner UFS Africa cannot be held liable.
+              ability in the event they don&apos;t match the product in the
+                exact manner UFS Africa cannot be held liable.
               </li>
               <li>
                 In the event of hijack or an accident where the vehicle is

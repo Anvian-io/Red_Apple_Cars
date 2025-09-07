@@ -45,7 +45,8 @@ export function Dashboard() {
                 Dashboard Overview
               </h1>
               <p className="text-sm mt-1" style={{ color: "var(--text)" }}>
-                Welcome back! Here's what's happening at your dealership today.
+                Welcome back! Here&apos;s what&apos;s happening at your
+                dealership today.
               </p>
             </div>
             <div className="flex items-center gap-3">
