@@ -1,19 +1,14 @@
 "use client";
 
 import { CarSection } from "@/components/cars/CarsSection";
-import { Navbar } from "@/components/Navbar/Navbar";
-
 
 export default function CarsPage({ isExpanded }) {
   return (
     <div className="overflow-auto w-full">
-      <Navbar>
-        <CarSection isExpanded={isExpanded} />
-      </Navbar>
+      <CarSection isExpanded={isExpanded} />
     </div>
   );
 }
-
 
 //   return (
 //     <div className="p-6">
