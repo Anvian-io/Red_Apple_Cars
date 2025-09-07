@@ -6,7 +6,7 @@ import { CompanyInvoice } from "@/components/invoices/CompanyInvoice";
 export default function Dashboard_Section() {
 
   return (
-    // <Dashboard />
-    <CompanyInvoice/>
+    <Dashboard />
+    // <CompanyInvoice/>
   );
 }
