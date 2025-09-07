@@ -66,16 +66,17 @@ export default function AboutUs() {
             Name
           </h4>
           <p className="text-muted-foreground leading-relaxed mb-4">
-            Hi, I'm [Your Name], the founder of RedAppleCars. I started this
-            platform with one mission — to make buying and selling pre-owned
+            Hi, I&apos;m [Your Name], the founder of RedAppleCars. I started this
+            platform with one mission &mdash; to make buying and selling pre-owned
             cars simple, safe, and stress-free.
           </p>
           <p className="text-muted-foreground leading-relaxed">
             Every vehicle is carefully inspected so you get both value and peace
-            of mind. With us, it's not just about cars — it's about trust,
+            of mind. With us, it&apos;s not just about cars &mdash; it&apos;s about trust,
             transparency, and helping you find the right ride for your journey
             ahead.
           </p>
+
         </motion.div>
       </div>
     </section>
