@@ -37,12 +37,12 @@ export function Navbar() {
   };
 
   const toggleSearch = () => {
-    setIsSearchActive(!isSearchActive);
-    if (!isSearchActive) {
-      setTimeout(() => {
-        searchInputRef.current?.focus();
-      }, 100);
-    }
+    // setIsSearchActive(!isSearchActive);
+    // if (!isSearchActive) {
+    //   setTimeout(() => {
+    //     searchInputRef.current?.focus();
+    //   }, 100);
+    // }
   };
 
   const navItems = [
