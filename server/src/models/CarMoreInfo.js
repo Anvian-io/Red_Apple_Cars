@@ -57,8 +57,7 @@ const carMoreInfoSchema = new mongoose.Schema(
             required: false
         },
         sold_by: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            type:String,
             required: false
         },
         customer_name: {
@@ -78,6 +77,6 @@ const carMoreInfoSchema = new mongoose.Schema(
 );
 
 carMoreInfoSchema.index({ car_id: 1 });
-carMoreInfoSchema.index({ sold_date: 1 });
+// carMoreInfoSchema.index({ sold_date: 1 });
 
 export default mongoose.model("CarMoreInfo", carMoreInfoSchema);

@@ -33,7 +33,7 @@ const carDetailSchema = new mongoose.Schema(
             required: true
         },
         mileage: {
-            type: Number,
+            type: String,
             required: true
         },
         drive: {
@@ -50,28 +50,21 @@ const carDetailSchema = new mongoose.Schema(
         },
         condition: {
             type: String,
-            enum: ["new", "used"],
             required: true
         },
         duty: {
             type: String,
             required: true
         },
-        status: {
-            type: String,
-            enum: ["available", "sold", "reserved"],
-            default: "available"
-        },
         stock_no: {
             type: String,
             required: true,
-            unique: true
         }
     },
     { timestamps: true }
 );
 
 carDetailSchema.index({ car_id: 1 });
-carDetailSchema.index({ stock_no: 1 });
+// carDetailSchema.index({ stock_no: 1 });
 
 export default mongoose.model("CarDetail", carDetailSchema);
