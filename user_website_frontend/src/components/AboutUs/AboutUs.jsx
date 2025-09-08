@@ -43,7 +43,7 @@ export default function AboutUs() {
         >
           <div className="relative w-full h-80 md:h-96 rounded-2xl shadow-lg overflow-hidden bg-muted">
             <Image
-              src="https://wallpapercave.com/wp/wp5571934.jpg"
+              src="https://img.freepik.com/free-photo/medium-shot-smiley-man-posing_23-2149915892.jpg"
               alt="Founder"
               fill
               className="object-cover"
