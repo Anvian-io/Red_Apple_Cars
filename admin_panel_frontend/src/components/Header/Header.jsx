@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import { BreadcrumbWrapper } from "..";
 import { Bell, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { NotificationsDropdown } from "@/components/custom_ui/NotificationsDropdown";
 
 export function Header({ isExpanded, pages }) {
   const [time, setTime] = useState(null);
-
+  
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
@@ -135,10 +135,9 @@ export function Header({ isExpanded, pages }) {
       {/* Right - Icons & Time */}
       <div className="flex items-center gap-4">
         {/* Notification */}
-        <Button variant="ghost" size="icon"
-          className="w-8 h-8 rounded-lg flex items-center justify-center bg-hoverBg">
-          <Bell className="h-5 w-5 " />
-        </Button>
+        
+<NotificationsDropdown />
+
 
         {/* Profile */}
         <Avatar className="w-8 h-8 rounded-lg flex items-center justify-center bg-hoverBg">
