@@ -1,5 +1,6 @@
 // models/Car.js
 import mongoose from "mongoose";
+import Counter from "./Counter.js";
 
 const carSchema = new mongoose.Schema(
     {
@@ -8,9 +9,12 @@ const carSchema = new mongoose.Schema(
             required: true,
             trim: true
         },
+        car_index_id: {
+            type: String, // Keep string if you want "C00001"
+            unique: true
+        },
         description: {
-            type: String,
-            required: false
+            type: String
         },
         car_company: {
             type: String,
@@ -26,18 +30,15 @@ const carSchema = new mongoose.Schema(
             required: true
         },
         main_image: {
-            type: String, // URL to the image
-            required: false
+            type: String // URL to the image
         },
         website_state: {
-            type: String,
-            enum: ["draft", "published", "archived"],
-            default: "draft"
+            type: Boolean,
+            default: false
         },
         status: {
-            type: String,
-            enum: ["available", "sold", "reserved"],
-            default: "available"
+            type: Boolean,
+            default: false
         },
         created_by: {
             type: mongoose.Schema.Types.ObjectId,
@@ -53,9 +54,22 @@ const carSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
+// Pre-save hook to auto-increment car_index_id
+carSchema.pre("save", async function (next) {
+    if (this.isNew) {
+        const counter = await Counter.findOneAndUpdate(
+            { name: "car_id" },
+            { $inc: { seq: 1 } },
+            { new: true, upsert: true }
+        );
+
+        // Assign the incremented value
+        this.car_index_id = `C${counter.seq.toString().padStart(5, "0")}`;
+    }
+    next();
+});
+
 // Indexes
 carSchema.index({ name: "text", car_company: "text" });
-carSchema.index({ status: 1 });
-carSchema.index({ website_state: 1 });
 
 export default mongoose.model("Car", carSchema);

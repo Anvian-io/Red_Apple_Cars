@@ -107,7 +107,7 @@ export function Navbar({ children }) {
               className={`w-full justify-start px-3 py-3 h-auto text-text 
     ${theme === "dark"
                   ? "hover:text-hoverText hover:bg-secondaryBg"
-                  : "hover:bg-gray-800 hover:text-white"
+                  : "hover:bg-gray-800 hover:bg-secondaryBg hover:text-heading"
                 }`}
             >
               
