@@ -3,7 +3,7 @@ import { asyncHandler, sendResponse, statusType } from "../../utils/index.js";
 import { uploadOnCloudinary } from "../../utils/index.js";
 import path from "path";
 import { fileURLToPath } from "url";
-import fs from "fs";
+import fs, { stat } from "fs";
 import Invoice from "../../models/Invoice.js";
 import Car from "../../models/Car.js";
 
@@ -11,7 +11,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export const generateInvoice = asyncHandler(async (req, res) => {
-    const { company, customer, banking, vehicle, price, invoice } = req.body;
+    const {
+        company,
+        customer,
+        banking,
+        vehicle,
+        price,
+        invoice,
+        payment_type = "offline"
+    } = req.body;
 
     if (!company || !customer || !banking || !vehicle || !price || !invoice) {
         return sendResponse(
@@ -72,13 +80,14 @@ export const generateInvoice = asyncHandler(async (req, res) => {
         // }
 
         const newInvoice = new Invoice({
-            car_id: vehicle.carId, // pass carId in request body
+            car_id: vehicle.carId,
             customer_name: customer.name,
             pdf_url: cloudinaryResponse.secure_url,
-            status: true, // default status, you can adjust
-            created_by: req.user._id, // assuming JWT middleware sets req.user
-            updated_by: req.user._id,
-            payment_status: true
+            status: "pending", // Using enum value
+            payment_status: "pending", // Using enum value
+            payment_type: payment_type, // Using enum value
+            created_by: req.user._id,
+            updated_by: req.user._id
         });
 
         await newInvoice.save();
@@ -106,50 +115,30 @@ export const generateInvoice = asyncHandler(async (req, res) => {
     }
 });
 
-// export const createInvoice = asyncHandler(async (req, res) => {
-//     const { car_id, customer_name, status } = req.body;
-
-//     // Validate required fields
-//     if (!car_id || !customer_name) {
-//         return sendResponse(
-//             res,
-//             false,
-//             null,
-//             "Car ID and customer name are required",
-//             statusType.BAD_REQUEST
-//         );
-//     }
-
-//     // Handle PDF upload
-//     let pdfUrl = null;
-//     if (req.files && req.files.pdf) {
-//         const pdfPath = req.files.pdf[0].path;
-//         const uploadedPdf = await uploadOnCloudinary(pdfPath);
-//         pdfUrl = uploadedPdf.url;
-//     }
-
-//     const invoice = await Invoice.create({
-//         car_id,
-//         customer_name,
-//         pdf_url: pdfUrl,
-//         status: status || "draft",
-//         created_by: req.user._id,
-//         updated_by: req.user._id
-//     });
-
-//     return sendResponse(res, true, { invoice }, "Invoice created successfully", statusType.SUCCESS);
-// });
-
-// Get All Invoices with Pagination
+// Get All Invoices with Pagination and Search
 export const getAllInvoices = asyncHandler(async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const status = req.query.status || "";
+    const payment_status = req.query.payment_status || "";
+    const payment_type = req.query.payment_type || "";
+    const search = req.query.search || "";
     const skip = (page - 1) * limit;
 
     // Build filter
     const filter = {};
+
     if (status) filter.status = status;
+    if (payment_status) filter.payment_status = payment_status;
+    if (payment_type) filter.payment_type = payment_type;
+
+    // Add search functionality
+    if (search) {
+        filter.$or = [
+            { customer_name: { $regex: search, $options: "i" } },
+            { invoice_index_id: { $regex: search, $options: "i" } }
+        ];
+    }
 
     const invoices = await Invoice.find(filter)
         .populate("car_id", "name car_index_id car_company")
@@ -250,31 +239,19 @@ export const update_invoice_car_details = asyncHandler(async (req, res) => {
     const { carId, invoice_index_id, status, invoiceStatus, paymentStatus, payment_type } = req.body;
 
     // Update car status
-    let carStatusValue;
-    if (status === "sold") carStatusValue = true;
-    else if (status === "unsold") carStatusValue = false;
-    else if (status === "pending") carStatusValue = null;
+    let carStatusValue = status;
 
     if (carStatusValue !== undefined) {
         await Car.findOneAndUpdate({ car_index_id: carId }, { status: carStatusValue });
     }
 
-    // Update invoice status + payment
-    let invoiceStatusValue;
-    if (invoiceStatus === "success") invoiceStatusValue = true;
-    else if (invoiceStatus === "failed") invoiceStatusValue = false;
-    else if (invoiceStatus === "pending") invoiceStatusValue = null;
-
-    let paymentStatusBoolean = paymentStatus === "done";
-
-    let paymentType = payment_type === "offline" ? true : false
-
+    // Update invoice status + payment (using string values directly)
     const updatedInvoice = await Invoice.findOneAndUpdate(
         { invoice_index_id: invoice_index_id },
         {
-            status: invoiceStatusValue,
-            payment_status: paymentStatusBoolean,
-            payment_type: paymentType
+            status: invoiceStatus,
+            payment_status: paymentStatus,
+            payment_type: payment_type
         },
         { new: true }
     )

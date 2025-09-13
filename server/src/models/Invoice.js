@@ -23,15 +23,21 @@ const invoiceSchema = new mongoose.Schema(
             required: true
         },
         status: {
-            type: Boolean,
+            type: String,
+            enum: ["success", "failed", "pending"],
+            default: "pending",
             required: true
         },
         payment_status: {
-            type: Boolean,
+            type: String,
+            enum: ["success", "pending", "failed", "refund"],
+            default: "pending",
             required: true
         },
         payment_type: {
-            type: Boolean,
+            type: String,
+            enum: ["online", "offline"],
+            default:"offline",
             required: true
         },
         created_by: {

@@ -11,7 +11,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { lobster } from "@/lib/fonts";
-import { createAndDownloadInvoice, update_invoice_car_details } from "@/services/invoice/invoiceServices";
+import {
+  createAndDownloadInvoice,
+  update_invoice_car_details,
+} from "@/services/invoice/invoiceServices";
 import { useRouter } from "next/navigation";
 import { File } from "lucide-react";
 import { useState } from "react";
@@ -20,10 +23,13 @@ import { toast } from "sonner";
 function ModifyDetails({ carDetails, invoiceDetails, onSave, onClose }) {
   const [status, setStatus] = useState(carDetails.status || "pending");
   const [invoiceStatus, setInvoiceStatus] = useState(
-    invoiceDetails.invoiceStatus || "pending"
+    invoiceDetails.status || "pending"
   );
   const [paymentStatus, setPaymentStatus] = useState(
-    invoiceDetails.paymentStatus || "pending"
+    invoiceDetails.payment_status || "pending"
+  );
+  const [paymentType, setPaymentType] = useState(
+    invoiceDetails.payment_type || "online"
   );
 
   const handleSave = () => {
@@ -34,6 +40,7 @@ function ModifyDetails({ carDetails, invoiceDetails, onSave, onClose }) {
       status,
       invoiceStatus,
       paymentStatus,
+      payment_type: paymentType,
     });
   };
 
@@ -64,9 +71,9 @@ function ModifyDetails({ carDetails, invoiceDetails, onSave, onClose }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Status</label>
+          <label className="block text-sm font-medium mb-1">Car Status</label>
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
@@ -100,17 +107,17 @@ function ModifyDetails({ carDetails, invoiceDetails, onSave, onClose }) {
             onChange={(e) => setPaymentStatus(e.target.value)}
             className="w-full p-2 border rounded"
           >
-            <option value="done">Done</option>
+            <option value="success">Success</option>
             <option value="pending">Pending</option>
+            <option value="failed">Failed</option>
+            <option value="refund">Refund</option>
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">
-            Payment Type
-          </label>
+          <label className="block text-sm font-medium mb-1">Payment Type</label>
           <select
-            value={paymentStatus}
-            onChange={(e) => setPaymentStatus(e.target.value)}
+            value={paymentType}
+            onChange={(e) => setPaymentType(e.target.value)}
             className="w-full p-2 border rounded"
           >
             <option value="online">Online</option>
@@ -192,11 +199,13 @@ export function CompanyInvoice({ car }) {
       const response = await createAndDownloadInvoice(payload, router);
 
       if (response.data) {
-        // console.log(response.data,"fewoihfio")
         setGeneratedInvoiceData({
           invoiceId: response.data.data.invoiceId,
           invoice_index_id: response.data.data.invoice_index_id,
           customerName: payload.customer.name,
+          status: "pending",
+          payment_status: "pending",
+          payment_type: "online",
         });
         setShowModifyDetails(true);
         toast.success("Invoice generated successfully");
@@ -505,7 +514,7 @@ export function CompanyInvoice({ car }) {
               carId: car?.car_index_id,
               carName: car?.name,
               company: car?.car_company,
-              status: car?.status ? "solved" : "pending",
+              status: car?.status ? "sold" : "unsold",
             }}
             invoiceDetails={generatedInvoiceData}
             onSave={handleSaveDetails}

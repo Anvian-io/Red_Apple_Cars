@@ -138,6 +138,22 @@ export function InvoiceSection({ isExpanded }) {
     }
   };
 
+  const getStatusBadgeVariant = (status) => {
+    switch (status) {
+      case "success":
+        return "success";
+      case "failed":
+        return "destructive";
+      case "refund":
+        return "secondary";
+      default:
+        return "outline";
+    }
+  };
+
+  const getPaymentTypeText = (type) => {
+    return type === "online" ? "Online" : "Offline";
+  };
 
   const skeletonRows = Array.from({ length: itemsPerPage }, (_, i) => (
     <TableRow key={i}>
@@ -228,6 +244,7 @@ export function InvoiceSection({ isExpanded }) {
               <TableHead className="min-w-[100px]">Car Name</TableHead>
               <TableHead className="min-w-[100px]">Car Company</TableHead>
               <TableHead className="min-w-[100px]">Invoice Status</TableHead>
+              <TableHead className="min-w-[100px]">Payment Status</TableHead>
               <TableHead className="min-w-[100px]">Payment Type</TableHead>
               <TableHead className="min-w-[100px]">Created By</TableHead>
               <TableHead className="min-w-[100px]">Updated By</TableHead>
@@ -254,10 +271,19 @@ export function InvoiceSection({ isExpanded }) {
                     <TableCell>{invoice?.car_id?.name}</TableCell>
                     <TableCell>{invoice?.car_id?.car_company}</TableCell>
                     <TableCell>
-                      {invoice?.car_id?.status == true ? "Success" : "Failed"}
+                      <Badge variant={getStatusBadgeVariant(invoice?.status)}>
+                        {invoice?.status}
+                      </Badge>
                     </TableCell>
                     <TableCell>
-                      {invoice?.payment_status ? "Offline" : "Online"}
+                      <Badge
+                        variant={getStatusBadgeVariant(invoice?.payment_status)}
+                      >
+                        {invoice?.payment_status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {getPaymentTypeText(invoice?.payment_type)}
                     </TableCell>
                     <TableCell>{invoice?.created_by?.name}</TableCell>
                     <TableCell>{invoice?.updated_by?.name}</TableCell>
@@ -275,23 +301,14 @@ export function InvoiceSection({ isExpanded }) {
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        {/* <Button
-                          onClick={() => {
-                          }}
-                          variant="ghost"
-                          size="icon"
-                          title="Edit invoice"
-                        > 
-                          <SquarePen className="h-4 w-4" />
-                        </Button> */}
-                        {/* <Button
+                        <Button
                           onClick={() => handleDownloadInvoice(invoice.pdf_url)}
                           variant="ghost"
                           size="icon"
                           title="Download invoice"
                         >
                           <Download className="h-4 w-4" />
-                        </Button> */}
+                        </Button>
                         <Button
                           onClick={() => handleDeleteClick(invoice)}
                           variant="ghost"

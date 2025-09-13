@@ -284,9 +284,9 @@ export function CarSection({ isExpanded }) {
                     </TableCell>
                     <TableCell className="text-center">
                       <Badge
-                        className={car?.status ? "bg-green-500" : "bg-red-500"}
+                        className={car?.status == "sold" ? "bg-green-500" : car.status == "unsold" ? "bg-red-500" : "bg-yellow-500"}
                       >
-                        {car?.status ? "Active" : "Inactive"}
+                        {car?.status === "sold" ?  "Sold" : car.status == "unsold" ? "Un Sold" : "Pending" }
                       </Badge>
                     </TableCell>
                     <TableCell className="text-center">
