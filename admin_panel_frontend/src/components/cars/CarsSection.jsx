@@ -203,7 +203,7 @@ export function CarSection({ isExpanded }) {
         </div>
       </div>
 
-      <div className="mx-1 mt-6 rounded-md max-w-[99vw] border overflow-x-auto bg-tableBg">
+      <div className="mx-1 mt-6 rounded-md max-w-[94.5vw] border overflow-x-auto bg-tableBg">
         <Table className="min-w-[800px] lg:min-w-full">
           <TableCaption className="mb-2">A list of available cars</TableCaption>
           <TableHeader className="bg-hoverBg">
@@ -280,13 +280,13 @@ export function CarSection({ isExpanded }) {
                     <TableCell className="text-center">{"dummy"}</TableCell>
                     <TableCell className="text-center">{"dummy"}</TableCell>
                     <TableCell className="text-center">
-                      <CompanyInvoice />
+                      <CompanyInvoice car={car} />
                     </TableCell>
                     <TableCell className="text-center">
                       <Badge
-                        className={car?.status ? "bg-green-500" : "bg-red-500"}
+                        className={car?.status == "sold" ? "bg-green-500" : car.status == "unsold" ? "bg-red-500" : "bg-yellow-500"}
                       >
-                        {car?.status ? "Active" : "Inactive"}
+                        {car?.status === "sold" ?  "Sold" : car.status == "unsold" ? "Un Sold" : "Pending" }
                       </Badge>
                     </TableCell>
                     <TableCell className="text-center">

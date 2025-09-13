@@ -47,8 +47,10 @@ const carSchema = new mongoose.Schema(
             default: false
         },
         status: {
-            type: Boolean,
-            default: false
+            type: String,
+            enum: ["unsold", "pending","sold"],
+            default:"unsold",
+            required: true
         },
         created_by: {
             type: mongoose.Schema.Types.ObjectId,

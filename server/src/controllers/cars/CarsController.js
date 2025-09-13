@@ -216,7 +216,7 @@ export const createOrUpdateCar = asyncHandler(async (req, res) => {
                         actual_price_zmw,
                         main_image: mainImageUrl,
                         website_state: website_state || "draft",
-                        status: status || "available",
+                        status: status || "pending",
                         created_by: req.user._id,
                         updated_by: req.user._id
                     }
@@ -241,7 +241,7 @@ export const createOrUpdateCar = asyncHandler(async (req, res) => {
                         location,
                         condition,
                         duty,
-                        status: status || "available",
+                        status: status || "pending",
                         stock_no
                     }
                 ],

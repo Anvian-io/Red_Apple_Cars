@@ -4,7 +4,7 @@ import { CarSection } from "@/components/cars/CarsSection";
 
 export default function CarsPage({ isExpanded }) {
   return (
-    <div className="overflow-auto w-full">
+    <div className="">
       <CarSection isExpanded={isExpanded} />
     </div>
   );

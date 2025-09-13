@@ -138,6 +138,33 @@ export function InvoiceSection({ isExpanded }) {
     }
   };
 
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case "success":
+        return "bg-green-100 text-green-700 border border-green-400";
+      case "failed":
+        return "bg-red-100 text-red-700 border border-red-400";
+      case "refund":
+        return "bg-gray-200 text-gray-700 border border-gray-400";
+      default:
+        return "bg-gray-50 text-gray-600 border border-gray-300";
+    }
+  };
+
+  const getPaymentStatusBadgeClass = (status) => {
+    switch (status) {
+      case "success":
+        return "bg-green-100 text-green-700 border border-green-400";
+      case "failed":
+        return "bg-red-100 text-red-700 border border-red-400";
+      default:
+        return "bg-yellow-50 text-yellow-600 border border-yellow-300";
+    }
+  };
+
+  const getPaymentTypeText = (type) => {
+    return type === "online" ? "Online" : "Offline";
+  };
 
   const skeletonRows = Array.from({ length: itemsPerPage }, (_, i) => (
     <TableRow key={i}>
@@ -221,19 +248,22 @@ export function InvoiceSection({ isExpanded }) {
           </TableCaption>
           <TableHeader className="bg-hoverBg">
             <TableRow>
-              <TableHead className="w-[50px]">Sr</TableHead>
-              <TableHead className="w-[100px]">Invoice ID</TableHead>
-              <TableHead className="w-[150px]">Customer Name</TableHead>
-              <TableHead className="w-[100px]">Car ID</TableHead>
-              <TableHead className="w-[120px]">Car Name</TableHead>
-              <TableHead className="w-[120px]">Car Company</TableHead>
-              <TableHead className="w-[100px]">Invoice Status</TableHead>
-              <TableHead className="w-[100px]">Payment Type</TableHead>
-              <TableHead className="w-[120px]">Created By</TableHead>
-              <TableHead className="w-[120px]">Updated By</TableHead>
-              <TableHead className="w-[100px]">Created At</TableHead>
-              <TableHead className="w-[100px]">Updated At</TableHead>
-              <TableHead className="w-[180px] text-right">Actions</TableHead>
+              <TableHead className="min-w-[50px]">Sr</TableHead>
+              <TableHead className="min-w-[100px]">Invoice ID</TableHead>
+              <TableHead className="min-w-[100px]">Customer Name</TableHead>
+              <TableHead className="min-w-[100px]">Car ID</TableHead>
+              <TableHead className="min-w-[100px]">Car Name</TableHead>
+              <TableHead className="min-w-[100px]">Car Company</TableHead>
+              <TableHead className="min-w-[100px]">Invoice Status</TableHead>
+              <TableHead className="min-w-[100px]">Payment Status</TableHead>
+              <TableHead className="min-w-[100px]">Payment Type</TableHead>
+              <TableHead className="min-w-[100px]">Created By</TableHead>
+              <TableHead className="min-w-[100px]">Updated By</TableHead>
+              <TableHead className="min-w-[100px]">Created At</TableHead>
+              <TableHead className="min-w-[100px]">Updated At</TableHead>
+              <TableHead className="min-w-[100px] text-right">
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -252,12 +282,21 @@ export function InvoiceSection({ isExpanded }) {
                     <TableCell>{invoice?.car_id?.name}</TableCell>
                     <TableCell>{invoice?.car_id?.car_company}</TableCell>
                     <TableCell>
+                      <Badge className={getStatusBadgeClass(invoice?.status)}>
+                        {invoice?.status}
+                      </Badge>
                     </TableCell>
                     <TableCell>
-                        <select className="border rounded-lg px-3 py-1 focus:outline-none">
-                        <option value="Online">Online</option>
-                        <option value="Offline">Offline</option>
-                        </select>
+                      <Badge
+                        className={getPaymentStatusBadgeClass(
+                          invoice?.payment_status
+                        )}
+                      >
+                        {invoice?.payment_status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {getPaymentTypeText(invoice?.payment_type)}
                     </TableCell>
                     <TableCell>{invoice?.created_by?.name}</TableCell>
                     <TableCell>{invoice?.updated_by?.name}</TableCell>
@@ -275,23 +314,14 @@ export function InvoiceSection({ isExpanded }) {
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        {/* <Button
-                          onClick={() => {
-                          }}
-                          variant="ghost"
-                          size="icon"
-                          title="Edit invoice"
-                        > 
-                          <SquarePen className="h-4 w-4" />
-                        </Button> */}
-                        {/* <Button
+                        <Button
                           onClick={() => handleDownloadInvoice(invoice.pdf_url)}
                           variant="ghost"
                           size="icon"
                           title="Download invoice"
                         >
                           <Download className="h-4 w-4" />
-                        </Button> */}
+                        </Button>
                         <Button
                           onClick={() => handleDeleteClick(invoice)}
                           variant="ghost"
