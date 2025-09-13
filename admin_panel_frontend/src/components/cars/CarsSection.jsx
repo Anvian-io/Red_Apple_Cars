@@ -208,45 +208,79 @@ export function CarSection({ isExpanded }) {
           <TableCaption className="mb-2">A list of available cars</TableCaption>
           <TableHeader className="bg-hoverBg">
             <TableRow>
-    <TableHead className="w-[50px]">SR</TableHead>
-    <TableHead className="w-[80px]">ID</TableHead>
-    <TableHead className="w-[150px]">Name</TableHead>
-    <TableHead className="w-[250px]">Description</TableHead>
-    <TableHead className="w-[200px]">Brand</TableHead>
-    <TableHead className="w-[120px] text-center">Real Price</TableHead>
-    <TableHead className="w-[120px] text-center">Actual Price</TableHead>
-    <TableHead className="w-[150px] text-center">Main Image</TableHead>
-    <TableHead className="w-[150px] text-center">Other Images</TableHead>
-    <TableHead className="w-[120px] text-center">Invoice</TableHead>
-    <TableHead className="w-[120px] text-center">Car Status</TableHead>
-    <TableHead className="w-[150px] text-center">Website State</TableHead>
-    <TableHead className="w-[150px]">Created At</TableHead>
-    <TableHead className="w-[150px]">Created By</TableHead>
-    <TableHead className="w-[150px]">Updated At</TableHead>
-    <TableHead className="w-[150px]">Updated By</TableHead>
-    <TableHead className="w-[120px] text-right">Actions</TableHead>
-  </TableRow>
+              <TableHead className="w-[50px]">SR</TableHead>
+              <TableHead className="w-[80px]">ID</TableHead>
+              <TableHead className="min-w-[100px]">Name</TableHead>
+              <TableHead className="min-w-[250px]">Description</TableHead>
+              <TableHead className="min-w-[100px]">Brand</TableHead>
+              <TableHead className="min-w-[120px] text-center">
+                Real Price (BWP)
+              </TableHead>
+              <TableHead className="min-w-[120px] text-center">
+                Actual Price (BWP)
+              </TableHead>
+              <TableHead className="min-w-[120px] text-center">
+                Real Price (ZMW)
+              </TableHead>
+              <TableHead className="min-w-[120px] text-center">
+                Actual Price (ZMW)
+              </TableHead>
+              <TableHead className="min-w-[150px] text-center">
+                Main Image
+              </TableHead>
+              <TableHead className="min-w-[150px] text-center">
+                Other Images
+              </TableHead>
+              <TableHead className="min-w-[120px] text-center">
+                Invoice
+              </TableHead>
+              <TableHead className="min-w-[120px] text-center">
+                Car Status
+              </TableHead>
+              <TableHead className="min-w-[150px] text-center">
+                Website State
+              </TableHead>
+              <TableHead className="min-w-[150px]">Created At</TableHead>
+              <TableHead className="min-w-[150px]">Created By</TableHead>
+              <TableHead className="min-w-[150px]">Updated At</TableHead>
+              <TableHead className="min-w-[150px]">Updated By</TableHead>
+              <TableHead className="min-w-[120px] text-center">
+                Actions
+              </TableHead>
+            </TableRow>
           </TableHeader>
           <TableBody>
             {loading
               ? skeletonRows
-              : cars.map((car) => (
+              : cars.map((car, index) => (
                   <TableRow key={car?._id}>
-                    <TableCell className="font-medium">{car?.name}</TableCell>
-                    <TableCell>{car?.car_company}</TableCell>
+                    <TableCell className="font-medium">{index + 1}</TableCell>
+                    <TableCell>{car?.car_index_id}</TableCell>
+                    <TableCell>{car?.name}</TableCell>
                     <TableCell className="text-muted-foreground">
                       {car?.description?.length > 50
                         ? `${car.description.substring(0, 50)}...`
                         : car?.description || "No description"}
                     </TableCell>
                     <TableCell className="text-center">
-                      {formatPrice(car?.real_price)}
+                      {car?.car_company}
                     </TableCell>
                     <TableCell className="text-center">
-                      {formatPrice(car?.actual_price)}
+                      {formatPrice(car?.real_price_bwp, "BWP")}
                     </TableCell>
                     <TableCell className="text-center">
-                      <CompanyInvoice/>
+                      {formatPrice(car?.actual_price_bwp, "BWP")}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {formatPrice(car?.real_price_zmw, "ZMW")}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {formatPrice(car?.actual_price_zmw, "ZMW")}
+                    </TableCell>
+                    <TableCell className="text-center">{"dummy"}</TableCell>
+                    <TableCell className="text-center">{"dummy"}</TableCell>
+                    <TableCell className="text-center">
+                      <CompanyInvoice />
                     </TableCell>
                     <TableCell className="text-center">
                       <Badge
@@ -255,6 +289,19 @@ export function CarSection({ isExpanded }) {
                         {car?.status ? "Active" : "Inactive"}
                       </Badge>
                     </TableCell>
+                    <TableCell className="text-center">
+                      <Badge
+                        className={
+                          car?.website_state ? "bg-green-500" : "bg-red-500"
+                        }
+                      >
+                        {car?.website_state ? "Active" : "Inactive"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{formatDate(car?.createdAt)}</TableCell>
+                    <TableCell>{car?.created_by?.name}</TableCell>
+                    <TableCell>{formatDate(car?.updatedAt)}</TableCell>
+                    <TableCell>{car?.updated_by?.name}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button
@@ -284,7 +331,6 @@ export function CarSection({ isExpanded }) {
                         </Button>
                       </div>
                     </TableCell>
-                    <TableCell>{formatDate(car?.updatedAt)}</TableCell>
                   </TableRow>
                 ))}
           </TableBody>
