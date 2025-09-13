@@ -138,16 +138,27 @@ export function InvoiceSection({ isExpanded }) {
     }
   };
 
-  const getStatusBadgeVariant = (status) => {
+  const getStatusBadgeClass = (status) => {
     switch (status) {
       case "success":
-        return "success";
+        return "bg-green-100 text-green-700 border border-green-400";
       case "failed":
-        return "destructive";
+        return "bg-red-100 text-red-700 border border-red-400";
       case "refund":
-        return "secondary";
+        return "bg-gray-200 text-gray-700 border border-gray-400";
       default:
-        return "outline";
+        return "bg-gray-50 text-gray-600 border border-gray-300";
+    }
+  };
+
+  const getPaymentStatusBadgeClass = (status) => {
+    switch (status) {
+      case "success":
+        return "bg-green-100 text-green-700 border border-green-400";
+      case "failed":
+        return "bg-red-100 text-red-700 border border-red-400";
+      default:
+        return "bg-yellow-50 text-yellow-600 border border-yellow-300";
     }
   };
 
@@ -271,13 +282,15 @@ export function InvoiceSection({ isExpanded }) {
                     <TableCell>{invoice?.car_id?.name}</TableCell>
                     <TableCell>{invoice?.car_id?.car_company}</TableCell>
                     <TableCell>
-                      <Badge variant={getStatusBadgeVariant(invoice?.status)}>
+                      <Badge className={getStatusBadgeClass(invoice?.status)}>
                         {invoice?.status}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <Badge
-                        variant={getStatusBadgeVariant(invoice?.payment_status)}
+                        className={getPaymentStatusBadgeClass(
+                          invoice?.payment_status
+                        )}
                       >
                         {invoice?.payment_status}
                       </Badge>
