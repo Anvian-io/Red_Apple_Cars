@@ -26,6 +26,14 @@ const invoiceSchema = new mongoose.Schema(
             type: Boolean,
             required: true
         },
+        payment_status: {
+            type: Boolean,
+            required: true
+        },
+        payment_type: {
+            type: Boolean,
+            required: true
+        },
         created_by: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",

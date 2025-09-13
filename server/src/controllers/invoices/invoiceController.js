@@ -5,6 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
 import Invoice from "../../models/Invoice.js";
+import Car from "../../models/Car.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -76,7 +77,8 @@ export const generateInvoice = asyncHandler(async (req, res) => {
             pdf_url: cloudinaryResponse.secure_url,
             status: true, // default status, you can adjust
             created_by: req.user._id, // assuming JWT middleware sets req.user
-            updated_by: req.user._id
+            updated_by: req.user._id,
+            payment_status: true
         });
 
         await newInvoice.save();
@@ -84,7 +86,11 @@ export const generateInvoice = asyncHandler(async (req, res) => {
         return sendResponse(
             res,
             true,
-            { pdfUrl: cloudinaryResponse.secure_url },
+            {
+                pdfUrl: cloudinaryResponse.secure_url,
+                invoiceId: newInvoice._id, // Include _id
+                invoice_index_id: newInvoice.invoice_index_id // Include invoice_index_id
+            },
             "Invoice generated & uploaded successfully",
             statusType.OK
         );
@@ -239,3 +245,53 @@ export const deleteInvoice = asyncHandler(async (req, res) => {
 
     return sendResponse(res, true, null, "Invoice deleted successfully", statusType.OK);
 });
+
+export const update_invoice_car_details = asyncHandler(async (req, res) => {
+    const { carId, invoice_index_id, status, invoiceStatus, paymentStatus, payment_type } = req.body;
+
+    // Update car status
+    let carStatusValue;
+    if (status === "sold") carStatusValue = true;
+    else if (status === "unsold") carStatusValue = false;
+    else if (status === "pending") carStatusValue = null;
+
+    if (carStatusValue !== undefined) {
+        await Car.findOneAndUpdate({ car_index_id: carId }, { status: carStatusValue });
+    }
+
+    // Update invoice status + payment
+    let invoiceStatusValue;
+    if (invoiceStatus === "success") invoiceStatusValue = true;
+    else if (invoiceStatus === "failed") invoiceStatusValue = false;
+    else if (invoiceStatus === "pending") invoiceStatusValue = null;
+
+    let paymentStatusBoolean = paymentStatus === "done";
+
+    let paymentType = payment_type === "offline" ? true : false
+
+    const updatedInvoice = await Invoice.findOneAndUpdate(
+        { invoice_index_id: invoice_index_id },
+        {
+            status: invoiceStatusValue,
+            payment_status: paymentStatusBoolean,
+            payment_type: paymentType
+        },
+        { new: true }
+    )
+        .populate("car_id", "name car_index_id car_company")
+        .populate("created_by", "name email")
+        .populate("updated_by", "name email");
+
+    if (!updatedInvoice) {
+        return sendResponse(res, false, null, "Invoice not found", statusType.NOT_FOUND);
+    }
+
+    return sendResponse(
+        res,
+        true,
+        { updatedInvoice },
+        "Invoice and car details updated successfully",
+        statusType.OK
+    );
+});
+

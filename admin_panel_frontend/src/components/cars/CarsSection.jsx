@@ -280,7 +280,7 @@ export function CarSection({ isExpanded }) {
                     <TableCell className="text-center">{"dummy"}</TableCell>
                     <TableCell className="text-center">{"dummy"}</TableCell>
                     <TableCell className="text-center">
-                      <CompanyInvoice />
+                      <CompanyInvoice car={car} />
                     </TableCell>
                     <TableCell className="text-center">
                       <Badge

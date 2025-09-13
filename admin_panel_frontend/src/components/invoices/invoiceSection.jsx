@@ -221,19 +221,21 @@ export function InvoiceSection({ isExpanded }) {
           </TableCaption>
           <TableHeader className="bg-hoverBg">
             <TableRow>
-              <TableHead className="w-[50px]">Sr</TableHead>
-              <TableHead className="w-[100px]">Invoice ID</TableHead>
-              <TableHead className="w-[150px]">Customer Name</TableHead>
-              <TableHead className="w-[100px]">Car ID</TableHead>
-              <TableHead className="w-[120px]">Car Name</TableHead>
-              <TableHead className="w-[120px]">Car Company</TableHead>
-              <TableHead className="w-[100px]">Invoice Status</TableHead>
-              <TableHead className="w-[100px]">Payment Type</TableHead>
-              <TableHead className="w-[120px]">Created By</TableHead>
-              <TableHead className="w-[120px]">Updated By</TableHead>
-              <TableHead className="w-[100px]">Created At</TableHead>
-              <TableHead className="w-[100px]">Updated At</TableHead>
-              <TableHead className="w-[180px] text-right">Actions</TableHead>
+              <TableHead className="min-w-[50px]">Sr</TableHead>
+              <TableHead className="min-w-[100px]">Invoice ID</TableHead>
+              <TableHead className="min-w-[100px]">Customer Name</TableHead>
+              <TableHead className="min-w-[100px]">Car ID</TableHead>
+              <TableHead className="min-w-[100px]">Car Name</TableHead>
+              <TableHead className="min-w-[100px]">Car Company</TableHead>
+              <TableHead className="min-w-[100px]">Invoice Status</TableHead>
+              <TableHead className="min-w-[100px]">Payment Type</TableHead>
+              <TableHead className="min-w-[100px]">Created By</TableHead>
+              <TableHead className="min-w-[100px]">Updated By</TableHead>
+              <TableHead className="min-w-[100px]">Created At</TableHead>
+              <TableHead className="min-w-[100px]">Updated At</TableHead>
+              <TableHead className="min-w-[100px] text-right">
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -252,12 +254,10 @@ export function InvoiceSection({ isExpanded }) {
                     <TableCell>{invoice?.car_id?.name}</TableCell>
                     <TableCell>{invoice?.car_id?.car_company}</TableCell>
                     <TableCell>
+                      {invoice?.car_id?.status == true ? "Success" : "Failed"}
                     </TableCell>
                     <TableCell>
-                        <select className="border rounded-lg px-3 py-1 focus:outline-none">
-                        <option value="Online">Online</option>
-                        <option value="Offline">Offline</option>
-                        </select>
+                      {invoice?.payment_status ? "Offline" : "Online"}
                     </TableCell>
                     <TableCell>{invoice?.created_by?.name}</TableCell>
                     <TableCell>{invoice?.updated_by?.name}</TableCell>
