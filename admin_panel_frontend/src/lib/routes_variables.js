@@ -1,4 +1,4 @@
-import { Home, User, FileText, Mail, Search, Settings } from "lucide-react";
+import { Home, User, FileText, Mail, Search, Settings,Car,ReceiptText,MessageSquareText,UserCog} from "lucide-react";
 
 export const navItems = [
   { icon: Home, label: "Home", href: "/", id: "home", pages: "Home" },
@@ -10,35 +10,35 @@ export const navItems = [
   //   pages: "Home, Dashboard",
   // },
   {
-    icon: FileText,
+    icon: Car,
     label: "Cars",
     href: "/cars",
     id: "cars",
     pages: "Home, Cars",
   },
   {
-    icon: Mail,
+    icon: FileText,
     label: "Invoices",
     href: "/invoices",
     id: "invoices",
     pages: "Home, Invoices",
   },
   {
-    icon: Search,
+    icon: MessageSquareText,
     label: "Feedback",
     href: "/feedback",
     id: "feedback",
     pages: "Home, Feedback",
   },
   {
-    icon: Settings,
+    icon: User,
     label: "Users",
     href: "/user_management",
     id: "users",
     pages: "Home, Users",
   },
   {
-    icon: Settings,
+    icon: UserCog,
     label: "Roles",
     href: "/roles",
     id: "roles",

@@ -208,22 +208,24 @@ export function CarSection({ isExpanded }) {
           <TableCaption className="mb-2">A list of available cars</TableCaption>
           <TableHeader className="bg-hoverBg">
             <TableRow>
-              <TableHead className="w-[150px]">Car Name</TableHead>
-              <TableHead className="w-[200px]">Company</TableHead>
-              <TableHead className="w-[250px]">Description</TableHead>
-              <TableHead className="w-[120px] text-center">
-                Real Price
-              </TableHead>
-              <TableHead className="w-[120px] text-center">
-                Actual Price
-              </TableHead>
-              <TableHead className="w-[120px] text-center">
-                Invoice
-              </TableHead>
-              <TableHead className="w-[100px] text-center">Status</TableHead>
-              <TableHead className="w-[150px] text-right">Actions</TableHead>
-              <TableHead className="w-[150px]">Last Updated</TableHead>
-            </TableRow>
+    <TableHead className="w-[50px]">SR</TableHead>
+    <TableHead className="w-[80px]">ID</TableHead>
+    <TableHead className="w-[150px]">Name</TableHead>
+    <TableHead className="w-[250px]">Description</TableHead>
+    <TableHead className="w-[200px]">Brand</TableHead>
+    <TableHead className="w-[120px] text-center">Real Price</TableHead>
+    <TableHead className="w-[120px] text-center">Actual Price</TableHead>
+    <TableHead className="w-[150px] text-center">Main Image</TableHead>
+    <TableHead className="w-[150px] text-center">Other Images</TableHead>
+    <TableHead className="w-[120px] text-center">Invoice</TableHead>
+    <TableHead className="w-[120px] text-center">Car Status</TableHead>
+    <TableHead className="w-[150px] text-center">Website State</TableHead>
+    <TableHead className="w-[150px]">Created At</TableHead>
+    <TableHead className="w-[150px]">Created By</TableHead>
+    <TableHead className="w-[150px]">Updated At</TableHead>
+    <TableHead className="w-[150px]">Updated By</TableHead>
+    <TableHead className="w-[120px] text-right">Actions</TableHead>
+  </TableRow>
           </TableHeader>
           <TableBody>
             {loading
