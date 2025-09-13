@@ -21,11 +21,21 @@ const carSchema = new mongoose.Schema(
             required: true,
             trim: true
         },
-        real_price: {
+        // Pula (Botswana) prices
+        real_price_bwp: {
             type: Number,
             required: true
         },
-        actual_price: {
+        actual_price_bwp: {
+            type: Number,
+            required: true
+        },
+        // Zambian Kwacha prices
+        real_price_zmw: {
+            type: Number,
+            required: true
+        },
+        actual_price_zmw: {
             type: Number,
             required: true
         },
