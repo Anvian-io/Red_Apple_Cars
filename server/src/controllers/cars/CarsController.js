@@ -374,6 +374,93 @@ export const getAllCars = asyncHandler(async (req, res) => {
     );
 });
 
+// Get all Zambia Cars (website_state = true, return ZMW prices)
+export const getAllZambiaCars = asyncHandler(async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const filter = { website_state: true };
+
+    const cars = await Car.find(filter)
+        .populate("created_by", "name email")
+        .populate("updated_by", "name email")
+        .sort({ updatedAt: -1 })
+        .skip(skip)
+        .limit(limit);
+
+    // Format with Zambia currency (ZMW)
+    const formattedCars = cars.map(car => ({
+        ...car.toObject(),
+        real_price: car.real_price_zmw,
+        actual_price: car.actual_price_zmw,
+        currency: "ZMW"
+    }));
+
+    const totalCars = await Car.countDocuments(filter);
+    const totalPages = Math.ceil(totalCars / limit);
+
+    return sendResponse(
+        res,
+        true,
+        {
+            cars: formattedCars,
+            pagination: {
+                totalPages,
+                currentPage: page,
+                totalCars,
+                itemsPerPage: limit
+            }
+        },
+        "Zambia cars fetched successfully",
+        statusType.OK
+    );
+});
+
+// Get all Botswana Cars (website_state = true, return BWP prices)
+export const getAllBotswanaCars = asyncHandler(async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const filter = { website_state: true };
+
+    const cars = await Car.find(filter)
+        .populate("created_by", "name email")
+        .populate("updated_by", "name email")
+        .sort({ updatedAt: -1 })
+        .skip(skip)
+        .limit(limit);
+
+    // Format with Botswana currency (BWP)
+    const formattedCars = cars.map(car => ({
+        ...car.toObject(),
+        real_price: car.real_price_bwp,
+        actual_price: car.actual_price_bwp,
+        currency: "BWP"
+    }));
+
+    const totalCars = await Car.countDocuments(filter);
+    const totalPages = Math.ceil(totalCars / limit);
+
+    return sendResponse(
+        res,
+        true,
+        {
+            cars: formattedCars,
+            pagination: {
+                totalPages,
+                currentPage: page,
+                totalCars,
+                itemsPerPage: limit
+            }
+        },
+        "Botswana cars fetched successfully",
+        statusType.OK
+    );
+});
+
+
 // Get Single Car with Details and More Info
 export const getCar = asyncHandler(async (req, res) => {
     const { id } = req.params;

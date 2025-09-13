@@ -6,7 +6,9 @@ import {
     getCar,
     deleteCar,
     deleteMainImage,
-    deleteOtherImage
+    deleteOtherImage,
+    getAllZambiaCars,
+    getAllBotswanaCars
 } from "./CarsController.js";
 // import { protect } from "../middleware/authMiddleware.js";
 import upload from "../../middlewares/multer.middleware.js";
@@ -27,10 +29,16 @@ router
     )
     .get(getAllCars);
 
+router.get("/zambia", getAllZambiaCars);
+
+router.get("/botswana", getAllBotswanaCars);
+
 router.route("/:id").get(getCar).delete(deleteCar);
 
 router.route("/:id/main-image").delete(deleteMainImage);
 
 router.route("/:carId/other-images/:imageId").delete(deleteOtherImage);
+
+
 
 export default router;

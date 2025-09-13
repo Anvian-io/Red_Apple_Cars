@@ -37,12 +37,12 @@ export function Navbar() {
   };
 
   const toggleSearch = () => {
-    // setIsSearchActive(!isSearchActive);
-    // if (!isSearchActive) {
-    //   setTimeout(() => {
-    //     searchInputRef.current?.focus();
-    //   }, 100);
-    // }
+    setIsSearchActive(!isSearchActive);
+    if (!isSearchActive) {
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 100);
+    }
   };
 
   const navItems = [
@@ -77,14 +77,14 @@ export function Navbar() {
           {/* Logo - Always visible */}
           <Link href="/" className="flex items-center space-x-2 z-10 flex-shrink-0">
             {/* Replace with your image logo */}
-            <Image 
-              src="https://res.cloudinary.com/dp89draup/image/upload/v1757338015/real-red-apple_ncf7fx.png" 
+            {/* <Image 
+              src="/logo.png" 
               alt="Red Apple Cars" 
               width={120} 
               height={40} 
               className="h-8 w-auto object-contain"
-            />
-            {/* <Car className="h-8 w-8 text-primary" /> */}
+            /> */}
+            <Car className="h-8 w-8 text-primary" />
             <span className="text-text font-bold text-sm sm:text-base md:text-lg lg:text-xl">
               Red Apple Cars
             </span>
@@ -155,10 +155,25 @@ export function Navbar() {
             <Button
               variant="ghost"
               size="icon"
-              className="text-foreground hover:bg-accent"
+              className="text-foreground hover:bg-accent relative"
               aria-label="Favorites"
             >
               <Heart className="text-text h-5 w-5" />
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                3
+              </span>
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-foreground hover:bg-accent relative"
+              aria-label="Shopping cart"
+            >
+              <ShoppingCart className="text-text h-5 w-5" />
+              <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                2
+              </span>
             </Button>
 
             <Button
@@ -181,7 +196,8 @@ export function Navbar() {
             {isSearchActive && (
               <motion.div
                 ref={searchRef}
-                className="absolute inset-0 flex items-center justify-center bg-background z-0"
+                className="absolute inset-0 flex items-center justify-center bg-background z-20 md:z-0"
+
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -200,8 +216,17 @@ export function Navbar() {
                       ref={searchInputRef}
                       type="text"
                       placeholder="Search cars, models, brands..."
-                      className="pl-10 pr-4 py-2 rounded-full border-2 border-primary bg-background text-base w-full shadow-lg"
+                      className="pl-10 pr-4 py-3 rounded-full border-2 border-primary bg-background text-base w-full shadow-lg"
                     />
+                    <Button 
+                      className="absolute right-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-full h-8 w-20 text-sm"
+                      onClick={() => {
+                        // Handle search functionality
+                        console.log('Search initiated:', searchInputRef.current?.value);
+                      }}
+                    >
+                      Search
+                    </Button>
                   </div>
                 </motion.div>
               </motion.div>
@@ -213,16 +238,6 @@ export function Navbar() {
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-border bg-background">
             <div className="container mx-auto py-4 px-4">
-              {/* Mobile search */}
-              <div className="relative mb-4">
-                <Search className="text-text absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <input
-                  type="text"
-                  placeholder="Search cars..."
-                  className="pl-10 pr-4 py-2 rounded-md border border-input bg-background text-sm w-full"
-                />
-              </div>
-
               {/* Mobile nav items */}
               <nav className="flex flex-col space-y-4">
                 {navItems.map((item) => (
@@ -257,11 +272,26 @@ export function Navbar() {
                   </Button>
                 </div>
 
+                {/* Mobile search - simplified version */}
+                <div className="pt-4 border-t border-border">
+                  <div className="relative">
+                    <Search className="text-text absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <input
+                      type="text"
+                      placeholder="Search inventory..."
+                      className="pl-10 pr-4 py-2 rounded-md border border-input bg-background text-sm w-full"
+                    />
+                  </div>
+                </div>
+
                 {/* Contact info for mobile */}
                 <div className="pt-4 border-t border-border">
-                  <div className="flex items-center space-x-2 text-muted-foreground">
+                  <div className="flex items-center space-x-2 text-muted-foreground mb-2">
                     <Phone className="h-4 w-4" />
                     <span>+1 (555) 123-4567</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Mon-Fri: 9AM-6PM | Sat: 10AM-4PM
                   </div>
                 </div>
               </nav>
