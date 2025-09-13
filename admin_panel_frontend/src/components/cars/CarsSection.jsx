@@ -203,7 +203,7 @@ export function CarSection({ isExpanded }) {
         </div>
       </div>
 
-      <div className="mx-1 mt-6 rounded-md max-w-[99vw] border overflow-x-auto bg-tableBg">
+      <div className="mx-1 mt-6 rounded-md max-w-[94.5vw] border overflow-x-auto bg-tableBg">
         <Table className="min-w-[800px] lg:min-w-full">
           <TableCaption className="mb-2">A list of available cars</TableCaption>
           <TableHeader className="bg-hoverBg">
