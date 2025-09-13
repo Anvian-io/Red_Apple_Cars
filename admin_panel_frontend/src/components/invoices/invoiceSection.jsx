@@ -46,6 +46,7 @@ export function InvoiceSection({ isExpanded }) {
   const [invoiceToDelete, setInvoiceToDelete] = useState(null);
   const router = useRouter();
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const [isFixed, setIsFixed] = useState(false);
 
   const fetchInvoices = useCallback(async () => {
     try {
@@ -220,12 +221,14 @@ export function InvoiceSection({ isExpanded }) {
           </TableCaption>
           <TableHeader className="bg-hoverBg">
             <TableRow>
-              <TableHead className="w-[50px]">SR</TableHead>
+              <TableHead className="w-[50px]">Sr</TableHead>
               <TableHead className="w-[100px]">Invoice ID</TableHead>
               <TableHead className="w-[150px]">Customer Name</TableHead>
+              <TableHead className="w-[100px]">Car ID</TableHead>
               <TableHead className="w-[120px]">Car Name</TableHead>
               <TableHead className="w-[120px]">Car Company</TableHead>
-              <TableHead className="w-[100px]">Car ID</TableHead>
+              <TableHead className="w-[100px]">Invoice Status</TableHead>
+              <TableHead className="w-[100px]">Payment Type</TableHead>
               <TableHead className="w-[120px]">Created By</TableHead>
               <TableHead className="w-[120px]">Updated By</TableHead>
               <TableHead className="w-[100px]">Created At</TableHead>
@@ -245,9 +248,17 @@ export function InvoiceSection({ isExpanded }) {
                       {invoice?.invoice_index_id}
                     </TableCell>
                     <TableCell>{invoice?.customer_name}</TableCell>
+                    <TableCell>{invoice?.car_id?.car_index_id}</TableCell>
                     <TableCell>{invoice?.car_id?.name}</TableCell>
                     <TableCell>{invoice?.car_id?.car_company}</TableCell>
-                    <TableCell>{invoice?.car_id?.car_index_id}</TableCell>
+                    <TableCell>
+                    </TableCell>
+                    <TableCell>
+                        <select className="border rounded-lg px-3 py-1 focus:outline-none">
+                        <option value="Online">Online</option>
+                        <option value="Offline">Offline</option>
+                        </select>
+                    </TableCell>
                     <TableCell>{invoice?.created_by?.name}</TableCell>
                     <TableCell>{invoice?.updated_by?.name}</TableCell>
                     <TableCell>{formatDate(invoice?.createdAt)}</TableCell>

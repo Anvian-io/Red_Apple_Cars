@@ -14,8 +14,10 @@ export const createOrUpdateCar = asyncHandler(async (req, res) => {
         name,
         description,
         car_company,
-        real_price,
-        actual_price,
+        real_price_bwp,
+        actual_price_bwp,
+        real_price_zmw,
+        actual_price_zmw,
         website_state,
         status,
         // Details
@@ -52,12 +54,19 @@ export const createOrUpdateCar = asyncHandler(async (req, res) => {
     } = req.body;
 
     // Validate required fields
-    if (!name || !car_company || !real_price || !actual_price) {
+    if (
+        !name ||
+        !car_company ||
+        !real_price_bwp ||
+        !actual_price_bwp ||
+        !real_price_zmw ||
+        !actual_price_zmw
+    ) {
         return sendResponse(
             res,
             false,
             null,
-            "Name, company, real price, and actual price are required",
+            "Name, company, and all price fields are required",
             statusType.BAD_REQUEST
         );
     }
@@ -80,8 +89,10 @@ export const createOrUpdateCar = asyncHandler(async (req, res) => {
             car.name = name;
             car.description = description;
             car.car_company = car_company;
-            car.real_price = real_price;
-            car.actual_price = actual_price;
+            car.real_price_bwp = real_price_bwp;
+            car.actual_price_bwp = actual_price_bwp;
+            car.real_price_zmw = real_price_zmw;
+            car.actual_price_zmw = actual_price_zmw;
             car.website_state = website_state || car.website_state;
             car.status = status || car.status;
             car.updated_by = req.user._id;
@@ -184,21 +195,6 @@ export const createOrUpdateCar = asyncHandler(async (req, res) => {
             }
         } else {
             // Create new car
-            // Check if car with same name already exists
-            // const existingCar = await Car.findOne({ car_index_id }).session(session);
-
-            // if (existingCar) {
-            //     await session.abortTransaction();
-            //     session.endSession();
-            //     return sendResponse(
-            //         res,
-            //         false,
-            //         null,
-            //         "Car with this name already exists",
-            //         statusType.BAD_REQUEST
-            //     );
-            // }
-
             // Handle main image upload
             let mainImageUrl = null;
             if (req.files && req.files.main_image) {
@@ -214,8 +210,10 @@ export const createOrUpdateCar = asyncHandler(async (req, res) => {
                         name,
                         description,
                         car_company,
-                        real_price,
-                        actual_price,
+                        real_price_bwp,
+                        actual_price_bwp,
+                        real_price_zmw,
+                        actual_price_zmw,
                         main_image: mainImageUrl,
                         website_state: website_state || "draft",
                         status: status || "available",
