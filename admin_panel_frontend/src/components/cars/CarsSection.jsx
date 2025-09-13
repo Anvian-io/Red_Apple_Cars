@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/dialog";
 import Image from "next/image";
 import { CompanyInvoice } from "../invoices/CompanyInvoice";
+import { CarInfoPic } from "./CarInfoPic";
 
 export function CarSection({ isExpanded }) {
   const [addOrUpdateCar, setAddOrUpdateCar] = useState(false);
@@ -236,6 +237,9 @@ export function CarSection({ isExpanded }) {
                 Invoice
               </TableHead>
               <TableHead className="min-w-[120px] text-center">
+                Car Info Img
+              </TableHead>
+              <TableHead className="min-w-[120px] text-center">
                 Car Status
               </TableHead>
               <TableHead className="min-w-[150px] text-center">
@@ -283,6 +287,9 @@ export function CarSection({ isExpanded }) {
                     <TableCell className="text-center">{"dummy"}</TableCell>
                     <TableCell className="text-center">
                       <CompanyInvoice car={car} />
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <CarInfoPic car={car} />
                     </TableCell>
                     <TableCell className="text-center">
                       <Badge
