@@ -1,7 +1,7 @@
 // components/Carousel.js
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Box, Button, Typography, useTheme } from "@mui/material";
 import { useMediaQuery } from "@mui/material";
 import { ChevronLeft, ChevronRight, Circle } from "@mui/icons-material";
@@ -11,6 +11,8 @@ const Carousel = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   // Enhanced banner data with CTAs and product info
   const banners = [
@@ -72,6 +74,34 @@ const Carousel = () => {
     setCurrentSlide((prev) => (prev - 1 + banners.length) % banners.length);
   };
 
+  // Touch event handlers for mobile swipe
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    
+    const distance = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 50; // Minimum distance for a swipe to be registered
+
+    if (distance > minSwipeDistance) {
+      // Swipe left - go to next slide
+      goToNext();
+    } else if (distance < -minSwipeDistance) {
+      // Swipe right - go to previous slide
+      goToPrev();
+    }
+    
+    // Reset values
+    touchStartX.current = 0;
+    touchEndX.current = 0;
+  };
+
   const currentBanner = banners[currentSlide];
   const imageUrl = isMobile && currentBanner.image_url_mobile 
     ? currentBanner.image_url_mobile 
@@ -84,9 +114,13 @@ const Carousel = () => {
         width: "100%", 
         overflow: "hidden",
         height: isMobile ? "450px" : "650px",
+        touchAction: "pan-y" // Allow vertical scrolling but prevent horizontal
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       {/* Slide Container with Fade Transition */}
       <Box sx={{
@@ -128,7 +162,7 @@ const Carousel = () => {
               position: "relative",
               zIndex: 2,
               color: "white",
-              px:2,
+              px: 2,
               maxWidth: "600px",
               ml: isMobile ? 2 : 8,
               mt: isMobile ? 4 : 0
@@ -234,68 +268,72 @@ const Carousel = () => {
         ))}
       </Box>
 
-      {/* Navigation Arrows */}
-      <Box
-        onClick={goToPrev}
-        sx={{
-          position: "absolute",
-          top: "50%",
-          left: "20px",
-          transform: "translateY(-50%)",
-          backgroundColor: "rgba(255, 255, 255, 0.9)",
-          border: "none",
-          borderRadius: "50%",
-          width: "50px",
-          height: "50px",
-          color: "primary.main",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          zIndex: 10,
-          transition: "all 0.3s ease",
-          "&:hover": {
-            backgroundColor: "primary.main",
-            color: "white",
-            transform: "translateY(-50%) scale(1.1)"
-          },
-          boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
-        }}
-        aria-label="Previous slide"
-      >
-        <ChevronLeft sx={{ fontSize: 32 }} />
-      </Box>
+      {/* Navigation Arrows - Hidden on Mobile */}
+      {!isMobile && (
+        <>
+          <Box
+            onClick={goToPrev}
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "20px",
+              transform: "translateY(-50%)",
+              backgroundColor: "rgba(255, 255, 255, 0.9)",
+              border: "none",
+              borderRadius: "50%",
+              width: "50px",
+              height: "50px",
+              color: "primary.main",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 10,
+              transition: "all 0.3s ease",
+              "&:hover": {
+                backgroundColor: "primary.main",
+                color: "white",
+                transform: "translateY(-50%) scale(1.1)"
+              },
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
+            }}
+            aria-label="Previous slide"
+          >
+            <ChevronLeft sx={{ fontSize: 32 }} />
+          </Box>
 
-      <Box
-        onClick={goToNext}
-        sx={{
-          position: "absolute",
-          top: "50%",
-          right: "20px",
-          transform: "translateY(-50%)",
-          backgroundColor: "rgba(255, 255, 255, 0.9)",
-          border: "none",
-          borderRadius: "50%",
-          width: "50px",
-          height: "50px",
-          color: "primary.main",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          zIndex: 10,
-          transition: "all 0.3s ease",
-          "&:hover": {
-            backgroundColor: "primary.main",
-            color: "white",
-            transform: "translateY(-50%) scale(1.1)"
-          },
-          boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
-        }}
-        aria-label="Next slide"
-      >
-        <ChevronRight sx={{ fontSize: 32 }} />
-      </Box>
+          <Box
+            onClick={goToNext}
+            sx={{
+              position: "absolute",
+              top: "50%",
+              right: "20px",
+              transform: "translateY(-50%)",
+              backgroundColor: "rgba(255, 255, 255, 0.9)",
+              border: "none",
+              borderRadius: "50%",
+              width: "50px",
+              height: "50px",
+              color: "primary.main",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 10,
+              transition: "all 0.3s ease",
+              "&:hover": {
+                backgroundColor: "primary.main",
+                color: "white",
+                transform: "translateY(-50%) scale(1.1)"
+              },
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
+            }}
+            aria-label="Next slide"
+          >
+            <ChevronRight sx={{ fontSize: 32 }} />
+          </Box>
+        </>
+      )}
 
       {/* Progress Bar */}
       <Box sx={{

@@ -22,9 +22,9 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" className="overflow-x-hidden"> {/* Prevent horizontal scroll */}
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-y-hidden`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-y-hidden bg-background`} // <-- Add background color
       >
         <ThemeProvider
           attribute="class"
@@ -32,9 +32,9 @@ export default function RootLayout({ children }) {
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex flex-col h-screen">
+          <div className="flex flex-col h-screen overflow-x-hidden">
             <Navbar />
-            <main className="flex-1 overflow-y-auto">
+            <main className="flex-1 overflow-y-auto overflow-x-hidden">
               {children}
             </main>
           </div>
