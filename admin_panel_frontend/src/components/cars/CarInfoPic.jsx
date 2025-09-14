@@ -55,21 +55,22 @@ export function CarInfoPic({ car }) {
 
   return (
     <>
+    
       <Button
         variant="ghost"
         size="icon"
         title="View car image and details"
         onClick={() => setOpen(true)}
-        className="h-8 w-8"
+        className="h-8 w-8 "
       >
         <ImageIcon className="h-4 w-4" />
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <div>
-              <DialogTitle>Car Image and Details</DialogTitle>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-tableBg "> 
+          <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4 ">
+            <div className="text-white">
+              <DialogTitle  >Car Image and Details</DialogTitle>
               <DialogDescription>
                 {car.name} - {car.car_company}
               </DialogDescription>
@@ -222,27 +223,29 @@ export function CarInfoPic({ car }) {
           <div className="flex flex-wrap justify-between gap-2 mt-6 pt-4 border-t">
             <div className="flex flex-wrap gap-2">
               <Button
+            
                 onClick={() => handleDownloadImage("png")}
-                variant="outline"
+                variant="default"
                 size="sm"
-                className="flex items-center gap-1"
+                className="flex items-center gap-1 text-white"
               >
-                <Download className="h-4 w-4" />
+                <Download className="h-4 w-4 " />
                 Download as PNG
               </Button>
             </div>
-            <Button
+            <Button 
               onClick={handleDownloadPdf}
-              variant="outline"
+              variant="default"
               size="sm"
-              className="flex items-center gap-1"
+              className="flex items-center gap-1 text-white"
             >
-              <FileText className="h-4 w-4" />
+              <FileText className="h-4 w-4 bg" />
               Download PDF
             </Button>
           </div>
         </DialogContent>
       </Dialog>
+      
     </>
   );
 }
