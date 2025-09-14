@@ -41,15 +41,15 @@ export function FeedbackSection({ isExpanded }) {
   const fetchFeedbacks = useCallback(async () => {
     try {
       setIsSearching(isInitial === false);
-      
+
       const response = await getAllFeedback({
         page: currentPage,
         limit: itemsPerPage,
         search: debouncedSearchTerm
       });
-      
+
       console.log("API Response:", response);
-      
+
       if (response && response.data && response.data.status) {
         // The feedbacks are in response.data.data
         setFeedbacks(response.data.data);
@@ -62,7 +62,7 @@ export function FeedbackSection({ isExpanded }) {
         setTotalPages(0);
         toast.error("Failed to fetch testimonials");
       }
-      
+
       setLoading(false);
       setIsSearching(false);
     } catch (error) {
@@ -131,9 +131,8 @@ export function FeedbackSection({ isExpanded }) {
         {[...Array(5)].map((_, i) => (
           <Star
             key={i}
-            className={`h-4 w-4 ${
-              i < rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
-            }`}
+            className={`h-4 w-4 ${i < rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
+              }`}
           />
         ))}
         <span className="ml-1 text-sm text-muted-foreground">({rating})</span>
@@ -207,6 +206,7 @@ export function FeedbackSection({ isExpanded }) {
           </TableCaption>
           <TableHeader className="bg-hoverBg">
             <TableRow>
+              <TableHead className="w-[120px]">Image</TableHead>
               <TableHead className="w-[200px]">Customer</TableHead>
               <TableHead className="w-[300px]">Testimonial</TableHead>
               <TableHead className="w-[120px]">Rating</TableHead>
@@ -219,65 +219,82 @@ export function FeedbackSection({ isExpanded }) {
             {loading
               ? skeletonRows
               : feedbacks.map((feedback) => (
-                  <TableRow key={feedback._id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarFallback>
-                            <User className="h-5 w-5" />
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="font-medium">
-                            {feedback.CustomerName}
-                          </div>
+                <TableRow key={feedback._id}>
+                  <TableCell>
+                    {feedback.image ? (
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={feedback.image} alt={feedback.CustomerName} />
+                        <AvatarFallback>
+                          <User className="h-5 w-5" />
+                        </AvatarFallback>
+                      </Avatar>
+                    ) : (
+                      <Avatar className="h-10 w-10">
+                        <AvatarFallback>
+                          <User className="h-5 w-5" />
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
+                  </TableCell>
+
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarFallback>
+                          <User className="h-5 w-5" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-medium">
+                          {feedback.CustomerName}
                         </div>
                       </div>
-                    </TableCell>
-                    
-                    <TableCell className="max-w-xs">
-                      <div className="line-clamp-2">{feedback.Testimonial}</div>
-                    </TableCell>
-                    <TableCell>{renderRating(feedback.rating)}</TableCell>
-                    <TableCell>
-                      <Badge
-                        className={
-                          feedback.Status === "published"
-                            ? "bg-green-500"
-                            : "bg-gray-500"
-                        }
+                    </div>
+                  </TableCell>
+
+                  <TableCell className="max-w-xs">
+                    <div className="line-clamp-2">{feedback.Testimonial}</div>
+                  </TableCell>
+                  <TableCell>{renderRating(feedback.rating)}</TableCell>
+                  <TableCell>
+                    <Badge
+                      className={
+                        feedback.Status === "published"
+                          ? "bg-green-500"
+                          : "bg-gray-500"
+                      }
+                    >
+                      {feedback.Status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1 text-sm">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      {formatDate(feedback.createdAt)}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        onClick={() => handleEditFeedback(feedback._id)}
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
                       >
-                        {feedback.Status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1 text-sm">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        {formatDate(feedback.createdAt)}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          onClick={() => handleEditFeedback(feedback._id)}
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                        >
-                          <SquarePen className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          onClick={() => handleDeleteFeedback(feedback._id)}
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                        <SquarePen className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        onClick={() => handleDeleteFeedback(feedback._id)}
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       </div>

@@ -1,29 +1,52 @@
 import Feedback from "../../models/feedback.js";
-
-import { asyncHandler, sendResponse, statusType } from "../../utils/index.js";
+import mongoose from "mongoose";
+import { asyncHandler, sendResponse, statusType, uploadOnCloudinary } from "../../utils/index.js";
 
 // Create Role
 export const createOrUpdateFeedback = asyncHandler(async (req, res) => {
     const { feedback_id, CustomerName, Testimonial, rating, Status } = req.body;
+    const imageFile = req.files && req.files.image ? req.files.image[0] : null;
+    const imageUrl = imageFile ? await uploadOnCloudinary(imageFile.path) : null;
+    const image = imageUrl?.url;
 
+    
     // Validate input
-    if (!CustomerName || !Testimonial || !rating || !Status) {
+    if (!CustomerName || !Testimonial || !rating || !Status || !image) {
+
         return sendResponse(
             res,
             false,
             null,
-            "All fields are required",
+            "All fields are not required",
             statusType.BAD_REQUEST
         );
     }
 
     let feedback;
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    // try{
+    //     if(feedback_id){
+    //         //update existing feedback
+    //         feedback =await Feedback.findById(feedback_id).session(session);
+    //         if(!feedback){
+    //             await session.abortTransaction();
+    //             session.endSession();
+    //             return sendResponse(res, false, null, "feedback not found", statusType.NOT_FOUND);
+    //         }
+
+
+    //     }
+    // }catch(error){
+
+    // }
 
     if (feedback_id) {
         // ✅ Update existing feedback
         feedback = await Feedback.findByIdAndUpdate(
             feedback_id,
-            { CustomerName, Testimonial, rating, Status },
+            { CustomerName, Testimonial, rating, Status, image },
             { new: true, runValidators: true }
         );
 
@@ -42,7 +65,8 @@ export const createOrUpdateFeedback = asyncHandler(async (req, res) => {
             CustomerName,
             Testimonial,
             rating,
-            Status
+            Status,
+            image
         });
     }
 
