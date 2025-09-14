@@ -324,6 +324,44 @@ export const createOrUpdateCar = asyncHandler(async (req, res) => {
     }
 });
 
+//get all cars for user website 
+export const getAllCars_for_user = asyncHandler(async (req, res) => {
+    const cars = await Car.aggregate([
+        {
+            $match: {
+                website_state: true,
+                status: "unsold"
+            }
+        },
+        {
+            $sort: { createdAt: -1 }
+        },
+        {
+            $lookup: {
+                from: "cardetails", // collection name in MongoDB (always lowercase + pluralized)
+                localField: "_id",
+                foreignField: "car_id",
+                as: "details"
+            }
+        },
+        {
+            $unwind: {
+                path: "$details",
+                preserveNullAndEmptyArrays: true // keep cars even if no details
+            }
+        }
+    ]);
+
+    return sendResponse(
+        res,
+        true,
+        cars,
+        "All cars with details fetched successfully",
+        statusType.SUCCESS
+    );
+});
+
+
 // Get All Cars with Pagination and Search
 export const getAllCars = asyncHandler(async (req, res) => {
     const page = parseInt(req.query.page) || 1;

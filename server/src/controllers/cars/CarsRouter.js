@@ -8,7 +8,8 @@ import {
     deleteMainImage,
     deleteOtherImage,
     getAllZambiaCars,
-    getAllBotswanaCars
+    getAllBotswanaCars,
+    getAllCars_for_user
 } from "./CarsController.js";
 // import { protect } from "../middleware/authMiddleware.js";
 import upload from "../../middlewares/multer.middleware.js";
@@ -32,6 +33,10 @@ router
 router.get("/zambia", getAllZambiaCars);
 
 router.get("/botswana", getAllBotswanaCars);
+
+router.get("/getAll", getAllCars);
+
+router.get("/getAllUnsoldCars", getAllCars_for_user);
 
 router.route("/:id").get(getCar).delete(deleteCar);
 

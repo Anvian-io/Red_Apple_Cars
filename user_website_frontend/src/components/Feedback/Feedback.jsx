@@ -17,7 +17,7 @@ export default function Feedback() {
     const fetchFeedbacks = async () => {
       try {
         const response = await getAllFeedback();
-        console.log("API Response:", response);
+        
         // Map backend response to frontend structure
         const formattedFeedbacks = response?.data?.data?.map((fb) => ({
           name: fb.CustomerName,

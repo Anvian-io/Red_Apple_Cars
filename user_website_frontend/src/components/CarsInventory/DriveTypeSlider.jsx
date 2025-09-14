@@ -1,17 +1,16 @@
 "use client";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Search, Filter, X } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import CarCard from "./CarCard";
 
-export default function BodyTypeSlider({ allCars, bodyTypes }) {
-  const [activeBodyType, setActiveBodyType] = useState("All");
+export default function DriveTypeSlider({ allCars, driveTypes }) {
+  const [activeDriveType, setActiveDriveType] = useState("All");
   const [cardsToShow, setCardsToShow] = useState(3);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
-  const [priceRange, setPriceRange] = useState([0, 200000]);
+  const [priceRange, setPriceRange] = useState([0, 15000000]); // Increased range for your car prices
   const [yearRange, setYearRange] = useState([2010, 2024]);
-  const [showFilters, setShowFilters] = useState(false);
   const [cardWidth, setCardWidth] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
   const containerRef = useRef(null);
@@ -21,23 +20,27 @@ export default function BodyTypeSlider({ allCars, bodyTypes }) {
   // Filter cars
   const filteredCars = useMemo(() => {
     return allCars.filter((car) => {
-      const bodyTypeMatch =
-        activeBodyType === "All" || car.bodyType === activeBodyType;
+      const driveTypeMatch =
+        activeDriveType === "All" || car.driveType === activeDriveType;
 
       const searchMatch =
         searchTerm === "" ||
         car.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        car.bodyType.toLowerCase().includes(searchTerm.toLowerCase());
+        (car.driveType && car.driveType.toLowerCase().includes(searchTerm.toLowerCase()));
 
-      const numericPrice = parseInt(car.price.replace(/[^0-9]/g, ""));
-      const priceMatch =
-        numericPrice >= priceRange[0] && numericPrice <= priceRange[1];
+      // Use numericPrice for filtering instead of parsing formatted price
+      const priceMatch = car.numericPrice >= priceRange[0] && car.numericPrice <= priceRange[1];
 
       const yearMatch = car.year >= yearRange[0] && car.year <= yearRange[1];
 
-      return bodyTypeMatch && searchMatch && priceMatch && yearMatch;
+      return driveTypeMatch && searchMatch && priceMatch && yearMatch;
     });
-  }, [allCars, activeBodyType, searchTerm, priceRange, yearRange]);
+  }, [allCars, activeDriveType, searchTerm, priceRange, yearRange]);
+
+  // Log filtered cars for debugging
+  useEffect(() => {
+    console.log("Filtered cars:", filteredCars);
+  }, [filteredCars]);
 
   // Responsive cards count
   useEffect(() => {
@@ -55,12 +58,12 @@ export default function BodyTypeSlider({ allCars, bodyTypes }) {
 
   // Card width calc
   useEffect(() => {
-    if (containerRef.current) {
+    if (containerRef.current && filteredCars.length > 0) {
       const containerWidth = containerRef.current.offsetWidth;
-      const gap = 24; // gap-6
-      const calculatedWidth =
-        (containerWidth - gap * (cardsToShow - 1)) / cardsToShow - 40;
-      setCardWidth(calculatedWidth);
+      const gap = 24;
+      const calculatedWidth = ((containerWidth - gap * (cardsToShow - 1)) / cardsToShow) * 0.9;
+setCardWidth(calculatedWidth);
+
     }
   }, [cardsToShow, filteredCars]);
 
@@ -116,19 +119,19 @@ export default function BodyTypeSlider({ allCars, bodyTypes }) {
   return (
     <div className="mt-16">
       <h3 className="text-center text-xl md:text-2xl font-bold text-heading mb-8">
-        Explore by Body Type
+        Explore by Drive Type
       </h3>
 
-      {/* Body Type Filter Buttons */}
+      {/* Drive Type Filter Buttons */}
       <div className="flex justify-center flex-wrap gap-2 md:gap-4 mb-8 px-4">
-        {["All", ...bodyTypes].map((type, idx) => (
+        {["All", ...driveTypes].map((type, idx) => (
           <motion.button
             key={idx}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setActiveBodyType(type)}
+            onClick={() => setActiveDriveType(type)}
             className={`px-4 py-2 text-sm md:text-base rounded-full transition-colors ${
-              activeBodyType === type
+              activeDriveType === type
                 ? "bg-primary text-white"
                 : "bg-gray-100 text-gray-800 hover:bg-gray-200"
             }`}
@@ -154,10 +157,7 @@ export default function BodyTypeSlider({ allCars, bodyTypes }) {
                 animate={{ x: -currentIndex * (cardWidth + gap) }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 style={{
-                  width: `${
-                    filteredCars.length * cardWidth +
-                    (filteredCars.length - 1) * gap
-                  }px`,
+                  width: `${filteredCars.length * cardWidth + (filteredCars.length - 1) * gap}px`,
                 }}
               >
                 {filteredCars.map((car) => (
