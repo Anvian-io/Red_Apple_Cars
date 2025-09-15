@@ -13,11 +13,14 @@ import {
 } from "./CarsController.js";
 // import { protect } from "../middleware/authMiddleware.js";
 import upload from "../../middlewares/multer.middleware.js";
+import { verifyJWT } from "../../middlewares/auth.middleware.js";
+
 
 const router = express.Router();
 
 // All routes are protected
 // router.use(protect);
+
 
 router
     .route("/")
@@ -36,7 +39,7 @@ router.get("/botswana", getAllBotswanaCars);
 
 router.get("/getAll", getAllCars);
 
-router.get("/getAllUnsoldCars", getAllCars_for_user);
+
 
 router.route("/:id").get(getCar).delete(deleteCar);
 

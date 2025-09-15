@@ -3,6 +3,6 @@ import { handleApiResponse } from "@/helper/zindex";
 
 
 export const getAllCars = async (payload, router) => {
-  const response = await apiClient.get("/cars/getAllUnsoldCars", { params: payload });
+  const response = await apiClient.get("/carsWebsite/getAllUnsoldCars", { params: payload });
   return handleApiResponse(response, router);
 };
