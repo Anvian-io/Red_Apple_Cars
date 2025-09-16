@@ -68,7 +68,7 @@ export default function CarsInventory() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12 bg-background text-text">
+    <div className="container mx-auto px-4 py-10 bg-background text-text">
       <div className="text-center mb-12">
         <h2 className="text-2xl md:text-3xl font-bold text-heading">
           PREMIUM CARS
