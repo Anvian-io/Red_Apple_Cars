@@ -11,6 +11,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+import { Badge } from "../ui/badge";
+
+
 import { Skeleton } from "@/components/ui/skeleton";
 import SearchLoader from "@/components/custom_ui/SearchLoader";
 import { useRouter } from "next/navigation";
@@ -36,6 +39,7 @@ export function ServicesSection({ isExpanded }) {
     setCurrentPage(page);
   };
 
+
   const dummyServices = [
       {
         id: "1",
@@ -46,7 +50,7 @@ export function ServicesSection({ isExpanded }) {
       {
         id: "2",
         name: "SEO Optimization",
-        description: "Improve your search engine rankings.",
+        description: "Improve your  search engine rankings.",
         mainImage: "/images/seo.png",
       },
       {
@@ -56,6 +60,8 @@ export function ServicesSection({ isExpanded }) {
         mainImage: "/images/ecommerce.png",
       }]
 
+      const totalServices = dummyServices.length; 
+      const services = dummyServices;
 
   const skeletonRows = Array.from({ length: itemsPerPage }, (_, i) => (
     <TableRow key={i}>
@@ -137,29 +143,35 @@ export function ServicesSection({ isExpanded }) {
           <TableCaption className="mb-2">
             A list of website Services
           </TableCaption>
-          <TableHeader className="bg-hoverBg">
+          <TableHeader className="bg-hoverBg text-left">
             <TableRow>
-              <TableHead className="w-[50px]">Sr</TableHead>
-              <TableHead className="w-[100px]">Name</TableHead>
-              <TableHead className="w-[150px]">Description</TableHead>
-              <TableHead className="w-[100px]">Main image</TableHead>
+              <TableHead className="w-[90px]">Sr</TableHead>
+              <TableHead className="w-[500px]">Name</TableHead>
+              <TableHead className="w-[500px]">Description</TableHead>
+              <TableHead className="w-[500px]">Main image</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {loading
-              ? skeletonRows
-              : services.map((service, index) => (
-                  <TableRow key={service?._id}>
-                    <TableCell>
-                      {(currentPage - 1) * itemsPerPage + index + 1}
-                    </TableCell>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                  </TableRow>
-                ))}
-          </TableBody>
+                <TableBody>
+        {loading
+            ? skeletonRows
+            : services.map((service, index) => (
+                <TableRow key={service.id}>
+                <TableCell>
+                    {(currentPage - 1) * itemsPerPage + index + 1}
+                </TableCell>
+                <TableCell>{service.name}</TableCell>
+                <TableCell>{service.description}</TableCell>
+                <TableCell>
+                    <img
+                    src={service.mainImage}
+                    alt={service.name}
+                    className="h-12 w-12 object-cover rounded-md"
+                    />
+                </TableCell>
+                </TableRow>
+      ))}
+</TableBody>
+
         </Table>
       </div>
       {totalPages > 0 && (
