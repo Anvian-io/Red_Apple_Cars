@@ -140,6 +140,7 @@ export function CompanyInvoice({ car }) {
   const router = useRouter();
   const [showModifyDetails, setShowModifyDetails] = useState(false);
   const [generatedInvoiceData, setGeneratedInvoiceData] = useState(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false); // Add this state
 
   const handle_generate_invoice = async () => {
     try {
@@ -227,6 +228,7 @@ export function CompanyInvoice({ car }) {
       if (response.data) {
         toast.success("Details updated successfully");
         setShowModifyDetails(false);
+        setIsDialogOpen(false); // Close the dialog on success
       } else {
         toast.error(response.data.message || "Failed to update details");
       }
@@ -236,9 +238,18 @@ export function CompanyInvoice({ car }) {
     }
   };
 
+    const handleDialogOpenChange = (open) => {
+      setIsDialogOpen(open);
+      if (!open) {
+        // Reset state when dialog closes
+        setShowModifyDetails(false);
+        setGeneratedInvoiceData(null);
+      }
+    };
+
   return (
-    <Dialog>
-      <DialogTrigger asChild>
+    <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
+      <DialogTrigger asChild onClick={() => setIsDialogOpen(true)}  >
         <div className="flex justify-center cursor-pointer">
           <File size={20} />
         </div>

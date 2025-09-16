@@ -91,7 +91,6 @@ export const handleApiResponse = (response, router) => {
     response?.error == "Unauthorized request: Invalid access token" ||
     response?.error == "Unauthorized request: Token missing" ||
     response?.error == "Unauthorized request: Token verification failed" ||
-    response?.error == "jwt malformed" ||
     response?.error == "jwt expired"
   ) {
     localStorage.removeItem("User");

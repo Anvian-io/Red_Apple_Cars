@@ -93,10 +93,11 @@ export const createOrUpdateCar = asyncHandler(async (req, res) => {
             car.actual_price_bwp = actual_price_bwp;
             car.real_price_zmw = real_price_zmw;
             car.actual_price_zmw = actual_price_zmw;
-            car.website_state = website_state || car.website_state;
+            car.website_state = website_state;
             car.status = status || car.status;
             car.updated_by = req.user._id;
 
+            // console.log(car,"fwejoifhwoi")
             // Handle main image upload if provided
             if (req.files && req.files.main_image) {
                 // Delete old image if exists
@@ -324,6 +325,43 @@ export const createOrUpdateCar = asyncHandler(async (req, res) => {
     }
 });
 
+//get all cars for user website
+export const getAllCars_for_user = asyncHandler(async (req, res) => {
+    const cars = await Car.aggregate([
+        {
+            $match: {
+                website_state: true,
+                status: "unsold"
+            }
+        },
+        {
+            $sort: { createdAt: -1 }
+        },
+        {
+            $lookup: {
+                from: "cardetails", // collection name in MongoDB (always lowercase + pluralized)
+                localField: "_id",
+                foreignField: "car_id",
+                as: "details"
+            }
+        },
+        {
+            $unwind: {
+                path: "$details",
+                preserveNullAndEmptyArrays: true // keep cars even if no details
+            }
+        }
+    ]);
+
+    return sendResponse(
+        res,
+        true,
+        cars,
+        "All cars with details fetched successfully",
+        statusType.SUCCESS
+    );
+});
+
 // Get All Cars with Pagination and Search
 export const getAllCars = asyncHandler(async (req, res) => {
     const page = parseInt(req.query.page) || 1;
@@ -345,13 +383,83 @@ export const getAllCars = asyncHandler(async (req, res) => {
     if (status) filter.status = status;
     if (website_state) filter.website_state = website_state;
 
-    // Get cars with pagination
-    const cars = await Car.find(filter)
-        .populate("created_by", "name email")
-        .populate("updated_by", "name email")
-        .sort({ updatedAt: -1 })
-        .skip(skip)
-        .limit(limit);
+    // Get cars with related data using aggregation
+    const cars = await Car.aggregate([
+        { $match: filter },
+        {
+            $lookup: {
+                from: "cardetails",
+                localField: "_id",
+                foreignField: "car_id",
+                as: "details"
+            }
+        },
+        {
+            $lookup: {
+                from: "carmoreinfos",
+                localField: "_id",
+                foreignField: "car_id",
+                as: "moreInfo"
+            }
+        },
+        {
+            $lookup: {
+                from: "carimages",
+                localField: "_id",
+                foreignField: "car_id",
+                as: "images"
+            }
+        },
+        // Modified lookup for created_by with projection
+        {
+            $lookup: {
+                from: "users",
+                let: { createdById: "$created_by" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ["$_id", "$$createdById"] }
+                        }
+                    },
+                    {
+                        $project: {
+                            name: 1,
+                            _id: 1
+                        }
+                    }
+                ],
+                as: "created_by"
+            }
+        },
+        // Modified lookup for updated_by with projection
+        {
+            $lookup: {
+                from: "users",
+                let: { updatedById: "$updated_by" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ["$_id", "$$updatedById"] }
+                        }
+                    },
+                    {
+                        $project: {
+                            name: 1,
+                            _id: 1
+                        }
+                    }
+                ],
+                as: "updated_by"
+            }
+        },
+        { $unwind: { path: "$created_by", preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: "$updated_by", preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: "$details", preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: "$moreInfo", preserveNullAndEmptyArrays: true } },
+        { $sort: { updatedAt: -1 } },
+        { $skip: skip },
+        { $limit: limit }
+    ]);
 
     // Get total count
     const totalCars = await Car.countDocuments(filter);
@@ -370,6 +478,92 @@ export const getAllCars = asyncHandler(async (req, res) => {
             }
         },
         "Cars fetched successfully",
+        statusType.OK
+    );
+});
+
+// Get all Zambia Cars (website_state = true, return ZMW prices)
+export const getAllZambiaCars = asyncHandler(async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const filter = { website_state: true };
+
+    const cars = await Car.find(filter)
+        .populate("created_by", "name email")
+        .populate("updated_by", "name email")
+        .sort({ updatedAt: -1 })
+        .skip(skip)
+        .limit(limit);
+
+    // Format with Zambia currency (ZMW)
+    const formattedCars = cars.map((car) => ({
+        ...car.toObject(),
+        real_price: car.real_price_zmw,
+        actual_price: car.actual_price_zmw,
+        currency: "ZMW"
+    }));
+
+    const totalCars = await Car.countDocuments(filter);
+    const totalPages = Math.ceil(totalCars / limit);
+
+    return sendResponse(
+        res,
+        true,
+        {
+            cars: formattedCars,
+            pagination: {
+                totalPages,
+                currentPage: page,
+                totalCars,
+                itemsPerPage: limit
+            }
+        },
+        "Zambia cars fetched successfully",
+        statusType.OK
+    );
+});
+
+// Get all Botswana Cars (website_state = true, return BWP prices)
+export const getAllBotswanaCars = asyncHandler(async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const filter = { website_state: true };
+
+    const cars = await Car.find(filter)
+        .populate("created_by", "name email")
+        .populate("updated_by", "name email")
+        .sort({ updatedAt: -1 })
+        .skip(skip)
+        .limit(limit);
+
+    // Format with Botswana currency (BWP)
+    const formattedCars = cars.map((car) => ({
+        ...car.toObject(),
+        real_price: car.real_price_bwp,
+        actual_price: car.actual_price_bwp,
+        currency: "BWP"
+    }));
+
+    const totalCars = await Car.countDocuments(filter);
+    const totalPages = Math.ceil(totalCars / limit);
+
+    return sendResponse(
+        res,
+        true,
+        {
+            cars: formattedCars,
+            pagination: {
+                totalPages,
+                currentPage: page,
+                totalCars,
+                itemsPerPage: limit
+            }
+        },
+        "Botswana cars fetched successfully",
         statusType.OK
     );
 });
@@ -488,3 +682,39 @@ export const deleteOtherImage = asyncHandler(async (req, res) => {
 
     return sendResponse(res, true, null, "Image deleted successfully", statusType.OK);
 });
+
+// // Add import at the top
+// import { createNotification } from "../../utils/notificationHelper.js";
+
+// // Inside createOrUpdateCar function, after successful operations:
+// // Add after session.commitTransaction() in the try block:
+
+// // Create notification for car creation/update
+// const notificationType = car_id ? "car_updated" : "car_created";
+// const notificationTitle = car_id ? "Car Updated" : "New Car Added";
+// const notificationMessage = car_id
+//     ? `Car "${name}" has been updated by ${req.user.name}`
+//     : `New car "${name}" has been added by ${req.user.name}`;
+
+// await createNotification({
+//     title: notificationTitle,
+//     message: notificationMessage,
+//     type: notificationType,
+//     related_model: "Car",
+//     related_id: car._id,
+//     recipient: req.user._id, // Or send to admin users if needed
+//     priority: "medium"
+// });
+
+// // You can also add notification for car status changes
+// if (status === "sold") {
+//     await createNotification({
+//         title: "Car Sold",
+//         message: `Car "${name}" has been marked as sold by ${req.user.name}`,
+//         type: "car_sold",
+//         related_model: "Car",
+//         related_id: car._id,
+//         recipient: req.user._id,
+//         priority: "high"
+//     });
+// }
