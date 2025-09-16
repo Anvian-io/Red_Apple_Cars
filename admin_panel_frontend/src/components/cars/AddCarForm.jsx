@@ -208,7 +208,7 @@ export function AddCarForm({ open, onOpenChange, onCarCreated, carData }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="text-text sm:max-w-3xl max-h-[90vh] overflow-y-auto bg-cardBg">
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit Car" : "Add New Car"}</DialogTitle>
           <DialogDescription>
@@ -231,13 +231,18 @@ export function AddCarForm({ open, onOpenChange, onCarCreated, carData }) {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Car Name</Label>
-                    <Input id="name" {...register("name", { required: "Car name is required" })} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="name"
+                      {...register("name", { required: "Car name is required" })}
+                    />
                     {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="car_company">Brand/Company</Label>
                     <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
                       id="car_company"
                       {...register("car_company", {
                         required: "Car company is required"
@@ -255,6 +260,7 @@ export function AddCarForm({ open, onOpenChange, onCarCreated, carData }) {
                   <div className="space-y-2">
                     <Label htmlFor="real_price_bwp">Real Price (Botswana)</Label>
                     <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
                       id="real_price_bwp"
                       type="number"
                       {...register("real_price_bwp", {
@@ -270,6 +276,7 @@ export function AddCarForm({ open, onOpenChange, onCarCreated, carData }) {
                   <div className="space-y-2">
                     <Label htmlFor="actual_price_bwp">Actual Price (Botswana)</Label>
                     <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
                       id="actual_price_bwp"
                       type="number"
                       {...register("actual_price_bwp", {
@@ -286,6 +293,7 @@ export function AddCarForm({ open, onOpenChange, onCarCreated, carData }) {
                   <div className="space-y-2">
                     <Label htmlFor="real_price_zmw">Real Price (Zambia)</Label>
                     <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
                       id="real_price_zmw"
                       type="number"
                       {...register("real_price_zmw", {
@@ -301,6 +309,7 @@ export function AddCarForm({ open, onOpenChange, onCarCreated, carData }) {
                   <div className="space-y-2">
                     <Label htmlFor="actual_price_zmw">Actual Price (Zambia)</Label>
                     <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
                       id="actual_price_zmw"
                       type="number"
                       {...register("actual_price_zmw", {
@@ -357,67 +366,119 @@ export function AddCarForm({ open, onOpenChange, onCarCreated, carData }) {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="year">Year</Label>
-                    <Input id="year" {...register("details.year")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="year"
+                      {...register("details.year")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="engine_type">Engine Type</Label>
-                    <Input id="engine_type" {...register("details.engine_type")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="engine_type"
+                      {...register("details.engine_type")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="engine_size">Engine Size</Label>
-                    <Input id="engine_size" {...register("details.engine_size")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="engine_size"
+                      {...register("details.engine_size")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="transmission">Transmission</Label>
-                    <Input id="transmission" {...register("details.transmission")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="transmission"
+                      {...register("details.transmission")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="color">Color</Label>
-                    <Input id="color" {...register("details.color")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="color"
+                      {...register("details.color")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="fuel">Fuel</Label>
-                    <Input id="fuel" {...register("details.fuel")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="fuel"
+                      {...register("details.fuel")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="mileage">Mileage</Label>
-                    <Input id="mileage" {...register("details.mileage")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="mileage"
+                      {...register("details.mileage")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="drive">Drive</Label>
-                    <Input id="drive" {...register("details.drive")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="drive"
+                      {...register("details.drive")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="option">Option</Label>
-                    <Input id="option" {...register("details.option")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="option"
+                      {...register("details.option")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="location">Location</Label>
-                    <Input id="location" {...register("details.location")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="location"
+                      {...register("details.location")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="condition">Condition</Label>
-                    <Input id="condition" {...register("details.condition")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="condition"
+                      {...register("details.condition")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="duty">Duty</Label>
-                    <Input id="duty" {...register("details.duty")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="duty"
+                      {...register("details.duty")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="stock_no">Stock No</Label>
-                    <Input id="stock_no" {...register("details.stock_no")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="stock_no"
+                      {...register("details.stock_no")}
+                    />
                   </div>
                 </div>
               </TabsContent>
@@ -426,82 +487,147 @@ export function AddCarForm({ open, onOpenChange, onCarCreated, carData }) {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="Tp">TP</Label>
-                    <Input id="Tp" {...register("moreInfo.Tp")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="Tp"
+                      {...register("moreInfo.Tp")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="cost">Cost</Label>
-                    <Input id="cost" {...register("moreInfo.cost")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="cost"
+                      {...register("moreInfo.cost")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="duty">Duty</Label>
-                    <Input id="duty" {...register("moreInfo.duty")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="duty"
+                      {...register("moreInfo.duty")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="t_cost">Total Cost</Label>
-                    <Input id="t_cost" {...register("moreInfo.t_cost")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="t_cost"
+                      {...register("moreInfo.t_cost")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="exr">Exchange Rate</Label>
-                    <Input id="exr" {...register("moreInfo.exr")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="exr"
+                      {...register("moreInfo.exr")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="k_price">K Price</Label>
-                    <Input id="k_price" {...register("moreInfo.k_price")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="k_price"
+                      {...register("moreInfo.k_price")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="sold_price">Sold Price</Label>
-                    <Input id="sold_price" {...register("moreInfo.sold_price")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="sold_price"
+                      {...register("moreInfo.sold_price")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="discount">Discount</Label>
-                    <Input id="discount" {...register("moreInfo.discount")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="discount"
+                      {...register("moreInfo.discount")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="profit">Profit</Label>
-                    <Input id="profit" {...register("moreInfo.profit")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="profit"
+                      {...register("moreInfo.profit")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="comm">Commission</Label>
-                    <Input id="comm" {...register("moreInfo.comm")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="comm"
+                      {...register("moreInfo.comm")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="net_profit">Net Profit</Label>
-                    <Input id="net_profit" {...register("moreInfo.net_profit")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="net_profit"
+                      {...register("moreInfo.net_profit")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="sold_date">Sold Date</Label>
-                    <Input id="sold_date" type="date" {...register("moreInfo.sold_date")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="sold_date"
+                      type="date"
+                      {...register("moreInfo.sold_date")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="sold_by">Sold By</Label>
-                    <Input id="sold_by" {...register("moreInfo.sold_by")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="sold_by"
+                      {...register("moreInfo.sold_by")}
+                    />
                   </div>
 
                   <div className="space-y-2 col-span-2">
                     <Label htmlFor="customer_name">Customer Name</Label>
-                    <Input id="customer_name" {...register("moreInfo.customer_name")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="customer_name"
+                      {...register("moreInfo.customer_name")}
+                    />
                   </div>
 
                   <div className="space-y-2 col-span-2">
                     <Label htmlFor="customer_address">Customer Address</Label>
-                    <Input id="customer_address" {...register("moreInfo.customer_address")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="customer_address"
+                      {...register("moreInfo.customer_address")}
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="customer_phone_no">Customer Phone</Label>
-                    <Input id="customer_phone_no" {...register("moreInfo.customer_phone_no")} />
+                    <Input
+                      className="border-border focus:outline-none focus:ring-0 focus:border-border"
+                      id="customer_phone_no"
+                      {...register("moreInfo.customer_phone_no")}
+                    />
                   </div>
                 </div>
               </TabsContent>
