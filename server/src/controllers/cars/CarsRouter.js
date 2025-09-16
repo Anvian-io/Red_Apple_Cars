@@ -15,23 +15,20 @@ import {
 import upload from "../../middlewares/multer.middleware.js";
 import { verifyJWT } from "../../middlewares/auth.middleware.js";
 
-
 const router = express.Router();
 
 // All routes are protected
 // router.use(protect);
 
+router.route("/").get(getAllCars);
 
-router
-    .route("/")
-    .post(
-        upload.fields([
-            { name: "main_image", maxCount: 1 },
-            { name: "other_images", maxCount: 10 }
-        ]),
-        createOrUpdateCar
-    )
-    .get(getAllCars);
+router.post("/create",
+    upload.fields([
+        { name: "main_image", maxCount: 1 },
+        { name: "other_images", maxCount: 10 }
+    ]),
+    createOrUpdateCar
+);
 
 router.get("/zambia", getAllZambiaCars);
 
@@ -39,14 +36,10 @@ router.get("/botswana", getAllBotswanaCars);
 
 router.get("/getAll", getAllCars);
 
-
-
 router.route("/:id").get(getCar).delete(deleteCar);
 
 router.route("/:id/main-image").delete(deleteMainImage);
 
 router.route("/:carId/other-images/:imageId").delete(deleteOtherImage);
-
-
 
 export default router;

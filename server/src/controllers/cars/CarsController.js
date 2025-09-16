@@ -93,10 +93,11 @@ export const createOrUpdateCar = asyncHandler(async (req, res) => {
             car.actual_price_bwp = actual_price_bwp;
             car.real_price_zmw = real_price_zmw;
             car.actual_price_zmw = actual_price_zmw;
-            car.website_state = website_state || car.website_state;
+            car.website_state = website_state;
             car.status = status || car.status;
             car.updated_by = req.user._id;
 
+            // console.log(car,"fwejoifhwoi")
             // Handle main image upload if provided
             if (req.files && req.files.main_image) {
                 // Delete old image if exists

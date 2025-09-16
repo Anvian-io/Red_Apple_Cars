@@ -1,5 +1,5 @@
 "use client";
-
+import DOMPurify from "dompurify";
 import React, { useState, useEffect, useCallback } from "react";
 import { SecondaryHeader } from "..";
 import {
@@ -35,10 +35,11 @@ import { CompanyInvoice } from "../invoices/CompanyInvoice";
 import { CarInfoPic } from "./CarInfoPic";
 import { CarDetailsDialog } from "./CarDetailsDialog";
 import { CarMoreInfoDialog } from "./CarMoreInfoDialog";
+import { CrudDetailsHoverCard } from "..";
 
 export function CarSection({ isExpanded }) {
   const [addOrUpdateCar, setAddOrUpdateCar] = useState(false);
-  const [currentCarId, setCurrentCarId] = useState(null);
+  const [currentCarData, setCurrentCarData] = useState(null);
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalPages, setTotalPages] = useState(0);
@@ -108,18 +109,14 @@ export function CarSection({ isExpanded }) {
   };
 
   const handleEditCar = (carId) => {
-    setCurrentCarId(carId);
+    const carToEdit = cars.find((car) => car._id === carId);
+    setCurrentCarData(carToEdit);
     setAddOrUpdateCar(true);
   };
 
   const handleAddCar = () => {
-    setCurrentCarId(null);
+    setCurrentCarData(null);
     setAddOrUpdateCar(true);
-  };
-
-  const handleViewCar = (car) => {
-    setCarToView(car);
-    setViewDialogOpen(true);
   };
 
   const handleViewDetails = (car) => {
@@ -247,17 +244,14 @@ export function CarSection({ isExpanded }) {
               <TableHead className="min-w-[120px] text-center">Real Price (ZMW)</TableHead>
               <TableHead className="min-w-[120px] text-center">Actual Price (ZMW)</TableHead>
               <TableHead className="min-w-[150px] text-center">Main Image</TableHead>
-              <TableHead className="min-w-[150px] text-center">Other Images</TableHead>
+              <TableHead className="min-w-[250px] text-center">Other Images</TableHead>
               <TableHead className="min-w-[120px] text-center">Invoice</TableHead>
               <TableHead className="min-w-[120px] text-center">Car Info Img</TableHead>
               <TableHead className="min-w-[120px] text-center">Car Details</TableHead>
               <TableHead className="min-w-[120px] text-center">More Info</TableHead>
               <TableHead className="min-w-[120px] text-center">Car Status</TableHead>
               <TableHead className="min-w-[150px] text-center">Website State</TableHead>
-              <TableHead className="min-w-[150px]">Created At</TableHead>
-              <TableHead className="min-w-[150px]">Created By</TableHead>
-              <TableHead className="min-w-[150px]">Updated At</TableHead>
-              <TableHead className="min-w-[150px]">Updated By</TableHead>
+              <TableHead className="min-w-[180px] text-center">History</TableHead>
               <TableHead className="min-w-[120px] text-center">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -270,9 +264,10 @@ export function CarSection({ isExpanded }) {
                     <TableCell>{car?.car_index_id}</TableCell>
                     <TableCell>{car?.name}</TableCell>
                     <TableCell className="text-muted-foreground">
-                      {car?.description?.length > 50
-                        ? `${car.description.substring(0, 50)}...`
-                        : car?.description || "No description"}
+                      <div
+                        className="h-24 overflow-y-auto prose prose-sm"
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(car?.description) }}
+                      />
                     </TableCell>
                     <TableCell className="text-center">{car?.car_company}</TableCell>
                     <TableCell className="text-center">
@@ -294,23 +289,23 @@ export function CarSection({ isExpanded }) {
                           alt="Main"
                           width={50}
                           height={50}
-                          className="mx-auto rounded"
+                          className="mx-auto rounded w-28 h-20"
                         />
                       ) : (
                         "No image"
                       )}
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-center w-full">
                       {car?.images && car.images.length > 0 ? (
-                        <div className="flex flex-wrap justify-center gap-1">
-                          {car.images.slice(0, 3).map((img, idx) => (
+                        <div className="flex overflow-x-auto gap-1">
+                          {car.images.map((img, idx) => (
                             <Image
                               key={idx}
                               src={img.image_url}
                               alt={`Other ${idx + 1}`}
-                              width={30}
-                              height={30}
-                              className="rounded"
+                              width={50}
+                              height={50}
+                              className="rounded w-28 h-20"
                             />
                           ))}
                           {car.images.length > 3 && (
@@ -351,10 +346,10 @@ export function CarSection({ isExpanded }) {
                       <Badge
                         className={
                           car?.status == "sold"
-                            ? "bg-green-500"
+                            ? "bg-green-100 text-green-700 border border-green-400"
                             : car.status == "unsold"
-                            ? "bg-red-500"
-                            : "bg-yellow-500"
+                            ? "bg-red-100 text-red-700 border border-red-400"
+                            : "bg-yellow-50 text-yellow-600 border border-yellow-300"
                         }
                       >
                         {car?.status === "sold"
@@ -369,20 +364,11 @@ export function CarSection({ isExpanded }) {
                         {car?.website_state ? "Active" : "Inactive"}
                       </Badge>
                     </TableCell>
-                    <TableCell>{formatDate(car?.createdAt)}</TableCell>
-                    <TableCell>{car?.created_by?.name}</TableCell>
-                    <TableCell>{formatDate(car?.updatedAt)}</TableCell>
-                    <TableCell>{car?.updated_by?.name}</TableCell>
+                    <TableCell>
+                      <CrudDetailsHoverCard car={car}>View Details</CrudDetailsHoverCard>
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button
-                          onClick={() => handleViewCar(car)}
-                          variant="ghost"
-                          size="icon"
-                          title="View car details"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
                         <Button
                           onClick={() => handleEditCar(car._id)}
                           variant="ghost"
@@ -424,7 +410,7 @@ export function CarSection({ isExpanded }) {
           open={addOrUpdateCar}
           onOpenChange={setAddOrUpdateCar}
           onCarCreated={fetchCars}
-          carId={currentCarId}
+          carData={currentCarData}
         />
       )}
 
@@ -448,98 +434,6 @@ export function CarSection({ isExpanded }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* View Car Details Dialog */}
-      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-        <DialogContent className="sm:max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>Car Details</DialogTitle>
-            <DialogDescription>Detailed information about {carToView?.name}</DialogDescription>
-          </DialogHeader>
-          {carToView && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-              <div className="flex flex-col items-center justify-center p-4 border rounded-lg">
-                {carToView.main_image ? (
-                  <Image
-                    src={carToView.main_image}
-                    alt={carToView.name}
-                    width={300}
-                    height={200}
-                    className="rounded-md object-cover"
-                  />
-                ) : (
-                  <div className="flex items-center justify-center w-64 h-40 bg-muted rounded-md">
-                    <Car className="h-16 w-16 text-muted-foreground" />
-                  </div>
-                )}
-                <h3 className="text-xl font-bold mt-4">{carToView.name}</h3>
-                <p className="text-muted-foreground">{carToView.car_company}</p>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <h4 className="font-semibold">Description</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {carToView.description || "No description available"}
-                  </p>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="font-semibold">Real Price (BWP)</h4>
-                    <p className="text-sm">{formatPrice(carToView.real_price_bwp, "BWP")}</p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">Actual Price (BWP)</h4>
-                    <p className="text-sm">{formatPrice(carToView.actual_price_bwp, "BWP")}</p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">Real Price (ZMW)</h4>
-                    <p className="text-sm">{formatPrice(carToView.real_price_zmw, "ZMW")}</p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">Actual Price (ZMW)</h4>
-                    <p className="text-sm">{formatPrice(carToView.actual_price_zmw, "ZMW")}</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="font-semibold">Status</h4>
-                    <Badge
-                      className={
-                        carToView?.status == "sold"
-                          ? "bg-green-500"
-                          : carToView.status == "unsold"
-                          ? "bg-red-500"
-                          : "bg-yellow-500"
-                      }
-                    >
-                      {carToView?.status === "sold"
-                        ? "Sold"
-                        : carToView.status == "unsold"
-                        ? "Un Sold"
-                        : "Pending"}
-                    </Badge>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">Website State</h4>
-                    <Badge className={carToView.website_state ? "bg-green-500" : "bg-red-500"}>
-                      {carToView.website_state ? "Visible" : "Hidden"}
-                    </Badge>
-                  </div>
-                </div>
-                <div>
-                  <h4 className="font-semibold">Car ID</h4>
-                  <p className="text-sm font-mono">{carToView.car_index_id}</p>
-                </div>
-                <div>
-                  <h4 className="font-semibold">Last Updated</h4>
-                  <p className="text-sm">{formatDate(carToView.updatedAt)}</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
       {/* Car Details Dialog */}
       <CarDetailsDialog
         open={detailsDialogOpen}
