@@ -9,9 +9,9 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
+  TableRow
 } from "@/components/ui/table";
-import { SquarePen, Trash2, Eye, Car, ChevronDown, ChevronUp } from "lucide-react";
+import { SquarePen, Trash2, Eye, Car, FileText, Info } from "lucide-react";
 import { Button } from "../ui/button";
 import { CustomPagination } from "..";
 import { Badge } from "../ui/badge";
@@ -28,11 +28,13 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
+  DialogFooter
 } from "@/components/ui/dialog";
 import Image from "next/image";
 import { CompanyInvoice } from "../invoices/CompanyInvoice";
 import { CarInfoPic } from "./CarInfoPic";
+import { CarDetailsDialog } from "./CarDetailsDialog";
+import { CarMoreInfoDialog } from "./CarMoreInfoDialog";
 
 export function CarSection({ isExpanded }) {
   const [addOrUpdateCar, setAddOrUpdateCar] = useState(false);
@@ -50,8 +52,9 @@ export function CarSection({ isExpanded }) {
   const [carToDelete, setCarToDelete] = useState(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [carToView, setCarToView] = useState(null);
-  const [hovered, setHovered] = useState(false);
-  const [showExtraRows, setShowExtraRows] = useState(true);
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [moreInfoDialogOpen, setMoreInfoDialogOpen] = useState(false);
+  const [selectedCar, setSelectedCar] = useState(null);
   const router = useRouter();
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
@@ -61,7 +64,7 @@ export function CarSection({ isExpanded }) {
       const payload = {
         search: debouncedSearchTerm,
         limit: itemsPerPage,
-        page: currentPage,
+        page: currentPage
       };
       const response = await getAllCars(payload, router);
       if (response.data.status) {
@@ -100,7 +103,7 @@ export function CarSection({ isExpanded }) {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency,
-      currencyDisplay: "symbol",
+      currencyDisplay: "symbol"
     }).format(price);
   };
 
@@ -117,6 +120,16 @@ export function CarSection({ isExpanded }) {
   const handleViewCar = (car) => {
     setCarToView(car);
     setViewDialogOpen(true);
+  };
+
+  const handleViewDetails = (car) => {
+    setSelectedCar(car);
+    setDetailsDialogOpen(true);
+  };
+
+  const handleViewMoreInfo = (car) => {
+    setSelectedCar(car);
+    setMoreInfoDialogOpen(true);
   };
 
   const handlePageChange = (page) => {
@@ -166,6 +179,18 @@ export function CarSection({ isExpanded }) {
       <TableCell className="text-center">
         <Skeleton className="h-4 w-20 bg-border mx-auto" />
       </TableCell>
+      <TableCell className="text-center">
+        <Skeleton className="h-4 w-20 bg-border mx-auto" />
+      </TableCell>
+      <TableCell className="text-center">
+        <Skeleton className="h-8 w-8 bg-border mx-auto" />
+      </TableCell>
+      <TableCell className="text-center">
+        <Skeleton className="h-8 w-8 bg-border mx-auto" />
+      </TableCell>
+      <TableCell className="text-center">
+        <Skeleton className="h-8 w-8 bg-border mx-auto" />
+      </TableCell>
       <TableCell className="text-right">
         <div className="flex justify-end gap-2">
           <Skeleton className="h-8 w-8 bg-border" />
@@ -190,37 +215,22 @@ export function CarSection({ isExpanded }) {
         onButtonClick={handleAddCar}
         onMobileButtonClick={handleAddCar}
         onSearch={handleSearch}
-        
-        
       />
-   
 
-   <div className="px-1 flex justify-between items-center mt-4">
-  <div className="flex items-center gap-4">
-    {loading ? (
-      <Skeleton className="h-5 w-40 bg-border rounded-md" />
-    ) : totalCars > 0 ? (
-      <Badge className="bg-hoverBg">
-        Showing {(currentPage - 1) * itemsPerPage + 1}-
-        {Math.min(currentPage * itemsPerPage, totalCars)} of {totalCars} Cars
-      </Badge>
-    ) : (
-      <Badge className="bg-hoverBg">No Cars Found</Badge>
-    )}
-
-
-    <Button
-    className="bg-primary"
-      size="sm"
-      
-      onClick={() => setShowExtraRows(!showExtraRows)}
-    >
-      {showExtraRows ? "Hide Extra Info" : "Show Extra Info"}
-    </Button>
-  </div>
-</div>
-
-
+      <div className="px-1 flex justify-between items-center mt-4">
+        <div className="flex items-center gap-4">
+          {loading ? (
+            <Skeleton className="h-5 w-40 bg-border rounded-md" />
+          ) : totalCars > 0 ? (
+            <Badge className="bg-hoverBg">
+              Showing {(currentPage - 1) * itemsPerPage + 1}-
+              {Math.min(currentPage * itemsPerPage, totalCars)} of {totalCars} Cars
+            </Badge>
+          ) : (
+            <Badge className="bg-hoverBg">No Cars Found</Badge>
+          )}
+        </div>
+      </div>
 
       <div className="mx-1 mt-6 rounded-md max-w-[94.5vw] border overflow-x-auto bg-tableBg">
         <Table className="min-w-[800px] lg:min-w-full">
@@ -240,6 +250,8 @@ export function CarSection({ isExpanded }) {
               <TableHead className="min-w-[150px] text-center">Other Images</TableHead>
               <TableHead className="min-w-[120px] text-center">Invoice</TableHead>
               <TableHead className="min-w-[120px] text-center">Car Info Img</TableHead>
+              <TableHead className="min-w-[120px] text-center">Car Details</TableHead>
+              <TableHead className="min-w-[120px] text-center">More Info</TableHead>
               <TableHead className="min-w-[120px] text-center">Car Status</TableHead>
               <TableHead className="min-w-[150px] text-center">Website State</TableHead>
               <TableHead className="min-w-[150px]">Created At</TableHead>
@@ -253,8 +265,7 @@ export function CarSection({ isExpanded }) {
             {loading
               ? skeletonRows
               : cars.map((car, index) => (
-                <React.Fragment key={car?._id}>
-                  <TableRow>
+                  <TableRow key={car?._id} className="bg-white hover:bg-hoverBg/50">
                     <TableCell className="font-medium">{index + 1}</TableCell>
                     <TableCell>{car?.car_index_id}</TableCell>
                     <TableCell>{car?.name}</TableCell>
@@ -276,13 +287,81 @@ export function CarSection({ isExpanded }) {
                     <TableCell className="text-center">
                       {formatPrice(car?.actual_price_zmw, "ZMW")}
                     </TableCell>
-                    <TableCell className="text-center">{"dummy"}</TableCell>
-                    <TableCell className="text-center">{"dummy"}</TableCell>
-                    <TableCell className="text-center"><CompanyInvoice car={car} /></TableCell>
-                    <TableCell className="text-center"><CarInfoPic car={car} /></TableCell>
                     <TableCell className="text-center">
-                      <Badge className={car?.status == "sold" ? "bg-green-500" : car.status == "unsold" ? "bg-red-500" : "bg-yellow-500"}>
-                        {car?.status === "sold" ? "Sold" : car.status == "unsold" ? "Un Sold" : "Pending"}
+                      {car?.main_image ? (
+                        <Image
+                          src={car.main_image}
+                          alt="Main"
+                          width={50}
+                          height={50}
+                          className="mx-auto rounded"
+                        />
+                      ) : (
+                        "No image"
+                      )}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {car?.images && car.images.length > 0 ? (
+                        <div className="flex flex-wrap justify-center gap-1">
+                          {car.images.slice(0, 3).map((img, idx) => (
+                            <Image
+                              key={idx}
+                              src={img.image_url}
+                              alt={`Other ${idx + 1}`}
+                              width={30}
+                              height={30}
+                              className="rounded"
+                            />
+                          ))}
+                          {car.images.length > 3 && (
+                            <Badge variant="secondary">+{car.images.length - 3}</Badge>
+                          )}
+                        </div>
+                      ) : (
+                        "No images"
+                      )}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <CompanyInvoice car={car} />
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <CarInfoPic car={car} />
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleViewDetails(car)}
+                        title="View car details"
+                      >
+                        <Info className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleViewMoreInfo(car)}
+                        title="View more information"
+                      >
+                        <FileText className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge
+                        className={
+                          car?.status == "sold"
+                            ? "bg-green-500"
+                            : car.status == "unsold"
+                            ? "bg-red-500"
+                            : "bg-yellow-500"
+                        }
+                      >
+                        {car?.status === "sold"
+                          ? "Sold"
+                          : car.status == "unsold"
+                          ? "Un Sold"
+                          : "Pending"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-center">
@@ -296,74 +375,35 @@ export function CarSection({ isExpanded }) {
                     <TableCell>{car?.updated_by?.name}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button onClick={() => handleViewCar(car)} variant="ghost" size="icon" title="View car details">
+                        <Button
+                          onClick={() => handleViewCar(car)}
+                          variant="ghost"
+                          size="icon"
+                          title="View car details"
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button onClick={() => handleEditCar(car._id)} variant="ghost" size="icon" title="Edit car">
+                        <Button
+                          onClick={() => handleEditCar(car._id)}
+                          variant="ghost"
+                          size="icon"
+                          title="Edit car"
+                        >
                           <SquarePen className="h-4 w-4" />
                         </Button>
-                        <Button onClick={() => handleDeleteClick(car)} variant="ghost" size="icon" className="text-red-500 hover:text-red-700 hover:bg-red-50" title="Delete car">
+                        <Button
+                          onClick={() => handleDeleteClick(car)}
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          title="Delete car"
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
                   </TableRow>
-                  {/* Car Details Row */}
-
-
-                  {showExtraRows && (
-                    <TableRow
-                      className="cursor-pointer"
-                      onMouseEnter={() => setHovered(`details-${car._id}`)}
-                      onMouseLeave={() => setHovered(null)}
-                    >
-                      <TableCell colSpan={20}>
-                        <div className="flex justify-between px-4 py-2 text-sm">
-                          <div className="font-bold">Car Details</div>
-                          <div>{hovered === `details-${car._id}` ? <ChevronUp /> : <ChevronDown />}</div>
-                        </div>
-
-                        <div
-                          className="overflow-hidden transition-all duration-1000 ease-in-out"
-                          style={{ maxHeight: hovered === `details-${car._id}` ? "200px" : "0px" }}
-                        >
-                          <div className="mt-2 p-4 border-t text-sm  rounded-md shadow">
-                            <p><span className="font-semibold">year :</span> </p>
-                            <p><span className="font-semibold">engine:</span> </p>
-                            <p><span className="font-semibold">engine size:</span></p>
-                          </div>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-
-                  {showExtraRows && (
-                    <TableRow
-                      className="cursor-pointer"
-                      onMouseEnter={() => setHovered(`info-${car._id}`)}
-                      onMouseLeave={() => setHovered(null)}
-                    >
-                      <TableCell colSpan={20}>
-                        <div className="flex justify-between px-4 py-2 text-sm">
-                          <div className="font-bold">More Information</div>
-                          <div>{hovered === `info-${car._id}` ? <ChevronUp /> : <ChevronDown />}</div>
-                        </div>
-
-                        <div
-                          className="overflow-hidden transition-all duration-1000 ease-in-out"
-                          style={{ maxHeight: hovered === `info-${car._id}` ? "150px" : "0px" }}
-                        >
-                          <div className="mt-2 p-4 border-t text-sm  rounded-md shadow">
-                            <p><span className="font-semibold">tp:</span> </p>
-                            <p><span className="font-semibold">cost duty:</span></p>
-                          </div>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-
-                </React.Fragment>
-              ))}
+                ))}
           </TableBody>
         </Table>
       </div>
@@ -394,29 +434,30 @@ export function CarSection({ isExpanded }) {
           <DialogHeader>
             <DialogTitle>Confirm Deletion</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete the car{" "}
-              <strong>{carToDelete?.name}</strong>? This action cannot be undone.
+              Are you sure you want to delete the car <strong>{carToDelete?.name}</strong>? This
+              action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={confirmDelete}>Delete</Button>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete}>
+              Delete
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* View Car Details Dialog */}
-
       <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent className="sm:max-w-4xl">
           <DialogHeader>
             <DialogTitle>Car Details</DialogTitle>
-            <DialogDescription>
-              Detailed information about {carToView?.name}
-            </DialogDescription>
+            <DialogDescription>Detailed information about {carToView?.name}</DialogDescription>
           </DialogHeader>
           {carToView && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
               <div className="flex flex-col items-center justify-center p-4 border rounded-lg">
                 {carToView.main_image ? (
                   <Image
@@ -434,32 +475,48 @@ export function CarSection({ isExpanded }) {
                 <h3 className="text-xl font-bold mt-4">{carToView.name}</h3>
                 <p className="text-muted-foreground">{carToView.car_company}</p>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div>
                   <h4 className="font-semibold">Description</h4>
                   <p className="text-sm text-muted-foreground">
                     {carToView.description || "No description available"}
                   </p>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <h4 className="font-semibold">Real Price</h4>
-                    <p className="text-sm">
-                      {formatPrice(carToView.real_price)}
-                    </p>
+                    <h4 className="font-semibold">Real Price (BWP)</h4>
+                    <p className="text-sm">{formatPrice(carToView.real_price_bwp, "BWP")}</p>
                   </div>
                   <div>
-                    <h4 className="font-semibold">Actual Price</h4>
-                    <p className="text-sm">
-                      {formatPrice(carToView.actual_price)}
-                    </p>
+                    <h4 className="font-semibold">Actual Price (BWP)</h4>
+                    <p className="text-sm">{formatPrice(carToView.actual_price_bwp, "BWP")}</p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">Real Price (ZMW)</h4>
+                    <p className="text-sm">{formatPrice(carToView.real_price_zmw, "ZMW")}</p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">Actual Price (ZMW)</h4>
+                    <p className="text-sm">{formatPrice(carToView.actual_price_zmw, "ZMW")}</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <h4 className="font-semibold">Status</h4>
-                    <Badge className={carToView.status ? "bg-green-500" : "bg-red-500"}>
-                      {carToView.status ? "Active" : "Inactive"}
+                    <Badge
+                      className={
+                        carToView?.status == "sold"
+                          ? "bg-green-500"
+                          : carToView.status == "unsold"
+                          ? "bg-red-500"
+                          : "bg-yellow-500"
+                      }
+                    >
+                      {carToView?.status === "sold"
+                        ? "Sold"
+                        : carToView.status == "unsold"
+                        ? "Un Sold"
+                        : "Pending"}
                     </Badge>
                   </div>
                   <div>
@@ -482,6 +539,20 @@ export function CarSection({ isExpanded }) {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Car Details Dialog */}
+      <CarDetailsDialog
+        open={detailsDialogOpen}
+        onOpenChange={setDetailsDialogOpen}
+        car={selectedCar}
+      />
+
+      {/* Car More Info Dialog */}
+      <CarMoreInfoDialog
+        open={moreInfoDialogOpen}
+        onOpenChange={setMoreInfoDialogOpen}
+        car={selectedCar}
+      />
     </div>
   );
 }

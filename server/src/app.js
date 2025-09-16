@@ -2,14 +2,15 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { userRoute } from "./controllers/user/userRoutes.js";
-import roleRouter from "./controllers/roles/rolesRouter.js"
+import roleRouter from "./controllers/roles/rolesRouter.js";
 import userRouter from "./controllers/user_management/user_managementRoute.js";
 import feedbackRoute from "./controllers/feedback/feedbackRouter.js";
 import feedbackWebsiteRoute from "./controllers/feedback/feedbackWebsiteRoutes.js";
 import { verifyJWT } from "./middlewares/auth.middleware.js";
-import carsRouter from "./controllers/cars/CarsRouter.js"
-import carsWebsiteRouter from "./controllers/cars/CarWebsiteRoutes.js"
-import invoiceRouter from './controllers/invoices/invoiceRoute.js'
+import carsRouter from "./controllers/cars/CarsRouter.js";
+import carsWebsiteRouter from "./controllers/cars/CarWebsiteRoutes.js";
+import invoiceRouter from "./controllers/invoices/invoiceRoute.js";
+import notificationRouter from "./controllers/notifications/notificationRoute.js";
 const app = express();
 
 app.use(
@@ -37,7 +38,7 @@ app.use("/api/feedback", feedbackRoute);
 app.use("/api/cars", carsRouter);
 app.use("/api/role", roleRouter);
 app.use("/api/user_management", userRouter);
-
+app.use("/api/notifications", notificationRouter);
 app.use("/api/invoice", invoiceRouter);
 
 export { app };
