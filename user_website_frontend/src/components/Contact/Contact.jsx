@@ -98,14 +98,15 @@ export default function Contact() {
           className="w-full h-72 md:h-80 lg:h-96 rounded-xl overflow-hidden shadow-md"
         >
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3655.879889722167!2d21.5476!3d-23.9394!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1eb8a2db4a6a0d2d%3A0x49c07eb9f7a3f0f5!2sXaxa%2C%20Botswana!5e0!3m2!1sen!2s!4v1725827500000"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3589.406531490655!2d25.908707215020516!3d-24.628207484166207!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1ebb5a5b6c0a7f1f%3A0x500cf75e7699f40!2sGaborone%2C%20Botswana!5e0!3m2!1sen!2s!4v1726500000000"
             width="100%"
             height="100%"
             style={{ border: 0 }}
             allowFullScreen=""
             loading="lazy"
             className="w-full h-full"
-          ></iframe>
+          />
+
         </motion.div>
       </div>
 

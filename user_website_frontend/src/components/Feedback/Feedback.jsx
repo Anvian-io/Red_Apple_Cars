@@ -108,51 +108,50 @@ export default function Feedback() {
           </div>
 
           {/* Infinite Scrolling Reel */}
-          <div className="relative overflow-hidden">
-            <motion.div
-              className="flex gap-6"
-              initial={{ x: 0 }}
-              animate={{ x: "-50%" }}
-              transition={{
-                duration: 25,
-                ease: "linear",
-                repeat: Infinity,
-              }}
-            >
-              {loopFeedbacks.map((fb, idx) => (
-                <div
-                  key={idx}
-                  className="relative min-w-[300px] max-w-sm bg-card rounded-xl shadow-lg overflow-hidden flex-shrink-0"
-                >
-                  {/* Image */}
-                  <div className="relative h-80 w-full bg-muted">
-                    <Image
-                      src={fb.image}
-                      alt={fb.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
+          <motion.div
+  className="flex gap-6"
+  initial={{ x: "0%" }}
+  animate={{ x: ["0%", "-100%"] }}
+  transition={{
+    duration: 40, // adjust speed (higher = slower)
+    ease: "linear",
+    repeat: Infinity,
+  }}
+>
+  {[...feedbacks, ...feedbacks, ...feedbacks].map((fb, idx) => (
+    <div
+      key={idx}
+      className="relative min-w-[300px] max-w-sm bg-card rounded-xl shadow-lg overflow-hidden flex-shrink-0"
+    >
+      {/* Image */}
+      <div className="relative h-80 w-full bg-muted">
+        <Image
+          src={fb.image}
+          alt={fb.name}
+          fill
+          className="object-cover"
+        />
+      </div>
 
-                  {/* Overlay Content */}
-                  <div className="absolute bottom-0 left-0 w-full bg-black/60 text-white p-4">
-                    <p className="font-semibold">
-                      {fb.name}{fb.city ? `, ${fb.city}` : ""}
-                    </p>
-                    <p className="text-sm mt-1 line-clamp-3">{fb.text}</p>
-                    <div className="flex items-center mt-2">
-                      {[...Array(fb.rating)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className="h-4 w-4 text-yellow-400 fill-yellow-400"
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </motion.div>
-          </div>
+      {/* Overlay Content */}
+      <div className="absolute bottom-0 left-0 w-full bg-black/60 text-white p-4">
+        <p className="font-semibold">
+          {fb.name}{fb.city ? `, ${fb.city}` : ""}
+        </p>
+        <p className="text-sm mt-1 line-clamp-3">{fb.text}</p>
+        <div className="flex items-center mt-2">
+          {[...Array(fb.rating)].map((_, i) => (
+            <Star
+              key={i}
+              className="h-4 w-4 text-yellow-400 fill-yellow-400"
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  ))}
+</motion.div>
+
 
           {/* Share Feedback Button */}
           <div className="text-center mt-12">

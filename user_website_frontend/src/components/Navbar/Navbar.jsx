@@ -134,7 +134,7 @@ export function Navbar() {
                 className="text-foreground hover:bg-accent hover:text-primary"
                 aria-label="Search"
               >
-                <Search className="h-5 w-5" />
+                <Search className="h-5 w-5 text-text" />
               </Button>
             ) : (
               <></>
@@ -149,9 +149,9 @@ export function Navbar() {
               aria-label="Toggle theme"
             >
               {theme === "dark" ? (
-                <Sun className="h-5 w-5" />
+                <Sun className="h-5 w-5 text-text" />
               ) : (
-                <Moon className="h-5 w-5" />
+                <Moon className="h-5 w-5 text-text" />
               )}
             </Button>
 
@@ -162,7 +162,7 @@ export function Navbar() {
               className="text-foreground hover:bg-accent hover:text-primary relative"
               aria-label="Favorites"
             >
-              <Heart className="h-5 w-5" />
+              <Heart className="h-5 w-5 text-text" />
               <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
                 3
               </span>
@@ -174,7 +174,7 @@ export function Navbar() {
                 variant="default"
                 className="bg-primary hover:bg-primary/90 text-white rounded-full px-4 py-2"
               >
-                <Phone className="h-4 w-4 mr-2" />
+                <Phone className="h-4 w-4 mr-2 " />
                 Contact
               </Button>
             </div>
@@ -188,9 +188,9 @@ export function Navbar() {
               aria-label="Toggle menu"
             >
               {isMobileMenuOpen ? (
-                <X className="h-6 w-6" />
+                <X className="h-6 w-6 text-text" />
               ) : (
-                <Menu className="h-6 w-6" />
+                <Menu className="h-6 w-6 text-text" />
               )}
             </Button>
           </div>
@@ -214,7 +214,7 @@ export function Navbar() {
                   transition={{ duration: 0.2 }}
                 >
                   <div className="relative flex items-center">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5 text-text" />
                     <input
                       ref={searchInputRef}
                       type="text"
@@ -227,7 +227,7 @@ export function Navbar() {
                       onClick={() => setIsSearchActive(false)}
                       className="absolute right-2 text-muted-foreground hover:text-primary hover:bg-transparent"
                     >
-                      <X className="h-5 w-5" />
+                      <X className="h-5 w-5 text-text" />
                     </Button>
                   </div>
                 </motion.div>
@@ -265,16 +265,16 @@ export function Navbar() {
                     <Button
                       variant="ghost"
                       onClick={handleThemeChange}
-                      className="text-foreground hover:bg-accent w-full justify-start"
+                      className="text-foreground hover:bg-accent w-full justify-start text-text"
                     >
                       {theme === "dark" ? (
                         <>
-                          <Sun className="h-5 w-5 mr-2" />
+                          <Sun className="h-5 w-5 mr-2 text-text" />
                           Light Mode
                         </>
                       ) : (
                         <>
-                          <Moon className="h-5 w-5 mr-2" />
+                          <Moon className="h-5 w-5 mr-2 text-text" />
                           Dark Mode
                         </>
                       )}
@@ -284,7 +284,7 @@ export function Navbar() {
                   {/* Mobile search */}
                   <div className="pt-4 border-b border-border/30 pb-4">
                     <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 text-text" />
                       <input
                         type="text"
                         placeholder="Search inventory..."
@@ -295,11 +295,11 @@ export function Navbar() {
 
                   {/* Contact info for mobile */}
                   <div className="pt-4">
-                    <div className="flex items-center space-x-2 text-muted-foreground mb-2">
-                      <Phone className="h-4 w-4" />
+                    <div className="flex items-center space-x-2 text-muted-foreground mb-2 text-text">
+                      <Phone className="h-4 w-4 text-text" />
                       <span>+1 (555) 123-4567</span>
                     </div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs text-muted-foreground text-text">
                       Mon-Fri: 9AM-6PM | Sat: 10AM-4PM
                     </div>
                   </div>
