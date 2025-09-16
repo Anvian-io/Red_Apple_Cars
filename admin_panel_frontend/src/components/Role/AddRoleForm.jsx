@@ -151,7 +151,7 @@ export function AddRoleForm({ open, onOpenChange, onRoleCreated, roleId }) {
   return (
     <Dialog className="" open={open} onOpenChange={onOpenChange}>
       <DialogOverlay className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
-      <DialogContent className="max-w-4xl bg-cardBg h-[calc(100vh-5rem)] flex flex-col">
+      <DialogContent className=" max-w-4xl bg-cardBg h-[calc(100vh-5rem)] flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-text">
             {isEditing ? "Edit Role" : "Add New Role"}
