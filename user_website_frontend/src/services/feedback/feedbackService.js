@@ -4,6 +4,6 @@ import { handleApiResponse } from "@/helper/zindex";
 
 
 export const getAllFeedback = async (payload, router) => {
-  const response = await apiClient.get("/feedback/all", { params: payload });
+  const response = await apiClient.get("/feedbackWebsite/all", { params: payload });
   return handleApiResponse(response, router);
 };
