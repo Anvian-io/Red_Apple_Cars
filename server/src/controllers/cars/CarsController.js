@@ -99,8 +99,10 @@ export const createOrUpdateCar = asyncHandler(async (req, res) => {
 
             // console.log(car,"fwejoifhwoi")
             // Handle main image upload if provided
+            console.log(req.files,"fweoif")
             if (req.files && req.files.main_image) {
                 // Delete old image if exists
+                console.log('fjewoife')
                 if (car.main_image) {
                     await deleteOnCloudinary(car.main_image);
                 }

@@ -3,7 +3,11 @@ import { apiClient } from "@/helper/commonHelper";
 import { handleApiResponse } from "@/helper/zindex";
 
 export const createOrUpdateCar = async (formData, router) => {
-  const response = await apiClient.post("/cars/create", formData);
+  const response = await apiClient.post("/cars/create", formData,{
+    headers: {
+      "Content-Type": "multipart/form-data"
+    }
+  });
   return handleApiResponse(response, router);
 };
 
