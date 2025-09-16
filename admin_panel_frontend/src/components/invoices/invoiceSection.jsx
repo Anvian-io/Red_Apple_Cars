@@ -31,7 +31,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-
+import { CrudDetailsHoverCard } from "..";
 
 
 export function InvoiceSection({ isExpanded }) {
@@ -306,13 +306,8 @@ export function InvoiceSection({ isExpanded }) {
                     <TableCell>
                       {getPaymentTypeText(invoice?.payment_type)}
                     </TableCell>
-                    <TableCell className="text-left">
-                      <div>
-                        <p className="text-blue-600"><strong>Created At:</strong></p> <b>{formatDate(invoice?.createdAt)}</b>
-                        <p> by {invoice?.created_by?.name}</p>
-                        <p className="text-green-600 mt-2"><strong>Updated At:</strong></p> <b>{formatDate(invoice?.updatedAt)}</b>
-                        <p> by {invoice?.updated_by?.name}</p>
-                      </div>
+                    <TableCell>
+                        <CrudDetailsHoverCard car={invoice}/>
                     </TableCell>
 
                     <TableCell className="text-right">
