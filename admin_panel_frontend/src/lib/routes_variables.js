@@ -1,4 +1,4 @@
-import { Home, User, FileText, Mail, Search, Settings,Car,ReceiptText,MessageSquareText,UserCog} from "lucide-react";
+import { Home, User, FileText, Mail, Search, Settings,Car,ReceiptText,MessageSquareText,UserCog,BriefcaseBusiness} from "lucide-react";
 
 export const navItems = [
   { icon: Home, label: "Home", href: "/", id: "home", pages: "Home" },
@@ -43,5 +43,13 @@ export const navItems = [
     href: "/roles",
     id: "roles",
     pages: "Home, Roles",
+  },
+
+  {
+    icon: BriefcaseBusiness,
+    label: "Website Services",
+    href: "/website-services",
+    id: "services",
+    pages: "Home, Services",
   },
 ];

@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { SquarePen, Trash2, Eye, Download } from "lucide-react";
+import { SquarePen, Trash2, Eye, Download, Bold } from "lucide-react";
 import { Button } from "../ui/button";
 import { CustomPagination } from "..";
 import { Badge } from "../ui/badge";
@@ -31,6 +31,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { CrudDetailsHoverCard } from "..";
+
 
 export function InvoiceSection({ isExpanded }) {
   const [invoices, setInvoices] = useState([]);
@@ -86,8 +88,17 @@ export function InvoiceSection({ isExpanded }) {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString();
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+    const hh = String(date.getHours()).padStart(2, "0");
+    const min = String(date.getMinutes()).padStart(2, "0");
+
+    return `${dd}-${mm}-${yyyy} ${hh}:${min}`;
   };
+
 
   const handleViewInvoice = (pdfUrl) => {
     window.open(pdfUrl, "_blank");
@@ -257,10 +268,7 @@ export function InvoiceSection({ isExpanded }) {
               <TableHead className="min-w-[100px]">Invoice Status</TableHead>
               <TableHead className="min-w-[100px]">Payment Status</TableHead>
               <TableHead className="min-w-[100px]">Payment Type</TableHead>
-              <TableHead className="min-w-[100px]">Created By</TableHead>
-              <TableHead className="min-w-[100px]">Updated By</TableHead>
-              <TableHead className="min-w-[100px]">Created At</TableHead>
-              <TableHead className="min-w-[100px]">Updated At</TableHead>
+              <TableHead className="min-w-[100px]">History</TableHead>
               <TableHead className="min-w-[100px] text-right">
                 Actions
               </TableHead>
@@ -298,10 +306,10 @@ export function InvoiceSection({ isExpanded }) {
                     <TableCell>
                       {getPaymentTypeText(invoice?.payment_type)}
                     </TableCell>
-                    <TableCell>{invoice?.created_by?.name}</TableCell>
-                    <TableCell>{invoice?.updated_by?.name}</TableCell>
-                    <TableCell>{formatDate(invoice?.createdAt)}</TableCell>
-                    <TableCell>{formatDate(invoice?.updatedAt)}</TableCell>
+                    <TableCell>
+                        <CrudDetailsHoverCard car={invoice}/>
+                    </TableCell>
+
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button

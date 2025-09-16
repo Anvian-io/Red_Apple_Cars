@@ -68,7 +68,7 @@ export function RichTextEditor({ name, label, required = false }) {
         onChange={handleChange}
         modules={modules}
         formats={formats}
-        className="rounded-md border"
+        className="rounded-md border border-border focus:outline-none focus:ring-0 focus:border-border"
       />
       {/* Hidden input to maintain form registration */}
       <input type="hidden" {...register(name)} />
