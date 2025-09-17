@@ -23,6 +23,8 @@ import SearchLoader from "@/components/custom_ui/SearchLoader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Star } from "lucide-react";
 import { toast } from "sonner";
+import { CrudDetailsHoverCard } from "..";
+
 
 export function FeedbackSection({ isExpanded }) {
   const [add_or_update_feedback, set_add_or_update_feedback] = useState(false);
@@ -211,7 +213,7 @@ export function FeedbackSection({ isExpanded }) {
               <TableHead className="w-[300px]">Testimonial</TableHead>
               <TableHead className="w-[120px]">Rating</TableHead>
               <TableHead className="w-[120px]">Status</TableHead>
-              <TableHead className="w-[150px]">Created Date</TableHead>
+              <TableHead className="w-[150px]">History</TableHead>
               <TableHead className="w-[100px] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -222,7 +224,7 @@ export function FeedbackSection({ isExpanded }) {
                 <TableRow key={feedback._id}>
                   <TableCell>
                     {feedback.image ? (
-                      <Avatar className="h-10 w-10">
+                      <Avatar className="h-28 w-28 rounded-none">
                         <AvatarImage src={feedback.image} alt={feedback.CustomerName} />
                         <AvatarFallback>
                           <User className="h-5 w-5" />
@@ -268,10 +270,7 @@ export function FeedbackSection({ isExpanded }) {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1 text-sm">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      {formatDate(feedback.createdAt)}
-                    </div>
+                    <CrudDetailsHoverCard car={feedback}/>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
