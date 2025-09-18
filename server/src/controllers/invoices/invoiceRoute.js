@@ -4,12 +4,14 @@ import {
     getInvoice,
     getAllInvoices,
     updateInvoice,
-    deleteInvoice
+    deleteInvoice,
+    update_invoice_car_details
 } from "./invoiceController.js";
 
 const router = express.Router();
 
 router.post("/generate", generateInvoice);
+router.post("/update_invoice_car_details", update_invoice_car_details);
 router.route("/").get(getAllInvoices);
 
 router

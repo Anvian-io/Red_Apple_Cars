@@ -335,17 +335,7 @@ const Carousel = () => {
         </>
       )}
 
-      {/* Progress Bar */}
-      <Box sx={{
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        height: "4px",
-        backgroundColor: "primary.main",
-        width: `${(currentSlide + 1) * (100 / banners.length)}%`,
-        transition: "width 0.3s ease",
-        zIndex: 10
-      }} />
+      
     </Box>
   );
 };

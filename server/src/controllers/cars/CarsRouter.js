@@ -6,26 +6,35 @@ import {
     getCar,
     deleteCar,
     deleteMainImage,
-    deleteOtherImage
+    deleteOtherImage,
+    getAllZambiaCars,
+    getAllBotswanaCars,
+    getAllCars_for_user
 } from "./CarsController.js";
 // import { protect } from "../middleware/authMiddleware.js";
 import upload from "../../middlewares/multer.middleware.js";
+import { verifyJWT } from "../../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
 // All routes are protected
 // router.use(protect);
 
-router
-    .route("/")
-    .post(
-        upload.fields([
-            { name: "main_image", maxCount: 1 },
-            { name: "other_images", maxCount: 10 }
-        ]),
-        createOrUpdateCar
-    )
-    .get(getAllCars);
+router.route("/").get(getAllCars);
+
+router.post("/create",
+    upload.fields([
+        { name: "main_image", maxCount: 1 },
+        { name: "other_images", maxCount: 10 }
+    ]),
+    createOrUpdateCar
+);
+
+router.get("/zambia", getAllZambiaCars);
+
+router.get("/botswana", getAllBotswanaCars);
+
+router.get("/getAll", getAllCars);
 
 router.route("/:id").get(getCar).delete(deleteCar);
 

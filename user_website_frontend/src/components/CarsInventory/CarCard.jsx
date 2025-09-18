@@ -47,20 +47,17 @@ export default function CarCard({ car }) {
         </div>
 
         {/* Consolidated specs */}
-        <div className="flex justify-between text-xs text-muted-foreground mb-3">
-          <div className="flex items-center">
-            <Car className="h-3 w-3 mr-1" />
-            <span>{car.mileage}</span>
-          </div>
-          <div className="flex items-center">
-            <Fuel className="h-3 w-3 mr-1" />
-            <span>{car.fuel}</span>
-          </div>
-          <div className="flex items-center">
-            <Users className="h-3 w-3 mr-1" />
-            <span>{car.seats}</span>
-          </div>
-        </div>
+        <div className="flex items-center justify-between mt-4">
+  <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+    <span>{car.year}</span>
+    <span>•</span>
+    <span>{car.mileage}</span>
+    <span>•</span>
+    <span>{car.fuel}</span>
+    <span>•</span>
+    <span>{car.driveType}</span> {/* Add drive type here */}
+  </div>
+</div>
 
         <Button className="w-full bg-primary hover:bg-primary/90 text-white py-2 text-sm">
           View Details

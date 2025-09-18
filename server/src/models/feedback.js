@@ -29,6 +29,10 @@ const FeedbackSchema = new mongoose.Schema(
             enum: ["published", "draft"],
             required: true,
             default: "Draft",
+        },
+        image:{
+            type: String,
+            required: true
         }
 
 

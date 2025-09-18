@@ -10,45 +10,47 @@
 
 @layer base {
   :root {
+    /* Light theme - Enhanced red apple colors */
     --background: #ffffff;
-    --sidebar-bg: #fef2f2;
-    --sidebar-border: #fecaca;
-    --text: #374151;
-    --heading: #dc2626;
-    --hover-text: #b91c1c;
-    --hover-bg: #fee2e2;
-    --border: #fecaca;
+    --sidebar-bg: #fff5f5;
+    --sidebar-border: #fed7d7;
+    --text: #2d3748;
+    --heading: #c53030;
+    --hover-text: #e53e3e;
+    --hover-bg: #feebeb;
+    --border: #fed7d7;
     --card-bg: #ffffff;
-    --card-text: #7f1d1d;
-    --primary: #dc2626;
-    --header: #b91c1c;
-    --input-text-bg: #1f2937;
-    --input-bg: #f3f4f6;
+    --card-text: #742a2a;
+    --primary: #e53e3e;
+    --header: #c53030;
+    --input-text-bg: #2d3748;
+    --input-bg: #f7fafc;
     --table-bg: #ffffff;
-    --button-bg: #dc2626;
-    --secondary-bg: #fee2e2;
-    --bgSwitch: #121010;
+    --button-bg: #e53e3e;
+    --secondary-bg: #feebeb;
+    --bgSwitch: #1a202c;
   }
 
   .dark {
-    --background: #000000;
-    --sidebar-bg: #030712;
-    --sidebar-border: #991b1b;
-    --text: #e5e7eb;
+    /* Dark theme - Rich, automotive-inspired colors */
+    --background: #0f172a;
+    --sidebar-bg: #1e293b;
+    --sidebar-border: #7f1d1d;
+    --text: #e2e8f0;
     --heading: #f87171;
-    --hover-text: #f87171;
-    --secondary-bg: #61010b60;
-    --hover-bg: #69000b;
+    --hover-text: #fca5a5;
+    --secondary-bg: #450a0a;
+    --hover-bg: #7f1d1d;
     --border: #991b1b;
-    --card-bg: #030712;
-    --table-bg: #111827c6;
-    --card-text: #fca5a5;
-    --primary: #dc2626;
+    --card-bg: #1e293b;
+    --table-bg: #1a202c;
+    --card-text: #fecaca;
+    --primary: #C62828;
     --header: #f87171;
-    --input-text-bg: #1f2937;
-    --input-bg: #f3f4f6;
-    --button-bg: #dc2626;
-    --bgSwitch: #232020;
+    --input-text-bg: #e2e8f0;
+    --input-bg: #334155;
+    --button-bg: #ef4444;
+    --bgSwitch: #334155;
   }
 }
 
@@ -59,30 +61,27 @@
   }
 }
 
-/* Add this to your global.css or styles.css */
-
+/* Scrollbar styling */
 @layer base {
-  /* Scrollbar styling */
   ::-webkit-scrollbar {
-    width: 10px; /* width of vertical scrollbar */
-    height: 8px; /* height of horizontal scrollbar */
+    width: 10px;
+    height: 8px;
   }
 
   ::-webkit-scrollbar-track {
-    background: var(--background); /* scrollbar track */
+    background: var(--background);
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: var(--border); /* scrollbar handle */
-    border-radius: 9999px; /* rounded corners */
-    border: 2px solid var(--background); /* space around thumb */
+    background-color: var(--border);
+    border-radius: 9999px;
+    border: 2px solid var(--background);
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background-color: var(--primary); /* hover effect */
+    background-color: var(--primary);
   }
 
-  /* Firefox scrollbar */
   * {
     scrollbar-width: thin;
     scrollbar-color: var(--text) var(--background);
@@ -90,5 +89,5 @@
 }
 
 html {
-  scroll-behavior: smooth; /* Smooth scrolling */
+  scroll-behavior: smooth;
 }

@@ -18,3 +18,7 @@ export const deleteInvoice = async (id, router) => {
   const response = await apiClient.get(`/invoice/${id}`);
   return handleApiResponse(response, router);
 };
+export const update_invoice_car_details = async (payload, router) => {
+  const response = await apiClient.post(`/invoice/update_invoice_car_details`,payload);
+  return handleApiResponse(response, router);
+};
