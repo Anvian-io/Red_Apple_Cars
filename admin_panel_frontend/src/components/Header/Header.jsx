@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { BreadcrumbWrapper } from "..";
 import { Bell, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { NotificationsDropdown } from "@/components/custom_ui/NotificationsDropdown";
-
+import { NotificationsDropdown } from "../Notifications/NotificationsDropdown";
 export function Header({ isExpanded, pages }) {
   const [time, setTime] = useState(null);
   
