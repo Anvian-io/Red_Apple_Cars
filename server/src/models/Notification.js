@@ -13,31 +13,6 @@ const notificationSchema = new mongoose.Schema(
         },
         type: {
             type: String,
-            enum: ["car_created", "car_updated", "car_sold", "system"],
-            default: "system"
-        },
-        related_model: {
-            type: String,
-            enum: ["Car", "User", "System"],
-            default: "System"
-        },
-        related_id: {
-            type: mongoose.Schema.Types.ObjectId,
-            refPath: "related_model"
-        },
-        recipient: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            required: true
-        },
-        read: {
-            type: Boolean,
-            default: false
-        },
-        priority: {
-            type: String,
-            enum: ["low", "medium", "high"],
-            default: "medium"
         }
     },
     { timestamps: true }

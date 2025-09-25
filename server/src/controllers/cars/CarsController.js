@@ -1,10 +1,12 @@
 // controllers/carController.js
 import Car from "../../models/Car.js";
+import role from "../../models/role.js";
 import CarDetail from "../../models/CarDetails.js";
 import CarMoreInfo from "../../models/CarMoreInfo.js";
 import CarImage from "../../models/CarImage.js";
 import { asyncHandler, sendResponse, statusType } from "../../utils/index.js";
 import { deleteOnCloudinary, uploadOnCloudinary } from "../../utils/cloudinary.js";
+import { createNotification } from "../../utils/notificationHelper.js";
 import mongoose from "mongoose";
 
 // Create or Update Car
@@ -99,10 +101,10 @@ export const createOrUpdateCar = asyncHandler(async (req, res) => {
 
             // console.log(car,"fwejoifhwoi")
             // Handle main image upload if provided
-            console.log(req.files,"fweoif")
+            console.log(req.files, "fweoif");
             if (req.files && req.files.main_image) {
                 // Delete old image if exists
-                console.log('fjewoife')
+                console.log("fjewoife");
                 if (car.main_image) {
                     await deleteOnCloudinary(car.main_image);
                 }
@@ -317,6 +319,16 @@ export const createOrUpdateCar = asyncHandler(async (req, res) => {
 
         await session.commitTransaction();
         session.endSession();
+
+        const action = car_id ? "updated" : "created";
+
+        const Role = await role.findById({ _id: req.user.role });
+
+        await createNotification({
+            title: `Car ${action}`,
+            message: `Car ${action} by ${Role.name}: ${req.user.name}`,
+            type: action
+        });
 
         const message = car_id ? "Car updated successfully" : "Car created successfully";
         return sendResponse(res, true, { car }, message, statusType.SUCCESS);
@@ -629,6 +641,13 @@ export const deleteCar = asyncHandler(async (req, res) => {
 
         await session.commitTransaction();
         session.endSession();
+
+        const role = await role.findById({ _id: req.user.role });
+        await createNotification({
+            title: "Car deleted",
+            message: `Car deleted by ${role.name}: ${req.user.name}`,
+            type: "delete"
+        });
 
         return sendResponse(res, true, null, "Car deleted successfully", statusType.OK);
     } catch (error) {
