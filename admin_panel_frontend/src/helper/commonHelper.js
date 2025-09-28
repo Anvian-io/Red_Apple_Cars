@@ -48,7 +48,7 @@ export const apiClient = {
         ...config,
         withCredentials: true,
         headers: {
-          ...(config.headers || {}),
+          ...(config?.headers || {}),
           Authorization: `Bearer ${getAccessToken()}`, // ✅ attach token
         },
       })

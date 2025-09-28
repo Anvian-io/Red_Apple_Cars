@@ -9,7 +9,9 @@ import {
     deleteOtherImage,
     getAllZambiaCars,
     getAllBotswanaCars,
-    getAllCars_for_user
+    getAllCars_for_user,
+    exportCarsToExcel,
+    exportCarsToExcelWithHyperlinks
 } from "./CarsController.js";
 // import { protect } from "../middleware/authMiddleware.js";
 import upload from "../../middlewares/multer.middleware.js";
@@ -41,5 +43,9 @@ router.route("/:id").get(getCar).delete(deleteCar);
 router.route("/:id/main-image").delete(deleteMainImage);
 
 router.route("/:carId/other-images/:imageId").delete(deleteOtherImage);
+
+router.get("/export/excel", exportCarsToExcel);
+
+router.get("/export/excel-with-hyperlinks", exportCarsToExcelWithHyperlinks);
 
 export default router;

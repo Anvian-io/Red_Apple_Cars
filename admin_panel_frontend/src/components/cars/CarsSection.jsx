@@ -26,7 +26,7 @@ import { Button } from "../ui/button";
 import { CustomPagination } from "..";
 import { Badge } from "../ui/badge";
 import { AddCarForm } from "./AddCarForm";
-import { getAllCars, deleteCar } from "@/services/cars/carsServices";
+import { getAllCars, deleteCar, exportCarsToExcel } from "@/services/cars/carsServices";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/useDebounce";
 import SearchLoader from "@/components/custom_ui/SearchLoader";
@@ -307,6 +307,27 @@ export function CarSection({ isExpanded }) {
     fetchCars();
   };
 
+  // Handle Excel export
+  const handleExportToExcel = async () => {
+    try {
+      toast.info("Preparing Excel export...");
+
+      const payload = {
+        search: searchTerm,
+        ...(filters.name && { name: filters.name }),
+        ...(filters.brand && { brand: filters.brand }),
+        ...(filters.status !== "all" && { status: filters.status }),
+        ...(filters.websiteState !== "all" && { website_state: filters.websiteState === "active" })
+      };
+
+      await exportCarsToExcel(payload, router);
+      toast.success("Cars exported to Excel successfully");
+    } catch (error) {
+      console.error("Error exporting cars to Excel:", error);
+      toast.error("Failed to export cars to Excel");
+    }
+  };
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString();
   };
@@ -426,7 +447,7 @@ export function CarSection({ isExpanded }) {
       />
 
       {/* Show Columns Toggle */}
-      <div className="flex justify-between items-center mt-4 px-1">
+      <div className="flex justify-between items-center mt-4 px-2">
         <div className="flex items-center gap-4">
           {loading ? (
             <Skeleton className="h-5 w-40 bg-border rounded-md" />
@@ -439,44 +460,27 @@ export function CarSection({ isExpanded }) {
             <Badge className="bg-hoverBg">No Cars Found</Badge>
           )}
         </div>
-
-        {/* <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-2"
-          >
-            <Columns className="h-4 w-4" />
-            Show Columns
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-2"
-          >
-            <Filter className="h-4 w-4" />
-            Filters
-          </Button>
-        </div> */}
+        <Button
+          className="hidden md:flex"
+          onClick={handleExportToExcel}
+          disabled={loading || cars.length === 0}
+        >
+          Download Excel
+        </Button>
       </div>
 
       {/* Column Visibility Section */}
-      {/* {showColumns && ( */}
-        <div className="mt-4 px-1">
-          <ColumnVisibility
-            columnVisibility={columnVisibility}
-            setColumnVisibility={setColumnVisibility}
-          />
-        </div>
-      {/* )} */}
+      <div className="mt-4 px-1">
+        <ColumnVisibility
+          columnVisibility={columnVisibility}
+          setColumnVisibility={setColumnVisibility}
+        />
+      </div>
 
       {/* Filters Section */}
-      {/* {showFilters && ( */}
-        <div className="mt-4 px-1">
-          <Filters filters={filters} setFilters={setFilters} applyFilters={applyFilters} />
-        </div>
-      {/* )} */}
+      <div className="mt-4 px-1">
+        <Filters filters={filters} setFilters={setFilters} applyFilters={applyFilters} />
+      </div>
 
       <div className="mx-1 mt-6 rounded-md max-w-[94.5vw] border overflow-x-auto bg-tableBg">
         <Table className="min-w-[800px] lg:min-w-full">
