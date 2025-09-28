@@ -1,13 +1,14 @@
-
 "use client";
-import { ServicesSection } from "@/components/";
 
-export default function Services() {
+import { withRouteGuard } from "@/components/RouteGuard";
+
+function Services() {
   return (
     <div>
-       <div>
-           <ServicesSection />
-          </div>
+      <h1>Website Services</h1>
+      <p>Your services content here...</p>
     </div>
   );
 }
+
+export default withRouteGuard(Services, "read");

@@ -44,8 +44,9 @@ export default function Login() {
 
         if (response.data) {
           toast.success("Login successful");
-          localStorage.setItem("User", JSON.stringify(response.data.data));
-          localStorage.setItem("accessToken", response.data.data.accessToken);
+          localStorage.setItem("User", JSON.stringify(response.data.data.User));
+          localStorage.setItem("permissions", JSON.stringify(response.data.data.permissions));
+          localStorage.setItem("accessToken", response.data.data.User.accessToken);
           router.push("/");
         } else {
           console.log(response,"fewoifhwefowfoifi")

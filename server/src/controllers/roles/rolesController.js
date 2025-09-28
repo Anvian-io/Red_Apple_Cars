@@ -2,6 +2,7 @@ import Role from "../../models/role.js";
 import Role_Mapper from "../../models/role_mapper.js";
 import { asyncHandler, sendResponse, statusType } from "../../utils/index.js";
 import User from "../../models/user.js";
+import { sendNotificationToClients } from "../notifications/notificationRoute.js";
 // Create Role
 export const createOrUpdateRole = asyncHandler(async (req, res) => {
     const { role_id, role_name, description, permissions } = req.body;
@@ -32,6 +33,8 @@ export const createOrUpdateRole = asyncHandler(async (req, res) => {
 
         // Remove existing permissions
         await Role_Mapper.deleteMany({ role_id: role_id });
+
+        sendNotificationToClients("role_updated");
     } else {
         // Check if role already exists (for creation only)
         const existingRole = await Role.findOne({ name: role_name.toLowerCase() });
