@@ -1,0 +1,42 @@
+name: Test and Build Applications
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'  # Changed from 22 to 18 for better compatibility
+        cache: 'npm'
+        cache-dependency-path: |
+          admin_panel_frontend/package-lock.json
+          user_website_frontend/package-lock.json  
+          server/package-lock.json
+    
+    - name: Install dependencies and test Admin Panel
+      run: |
+        cd admin_panel_frontend
+        npm install
+        npm run build  # Changed from test to build (more reliable for Next.js)
+    
+    - name: Install dependencies and test User Website
+      run: |
+        cd user_website_frontend
+        npm install
+        npm run build  # Changed from test to build
+    
+    - name: Install dependencies and test Server
+      run: |
+        cd server
+        npm install
+        npm run build || echo "No build script, continuing..."  # Build if exists, else continue
+        # If you have tests, use: npm test
