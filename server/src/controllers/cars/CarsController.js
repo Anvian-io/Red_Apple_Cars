@@ -9,6 +9,8 @@ import { deleteOnCloudinary, uploadOnCloudinary } from "../../utils/cloudinary.j
 import { createNotification } from "../../utils/notificationHelper.js";
 import mongoose from "mongoose";
 import ExcelJS from "exceljs";
+import { sendNotificationToClients } from "../notifications/notificationRoute.js";
+
 
 // Create or Update Car
 export const createOrUpdateCar = asyncHandler(async (req, res) => {
@@ -328,8 +330,10 @@ export const createOrUpdateCar = asyncHandler(async (req, res) => {
         await createNotification({
             title: `Car ${action}`,
             message: `Car ${action} by ${Role.name}: ${req.user.name}`,
-            type: action
+            type: action,
         });
+
+        sendNotificationToClients("notification_update");
 
         const message = car_id ? "Car updated successfully" : "Car created successfully";
         return sendResponse(res, true, { car }, message, statusType.SUCCESS);

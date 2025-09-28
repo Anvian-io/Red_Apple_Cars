@@ -11,6 +11,7 @@ export const createNotification = async ({
             title,
             message,
             type,
+            read:false
         });
 
         return notification;
@@ -25,7 +26,7 @@ export const getUserNotifications = async (userId, page = 1, limit = 10) => {
     try {
         const skip = (page - 1) * limit;
 
-        const notifications = await Notification.find()
+        const notifications = await Notification.find({read:false})
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)

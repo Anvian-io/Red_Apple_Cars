@@ -5,6 +5,7 @@ import { Bell, X, Plus, Edit, Trash2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getAllNotification } from "@/services/notification/notificationServices";
+import { apiClientEvents } from "@/helper/commonHelper";
 
 export function NotificationsDropdown() {
   const [open, setOpen] = useState(false);
@@ -12,8 +13,8 @@ export function NotificationsDropdown() {
   const [loading, setLoading] = useState(false);
 
   const fetchNotifications = async () => {
-    if (!open) return;
-    
+    // if (!open) return;
+
     setLoading(true);
     try {
       const data = await getAllNotification();
@@ -27,15 +28,31 @@ export function NotificationsDropdown() {
 
   useEffect(() => {
     fetchNotifications();
-  }, [open]);
+  }, []);
+
+  useEffect(() => {
+    const evtSource = apiClientEvents.events("/notifications/stream", {
+      onMessage: (msg) => {
+        console.log(msg,'weofjeowij')
+        if (msg.type == "notification_update") {
+          fetchNotifications();
+        }
+      },
+      onError: (err) => {
+        console.error("SSE error:", err);
+      }
+    });
+
+    return () => evtSource.close();
+  }, []);
 
   const getNotificationIcon = (type) => {
     switch (type) {
-      case 'create':
+      case "create":
         return <Plus className="h-4 w-4" />;
-      case 'update':
+      case "update":
         return <Edit className="h-4 w-4" />;
-      case 'delete':
+      case "delete":
         return <Trash2 className="h-4 w-4" />;
       default:
         return <CheckCircle className="h-4 w-4" />;
@@ -44,11 +61,11 @@ export function NotificationsDropdown() {
 
   const getNotificationStyle = (type) => {
     switch (type) {
-      case 'create':
+      case "create":
         return "text-green-600 border-l-4 border-l-green-500";
-      case 'update':
+      case "update":
         return "text-blue-600 border-l-4 border-l-blue-500";
-      case 'delete':
+      case "delete":
         return "text-red-600 border-l-4 border-l-red-500";
       default:
         return "text-text border-l-4 border-l-gray-500";
@@ -59,7 +76,7 @@ export function NotificationsDropdown() {
     const now = new Date();
     const created = new Date(createdAt);
     const diffInMinutes = Math.floor((now.getTime() - created.getTime()) / (1000 * 60));
-    
+
     if (diffInMinutes < 1) return "Just now";
     if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
     if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
@@ -78,7 +95,7 @@ export function NotificationsDropdown() {
         <Bell className="h-5 w-5" />
         {notifications.length > 0 && (
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center text-[10px]">
-            {notifications.length > 9 ? '9+' : notifications.length}
+            {notifications.length > 9 ? "9+" : notifications.length}
           </span>
         )}
       </Button>
@@ -92,9 +109,7 @@ export function NotificationsDropdown() {
               <h3 className="text-sm font-semibold">Notifications</h3>
               <div className="flex items-center gap-2">
                 {notifications.length > 0 && (
-                  <span className="text-xs text-muted-foreground">
-                    {notifications.length} new
-                  </span>
+                  <span className="text-xs text-muted-foreground">{notifications.length} new</span>
                 )}
                 <button
                   onClick={() => setOpen(false)}
@@ -130,39 +145,47 @@ export function NotificationsDropdown() {
                   {notifications.map((notification) => (
                     <li
                       key={notification._id}
-                      className={`px-4 py-3 hover:bg-hoverBg cursor-pointer border-b ${getNotificationStyle(notification.type)}`}
+                      className={`px-4 py-3 hover:bg-hoverBg cursor-pointer border-b ${getNotificationStyle(
+                        notification.type
+                      )}`}
                     >
                       <div className="flex space-x-3">
                         {/* Icon with type-based background */}
                         <div className="flex-shrink-0">
-                          <div className={`p-2 rounded-full ${
-                            notification.type === 'create' ? 'bg-green-100' :
-                            notification.type === 'update' ? 'bg-blue-100' :
-                            'bg-red-100'
-                          }`}>
+                          <div
+                            className={`p-2 rounded-full ${
+                              notification.type === "create"
+                                ? "bg-green-100"
+                                : notification.type === "update"
+                                ? "bg-blue-100"
+                                : "bg-red-100"
+                            }`}
+                          >
                             {getNotificationIcon(notification.type)}
                           </div>
                         </div>
-                        
+
                         {/* Content */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1">
                             <h4 className="text-sm font-semibold text-text truncate">
                               {notification.title}
                             </h4>
-                            <span className={`text-xs px-2 py-1 rounded-full ${
-                              notification.type === 'create' ? 'bg-green-100 text-green-800' :
-                              notification.type === 'update' ? 'bg-blue-100 text-blue-800' :
-                              'bg-red-100 text-red-800'
-                            }`}>
+                            <span
+                              className={`text-xs px-2 py-1 rounded-full ${
+                                notification.type === "create"
+                                  ? "bg-green-100 text-green-800"
+                                  : notification.type === "update"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
                               {notification.type}
                             </span>
                           </div>
-                          
-                          <p className="text-sm text-text mb-2">
-                            {notification.message}
-                          </p>
-                          
+
+                          <p className="text-sm text-text mb-2">{notification.message}</p>
+
                           <span className="text-xs text-muted-foreground">
                             {formatTime(notification.createdAt)}
                           </span>
@@ -177,7 +200,7 @@ export function NotificationsDropdown() {
             {/* Footer */}
             {notifications.length > 0 && (
               <div className="px-4 py-2 border-t">
-                <button 
+                <button
                   className="w-full text-xs text-muted-foreground hover:underline text-center"
                   onClick={() => setNotifications([])}
                 >

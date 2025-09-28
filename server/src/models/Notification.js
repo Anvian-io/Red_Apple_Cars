@@ -13,12 +13,15 @@ const notificationSchema = new mongoose.Schema(
         },
         type: {
             type: String,
+        },
+        read:{
+            type:Boolean
         }
     },
     { timestamps: true }
 );
 
 // Index for better query performance
-notificationSchema.index({ recipient: 1, read: 1, createdAt: -1 });
+notificationSchema.index({ read: 1, createdAt: -1 });
 
 export default mongoose.model("Notification", notificationSchema);
