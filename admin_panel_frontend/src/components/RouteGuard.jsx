@@ -84,7 +84,7 @@ export function RouteGuard({ children, requiredPermission = "read" }) {
         <div className="text-center">
           <div className="text-6xl mb-4">🚫</div>
           <h2 className="text-2xl font-bold text-heading mb-2">Access Denied</h2>
-          <p className="text-text mb-4">You don't have permission to access this page.</p>
+          <p className="text-text mb-4">You don&apos;t have permission to access this page.</p>
           <Button
             onClick={() => {
               const permissions = JSON.parse(localStorage.getItem("permissions") || "[]");
