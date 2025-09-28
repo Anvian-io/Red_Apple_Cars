@@ -17,6 +17,7 @@ import { Badge } from "../ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import SearchLoader from "@/components/custom_ui/SearchLoader";
 import { useRouter } from "next/navigation";
+import { CustomPagination } from "..";
 
 
 export function ServicesSection({ isExpanded }) {
