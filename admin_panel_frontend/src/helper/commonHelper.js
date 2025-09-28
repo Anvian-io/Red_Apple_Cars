@@ -1,4 +1,5 @@
 import axios from "axios";
+import { EventSourcePolyfill } from "event-source-polyfill";
 
 const asyncHandler = (fn) => {
   return async (...args) => {
@@ -86,7 +87,7 @@ export const apiClient = {
 
 export const apiClientEvents = {
   events: (url, { onMessage, onError, onOpen } = {}, headers = {}) => {
-    const evtSource = new EventSource(`${base_url}${url}`, {
+    const evtSource = new EventSourcePolyfill(`${base_url}${url}`, {
       headers: {
         ...headers,
         Authorization: `Bearer ${getAccessToken()}`
@@ -95,9 +96,7 @@ export const apiClientEvents = {
     });
 
     if (onOpen) evtSource.onopen = onOpen;
-    console.log(onMessage,"Fewoif")
-    if (onMessage)
-      console.log('wjfi')
+    if (onMessage) {
       evtSource.onmessage = (e) => {
         try {
           const data = JSON.parse(e.data);
@@ -106,6 +105,7 @@ export const apiClientEvents = {
           onMessage(e.data, e);
         }
       };
+    }
     if (onError) evtSource.onerror = onError;
 
     return evtSource;
