@@ -1,4 +1,5 @@
 import axios from "axios";
+import { EventSourcePolyfill } from "event-source-polyfill";
 
 const asyncHandler = (fn) => {
   return async (...args) => {
@@ -48,9 +49,9 @@ export const apiClient = {
         ...config,
         withCredentials: true,
         headers: {
-          ...(config.headers || {}),
-          Authorization: `Bearer ${getAccessToken()}`, // ✅ attach token
-        },
+          ...(config?.headers || {}),
+          Authorization: `Bearer ${getAccessToken()}` // ✅ attach token
+        }
       })
     ),
 
@@ -65,9 +66,9 @@ export const apiClient = {
       axios.post(`${base_url}${url}`, data, {
         headers: {
           ...headers,
-          Authorization: `Bearer ${getAccessToken()}`, // ✅ attach token
+          Authorization: `Bearer ${getAccessToken()}` // ✅ attach token
         },
-        withCredentials: true,
+        withCredentials: true
       })
     );
   },
@@ -77,11 +78,38 @@ export const apiClient = {
       axios.delete(`${base_url}${url}`, {
         headers: {
           ...headers,
-          Authorization: `Bearer ${getAccessToken()}`, // ✅ attach token
+          Authorization: `Bearer ${getAccessToken()}` // ✅ attach token
         },
-        withCredentials: true,
+        withCredentials: true
       })
     ),
+};
+
+export const apiClientEvents = {
+  events: (url, { onMessage, onError, onOpen } = {}, headers = {}) => {
+    const evtSource = new EventSourcePolyfill(`${base_url}${url}`, {
+      headers: {
+        ...headers,
+        Authorization: `Bearer ${getAccessToken()}`
+      },
+      withCredentials: true
+    });
+
+    if (onOpen) evtSource.onopen = onOpen;
+    if (onMessage) {
+      evtSource.onmessage = (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          onMessage(data, e);
+        } catch {
+          onMessage(e.data, e);
+        }
+      };
+    }
+    if (onError) evtSource.onerror = onError;
+
+    return evtSource;
+  }
 };
 
 // helper/responseHandler.js

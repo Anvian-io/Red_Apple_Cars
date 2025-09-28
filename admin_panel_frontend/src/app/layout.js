@@ -43,7 +43,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body
-        className={`bg-cardBg ${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`bg-cardBg ${geistSans.variable} ${geistMono.variable} antialiased overflow-x-hidden `}
       >
         <ThemeProvider
           attribute="class"

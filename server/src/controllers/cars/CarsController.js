@@ -1,11 +1,16 @@
 // controllers/carController.js
 import Car from "../../models/Car.js";
+import role from "../../models/role.js";
 import CarDetail from "../../models/CarDetails.js";
 import CarMoreInfo from "../../models/CarMoreInfo.js";
 import CarImage from "../../models/CarImage.js";
 import { asyncHandler, sendResponse, statusType } from "../../utils/index.js";
 import { deleteOnCloudinary, uploadOnCloudinary } from "../../utils/cloudinary.js";
+import { createNotification } from "../../utils/notificationHelper.js";
 import mongoose from "mongoose";
+import ExcelJS from "exceljs";
+import { sendNotificationToClients } from "../notifications/notificationRoute.js";
+
 
 // Create or Update Car
 export const createOrUpdateCar = asyncHandler(async (req, res) => {
@@ -99,8 +104,10 @@ export const createOrUpdateCar = asyncHandler(async (req, res) => {
 
             // console.log(car,"fwejoifhwoi")
             // Handle main image upload if provided
+            console.log(req.files, "fweoif");
             if (req.files && req.files.main_image) {
                 // Delete old image if exists
+                console.log("fjewoife");
                 if (car.main_image) {
                     await deleteOnCloudinary(car.main_image);
                 }
@@ -315,6 +322,18 @@ export const createOrUpdateCar = asyncHandler(async (req, res) => {
 
         await session.commitTransaction();
         session.endSession();
+
+        const action = car_id ? "updated" : "created";
+
+        const Role = await role.findById({ _id: req.user.role });
+
+        await createNotification({
+            title: `Car ${action}`,
+            message: `Car ${action} by ${Role.name}: ${req.user.name}`,
+            type: action,
+        });
+
+        sendNotificationToClients("notification_update");
 
         const message = car_id ? "Car updated successfully" : "Car created successfully";
         return sendResponse(res, true, { car }, message, statusType.SUCCESS);
@@ -628,6 +647,13 @@ export const deleteCar = asyncHandler(async (req, res) => {
         await session.commitTransaction();
         session.endSession();
 
+        const role = await role.findById({ _id: req.user.role });
+        await createNotification({
+            title: "Car deleted",
+            message: `Car deleted by ${role.name}: ${req.user.name}`,
+            type: "delete"
+        });
+
         return sendResponse(res, true, null, "Car deleted successfully", statusType.OK);
     } catch (error) {
         await session.abortTransaction();
@@ -681,6 +707,332 @@ export const deleteOtherImage = asyncHandler(async (req, res) => {
     await CarImage.findByIdAndDelete(imageId);
 
     return sendResponse(res, true, null, "Image deleted successfully", statusType.OK);
+});
+
+export const exportCarsToExcel = asyncHandler(async (req, res) => {
+    try {
+        // Fetch all cars with their related data
+        const cars = await Car.aggregate([
+            { $match: { website_state: true } },
+            { $sort: { createdAt: -1 } },
+            {
+                $lookup: {
+                    from: "cardetails",
+                    localField: "_id",
+                    foreignField: "car_id",
+                    as: "details"
+                }
+            },
+            {
+                $lookup: {
+                    from: "carimages",
+                    localField: "_id",
+                    foreignField: "car_id",
+                    as: "images"
+                }
+            },
+            {
+                $lookup: {
+                    from: "carmoreinfos",
+                    localField: "_id",
+                    foreignField: "car_id",
+                    as: "moreInfo"
+                }
+            }
+        ]);
+
+        // Create a new workbook
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Cars Inventory");
+
+        // Define columns with custom widths
+        worksheet.columns = [
+            { header: "Car Index ID", key: "car_index_id", width: 15 },
+            { header: "Name", key: "name", width: 25 },
+            { header: "Description", key: "description", width: 30 },
+            { header: "Company", key: "car_company", width: 20 },
+            { header: "Real Price (BWP)", key: "real_price_bwp", width: 18 },
+            { header: "Actual Price (BWP)", key: "actual_price_bwp", width: 18 },
+            { header: "Real Price (ZMW)", key: "real_price_zmw", width: 18 },
+            { header: "Actual Price (ZMW)", key: "actual_price_zmw", width: 18 },
+            { header: "Main Image", key: "main_image", width: 50 },
+            // { header: "All Images", key: "all_images", width: 100 },
+            { header: "Website State", key: "website_state", width: 15 },
+            { header: "Status", key: "status", width: 12 },
+            { header: "Year", key: "year", width: 10 },
+            { header: "Engine Type", key: "engine_type", width: 15 },
+            { header: "Engine Size", key: "engine_size", width: 15 },
+            { header: "Transmission", key: "transmission", width: 15 },
+            { header: "Color", key: "color", width: 15 },
+            { header: "Fuel", key: "fuel", width: 12 },
+            { header: "Mileage", key: "mileage", width: 15 },
+            { header: "Drive", key: "drive", width: 12 },
+            { header: "Option", key: "option", width: 20 },
+            { header: "Location", key: "location", width: 20 },
+            { header: "Condition", key: "condition", width: 15 },
+            { header: "Duty", key: "duty", width: 15 },
+            { header: "Stock No", key: "stock_no", width: 15 },
+            { header: "TP", key: "tp", width: 12 },
+            { header: "Cost", key: "cost", width: 12 },
+            { header: "Duty Cost", key: "duty_cost", width: 15 },
+            { header: "Total Cost", key: "t_cost", width: 15 },
+            { header: "Exchange Rate", key: "exr", width: 15 },
+            { header: "K Price", key: "k_price", width: 15 },
+            { header: "Sold Price", key: "sold_price", width: 15 },
+            { header: "Discount", key: "discount", width: 12 },
+            { header: "Profit", key: "profit", width: 12 },
+            { header: "Commission", key: "comm", width: 12 },
+            { header: "Net Profit", key: "net_profit", width: 15 },
+            { header: "Sold Date", key: "sold_date", width: 15 },
+            { header: "Sold By", key: "sold_by", width: 20 },
+            { header: "Customer Name", key: "customer_name", width: 25 },
+            { header: "Customer Address", key: "customer_address", width: 30 },
+            { header: "Customer Phone", key: "customer_phone_no", width: 20 },
+            { header: "Created At", key: "createdAt", width: 20 },
+            { header: "Updated At", key: "updatedAt", width: 20 }
+        ];
+
+        // Style the header row
+        worksheet.getRow(1).font = { bold: true, color: { argb: "FFFFFF" } };
+        worksheet.getRow(1).fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "4472C4" }
+        };
+
+        // Add data rows
+        // Add data rows
+        for (let index = 0; index < cars.length; index++) {
+            const car = cars[index];
+
+            const row = worksheet.addRow({
+                car_index_id: car.car_index_id || "",
+                name: car.name || "",
+                description: car.description || "",
+                car_company: car.car_company || "",
+                real_price_bwp: car.real_price_bwp || 0,
+                actual_price_bwp: car.actual_price_bwp || 0,
+                real_price_zmw: car.real_price_zmw || 0,
+                actual_price_zmw: car.actual_price_zmw || 0,
+                main_image: "", // We'll embed the actual image here
+                // all_images: car.images ? car.images.map((img) => img.image_url).join(", ") : "",
+                website_state: car.website_state ? "Yes" : "No",
+                status: car.status || "",
+                year: car.details?.year || "",
+                engine_type: car.details?.engine_type || "",
+                engine_size: car.details?.engine_size || "",
+                transmission: car.details?.transmission || "",
+                color: car.details?.color || "",
+                fuel: car.details?.fuel || "",
+                mileage: car.details?.mileage || "",
+                drive: car.details?.drive || "",
+                option: car.details?.option || "",
+                location: car.details?.location || "",
+                condition: car.details?.condition || "",
+                duty: car.details?.duty || "",
+                stock_no: car.details?.stock_no || "",
+                tp: car.moreInfo?.Tp || "",
+                cost: car.moreInfo?.cost || "",
+                duty_cost: car.moreInfo?.duty || "",
+                t_cost: car.moreInfo?.t_cost || "",
+                exr: car.moreInfo?.exr || "",
+                k_price: car.moreInfo?.k_price || "",
+                sold_price: car.moreInfo?.sold_price || "",
+                discount: car.moreInfo?.discount || "",
+                profit: car.moreInfo?.profit || "",
+                comm: car.moreInfo?.comm || "",
+                net_profit: car.moreInfo?.net_profit || "",
+                sold_date: car.moreInfo?.sold_date
+                    ? new Date(car.moreInfo.sold_date).toLocaleDateString()
+                    : "",
+                sold_by: car.moreInfo?.sold_by || "",
+                customer_name: car.moreInfo?.customer_name || "",
+                customer_address: car.moreInfo?.customer_address || "",
+                customer_phone_no: car.moreInfo?.customer_phone_no || "",
+                createdAt: car.createdAt ? new Date(car.createdAt).toLocaleDateString() : "",
+                updatedAt: car.updatedAt ? new Date(car.updatedAt).toLocaleDateString() : ""
+            });
+
+            // Embed main image if available
+            // console.log(car.all_images);
+            if (car.main_image) {
+                try {
+                    // console.log(car.main_image)
+                    const response = await fetch(car.main_image);
+                    if (!response.ok) throw new Error("Image fetch failed");
+
+                    const imageBuffer = await response.arrayBuffer();
+                    const ext = car.main_image.split(".").pop().split("?")[0];
+
+                    const imageId = workbook.addImage({
+                        buffer: Buffer.from(imageBuffer),
+                        extension: ext
+                    });
+
+                    worksheet.addImage(imageId, {
+                        tl: { col: 8, row: row.number - 1 },
+                        ext: { width: 120, height: 80 }
+                    });
+
+                    worksheet.getRow(row.number).height = 80;
+                } catch (err) {
+                    console.warn(`Failed to embed image for car ${car.car_index_id}:`, err.message);
+                }
+            }
+            // console.log(car.images,'fowiehfho')
+            // Optional: Alternate row color
+            if (index % 2 === 0) {
+                row.fill = {
+                    type: "pattern",
+                    pattern: "solid",
+                    fgColor: { argb: "F2F2F2" }
+                };
+            }
+        }
+
+        // Auto-filter for all columns
+        worksheet.autoFilter = {
+            from: { row: 1, column: 1 },
+            to: { row: 1, column: worksheet.columnCount }
+        };
+
+        // Freeze the header row
+        worksheet.views = [{ state: "frozen", xSplit: 0, ySplit: 1 }];
+
+        // Set response headers for Excel file download
+        res.setHeader(
+            "Content-Type",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+        res.setHeader(
+            "Content-Disposition",
+            `attachment; filename=cars-inventory-${Date.now()}.xlsx`
+        );
+
+        // Write workbook to response
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (error) {
+        console.error("Error generating Excel file:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error generating Excel file",
+            error: error.message
+        });
+    }
+});
+
+// Alternative version with image hyperlinks (if you want clickable links)
+export const exportCarsToExcelWithHyperlinks = asyncHandler(async (req, res) => {
+    try {
+        const cars = await Car.aggregate([
+            {
+                $match: {
+                    website_state: true,
+                    status: "unsold"
+                }
+            },
+            {
+                $sort: { createdAt: -1 }
+            },
+            {
+                $lookup: {
+                    from: "cardetails",
+                    localField: "_id",
+                    foreignField: "car_id",
+                    as: "details"
+                }
+            },
+            {
+                $lookup: {
+                    from: "carimages",
+                    localField: "_id",
+                    foreignField: "car_id",
+                    as: "images"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$details",
+                    preserveNullAndEmptyArrays: true
+                }
+            }
+        ]);
+
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Cars with Image Links");
+
+        // Simplified columns for hyperlink version
+        worksheet.columns = [
+            { header: "Car ID", key: "car_index_id", width: 15 },
+            { header: "Name", key: "name", width: 25 },
+            { header: "Company", key: "car_company", width: 20 },
+            { header: "Price (BWP)", key: "actual_price_bwp", width: 15 },
+            { header: "Price (ZMW)", key: "actual_price_zmw", width: 15 },
+            { header: "Main Image", key: "main_image", width: 50 },
+            { header: "All Images", key: "all_images", width: 100 },
+            { header: "Year", key: "year", width: 10 },
+            { header: "Color", key: "color", width: 15 },
+            { header: "Status", key: "status", width: 12 }
+        ];
+
+        // Style header
+        worksheet.getRow(1).font = { bold: true };
+        worksheet.getRow(1).fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "DDEBF7" }
+        };
+
+        cars.forEach((car, index) => {
+            const row = worksheet.addRow({
+                car_index_id: car.car_index_id,
+                name: car.name,
+                car_company: car.car_company,
+                actual_price_bwp: car.actual_price_bwp,
+                actual_price_zmw: car.actual_price_zmw,
+                main_image: car.main_image,
+                all_images: car.images ? car.images.map((img) => img.image_url).join("\n") : "",
+                year: car.details?.year || "",
+                color: car.details?.color || "",
+                status: car.status
+            });
+
+            // Add hyperlinks to image URLs
+            if (car.main_image) {
+                const mainImageCell = row.getCell(6);
+                mainImageCell.value = { text: "View Main Image", hyperlink: car.main_image };
+                mainImageCell.font = { color: { argb: "0000FF" }, underline: true };
+            }
+
+            if (car.images && car.images.length > 0) {
+                const allImagesCell = row.getCell(7);
+                allImagesCell.value = car.images.map((img, idx) => `Image ${idx + 1}`).join("\n");
+
+                // Note: ExcelJS doesn't support multiple hyperlinks in one cell easily
+                // This adds the links as text that users can copy
+            }
+        });
+
+        res.setHeader(
+            "Content-Type",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+        res.setHeader(
+            "Content-Disposition",
+            `attachment; filename=cars-with-images-${Date.now()}.xlsx`
+        );
+
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (error) {
+        console.error("Error generating Excel file:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error generating Excel file",
+            error: error.message
+        });
+    }
 });
 
 // // Add import at the top

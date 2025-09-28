@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useForm, Controller, FormProvider } from "react-hook-form";
 import {
   Dialog,
@@ -18,6 +18,8 @@ import { createOrUpdateCar } from "@/services/cars/carsServices";
 import { useRouter } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { RichTextEditor } from "..";
+import Image from "next/image";
+import { X, Upload, Plus } from "lucide-react";
 
 export function AddCarForm({ open, onOpenChange, onCarCreated, carData }) {
   const methods = useForm({
@@ -31,6 +33,7 @@ export function AddCarForm({ open, onOpenChange, onCarCreated, carData }) {
       actual_price_zmw: 0,
       status: "unsold",
       website_state: true,
+      // Remove main_image and images from form state - we'll handle them separately
       details: {
         year: "",
         engine_type: "",
@@ -80,6 +83,11 @@ export function AddCarForm({ open, onOpenChange, onCarCreated, carData }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState("car");
+  const [mainImageFile, setMainImageFile] = useState(null);
+  const [mainImagePreview, setMainImagePreview] = useState(null);
+  const [additionalImageFiles, setAdditionalImageFiles] = useState([]);
+  const [additionalImagePreviews, setAdditionalImagePreviews] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
   const router = useRouter();
 
   const status = watch("status");
@@ -98,6 +106,15 @@ export function AddCarForm({ open, onOpenChange, onCarCreated, carData }) {
       setValue("actual_price_zmw", carData.actual_price_zmw || 0);
       setValue("status", carData.status || "unsold");
       setValue("website_state", carData.website_state || true);
+
+      // Set images if they exist
+      if (carData.main_image) {
+        setMainImagePreview(carData.main_image);
+      }
+
+      if (carData.images && carData.images.length > 0) {
+        setExistingImages(carData.images);
+      }
 
       // Set details if they exist
       if (carData.details) {
@@ -158,29 +175,111 @@ export function AddCarForm({ open, onOpenChange, onCarCreated, carData }) {
           customer_phone_no: ""
         }
       });
+      setMainImageFile(null);
+      setMainImagePreview(null);
+      setAdditionalImageFiles([]);
+      setAdditionalImagePreviews([]);
+      setExistingImages([]);
       setIsEditing(false);
       setActiveTab("car");
     }
   }, [open, carData, setValue, reset]);
 
+  const handleMainImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setMainImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setMainImagePreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAdditionalImagesUpload = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+      const newFiles = [...additionalImageFiles];
+      const newPreviews = [...additionalImagePreviews];
+
+      files.forEach((file) => {
+        newFiles.push(file);
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          newPreviews.push(e.target.result);
+          setAdditionalImagePreviews([...newPreviews]);
+        };
+        reader.readAsDataURL(file);
+      });
+
+      setAdditionalImageFiles(newFiles);
+    }
+  };
+
+  const removeAdditionalImage = (index) => {
+    const newFiles = [...additionalImageFiles];
+    const newPreviews = [...additionalImagePreviews];
+    newFiles.splice(index, 1);
+    newPreviews.splice(index, 1);
+    setAdditionalImageFiles(newFiles);
+    setAdditionalImagePreviews(newPreviews);
+  };
+
+  const removeExistingImage = (index) => {
+    const newImages = [...existingImages];
+    newImages.splice(index, 1);
+    setExistingImages(newImages);
+  };
+
   const onSubmit = async (data) => {
     setIsSubmitting(true);
-    try {
-      const formData = {
-        car_id: carData?._id || null,
-        name: data.name,
-        description: data.description,
-        car_company: data.car_company,
-        real_price_bwp: data.real_price_bwp,
-        actual_price_bwp: data.actual_price_bwp,
-        real_price_zmw: data.real_price_zmw,
-        actual_price_zmw: data.actual_price_zmw,
-        status: data.status === (true || false) ? "unsold" : data.status,
-        website_state: data.website_state,
-        details: data.details,
-        moreInfo: data.moreInfo
-      };
 
+    try {
+      // Create FormData object
+      const formData = new FormData();
+
+      // Append all non-file fields
+      if (carData?._id) {
+        formData.append("car_id", carData._id);
+      }
+
+      formData.append("name", data.name);
+      formData.append("description", data.description);
+      formData.append("car_company", data.car_company);
+      formData.append("real_price_bwp", data.real_price_bwp);
+      formData.append("actual_price_bwp", data.actual_price_bwp);
+      formData.append("real_price_zmw", data.real_price_zmw);
+      formData.append("actual_price_zmw", data.actual_price_zmw);
+      formData.append("status", data.status === (true || false) ? "unsold" : data.status);
+      formData.append("website_state", data.website_state);
+
+      // Append details
+      Object.keys(data.details).forEach((key) => {
+        formData.append(key, data.details[key]);
+      });
+
+      // Append moreInfo
+      Object.keys(data.moreInfo).forEach((key) => {
+        // Handle special case for duty field in moreInfo to avoid conflict with details.duty
+        if (key === "duty") {
+          formData.append("duty_more", data.moreInfo[key]);
+        } else {
+          formData.append(key, data.moreInfo[key]);
+        }
+      });
+
+      // Append main image if selected
+      if (mainImageFile) {
+        formData.append("main_image", mainImageFile);
+      }
+
+      // Append additional images
+      additionalImageFiles.forEach((file) => {
+        formData.append("other_images", file);
+      });
+
+      // Call the API with FormData
       const response = await createOrUpdateCar(formData, router);
 
       if (response && response.data && response.data.status) {
@@ -204,6 +303,11 @@ export function AddCarForm({ open, onOpenChange, onCarCreated, carData }) {
   const handleCancel = () => {
     onOpenChange(false);
     reset();
+    setMainImageFile(null);
+    setMainImagePreview(null);
+    setAdditionalImageFiles([]);
+    setAdditionalImagePreviews([]);
+    setExistingImages([]);
   };
 
   return (
@@ -255,6 +359,106 @@ export function AddCarForm({ open, onOpenChange, onCarCreated, carData }) {
                 </div>
 
                 <RichTextEditor name="description" label="Description" />
+
+                {/* Main Image Upload */}
+                <div className="space-y-2">
+                  <Label>Main Image</Label>
+                  <div className="flex items-center gap-4">
+                    <label
+                      htmlFor="main_image"
+                      className="flex flex-col items-center justify-center w-56 h-40 border-2 border-dashed border-border rounded-md cursor-pointer hover:bg-accent/10 transition-colors"
+                    >
+                      {mainImagePreview ? (
+                        <div className="relative w-full h-full">
+                          <Image
+                            src={mainImagePreview}
+                            alt="Main car image"
+                            fill
+                            className="object-cover rounded-md"
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center p-4">
+                          <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">Upload</span>
+                        </div>
+                      )}
+                      <input
+                        id="main_image"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleMainImageUpload}
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                {/* Additional Images Upload */}
+                <div className="space-y-2">
+                  <Label>Additional Images</Label>
+                  <div className="grid grid-cols-3 gap-4">
+                    {/* Existing images */}
+                    {existingImages.map((image, index) => (
+                      <div key={`existing-${index}`} className="relative group">
+                        <div className="w-full h-32 relative rounded-md overflow-hidden">
+                          <Image
+                            src={image.image_url || image}
+                            alt={`Existing image ${index + 1}`}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => removeExistingImage(index)}
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+
+                    {/* New image previews */}
+                    {additionalImagePreviews.map((preview, index) => (
+                      <div key={`new-${index}`} className="relative group">
+                        <div className="w-full h-32 relative rounded-md overflow-hidden">
+                          <Image
+                            src={preview}
+                            alt={`Additional image ${index + 1}`}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => removeAdditionalImage(index)}
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+
+                    <label
+                      htmlFor="images"
+                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-md cursor-pointer hover:bg-accent/10 transition-colors"
+                    >
+                      <div className="flex flex-col items-center justify-center p-4">
+                        <Plus className="w-8 h-8 mb-2 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">Add Image</span>
+                      </div>
+                      <input
+                        id="images"
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={handleAdditionalImagesUpload}
+                      />
+                    </label>
+                  </div>
+                </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
