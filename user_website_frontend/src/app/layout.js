@@ -22,24 +22,25 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="overflow-x-hidden"> {/* Prevent horizontal scroll */}
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-y-hidden bg-background`} // <-- Add background color
-      >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <div className="flex flex-col h-screen overflow-x-hidden">
-            <Navbar />
-            <main className="flex-1 overflow-y-auto overflow-x-hidden">
-              {children}
-            </main>
-          </div>
-        </ThemeProvider>
-      </body>
-    </html>
+    <html lang="en" className="overflow-x-hidden">
+  <body
+    className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-y-hidden bg-background`}
+  >
+    {/* Page Content */}
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
+      <div className="flex flex-col h-screen overflow-x-hidden">
+        <Navbar />
+        <main className="flex-1 overflow-y-auto overflow-x-hidden">
+          {children}
+        </main>
+      </div>
+    </ThemeProvider>
+  </body>
+</html>
   );
 }
