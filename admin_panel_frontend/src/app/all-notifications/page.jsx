@@ -205,7 +205,7 @@ export default function Notifications() {
                 <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No notifications</h3>
                 <p className="text-muted-foreground">
-                  You're all caught up! New notifications will appear here.
+                  You&apos;re all caught up! New notifications will appear here.
                 </p>
               </CardContent>
             </Card>
