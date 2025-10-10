@@ -126,58 +126,78 @@ function ModifyDetails({ carDetails, invoiceDetails, onSave, onClose }) {
   );
 }
 
-export function CompanyInvoice({ car, customerData }) {
+// Dummy banking data to show when no data is found in localStorage
+const dummyBankingData = {
+  bankName: "Bidvest Bank",
+  accountName: "Red Apple Cars (Pty) Ltd",
+  accountNumber: "31400008206",
+  branchCode: "462-005",
+  swiftCode: "BIDBZAJJ",
+  address: "Unit 6, No 56 Shepstone Place, Westville 3630, South Africa"
+};
+
+// Dummy company data
+const dummyCompanyData = {
+  name: "Red Apple Cars",
+  regNumber: "2019/475390/07",
+  vatNumber: "4190288680"
+};
+
+export function CompanyInvoice({ car }) {
   const router = useRouter();
   const [showModifyDetails, setShowModifyDetails] = useState(false);
   const [generatedInvoiceData, setGeneratedInvoiceData] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [companyDetails, setCompanyDetails] = useState(null);
-  const [bankingDetails, setBankingDetails] = useState(null);
 
-  // Load company and banking details from localStorage
+  // State for dynamic data
+  const [customerData, setCustomerData] = useState({
+    name: "",
+    number: "",
+    bondStore: "",
+    address: ""
+  });
+  const [companyData, setCompanyData] = useState(null);
+  const [bankingData, setBankingData] = useState(null);
+
+  // Load company and banking details from localStorage on component mount
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedCompany = localStorage.getItem("companyDetails");
-      const storedBanking = localStorage.getItem("bankingDetails");
+    const storedCompanyData = localStorage.getItem("companyDetails");
+    const storedBankingData = localStorage.getItem("bankingDetails");
 
-      if (storedCompany) {
-        setCompanyDetails(JSON.parse(storedCompany));
-      }
-      if (storedBanking) {
-        setBankingDetails(JSON.parse(storedBanking));
-      }
+    if (storedCompanyData) {
+      setCompanyData(JSON.parse(storedCompanyData));
+    }
+    if (storedBankingData) {
+      setBankingData(JSON.parse(storedBankingData));
     }
   }, []);
 
+  const handleCustomerDataChange = (field, value) => {
+    setCustomerData((prev) => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
   const handle_generate_invoice = async () => {
+    // Validate customer data
+    if (
+      !customerData.name ||
+      !customerData.number ||
+      !customerData.bondStore ||
+      !customerData.address
+    ) {
+      toast.error("Please fill in all customer details");
+      return;
+    }
+
     try {
-      // Default company details if not in localStorage
-      const defaultCompany = {
-        name: "Red Apple Cars",
-        regNumber: "2019/475390/07",
-        vatNumber: "4190288680"
-      };
-
-      // Default banking details if not in localStorage
-      const defaultBanking = {
-        bankName: "Bidvest Bank",
-        accountName: "Red Apple Cars (Pty) Ltd",
-        accountNumber: "31400008206",
-        branchCode: "462-005",
-        swiftCode: "BIDBZAJJ",
-        address: "Unit 6, No 56 Shepstone Place, Westville 3630, South Africa"
-      };
-
-      // Default customer data if not provided
-      const defaultCustomer = {
-        name: "Dream drive motor",
-        number: "988738379",
-        bondStore: "Value Marketing (PTY) LTD",
-        address: "Gaborone, Botswana."
-      };
-
       const payload = {
-        company: companyDetails || defaultCompany,
+        company: {
+          name: companyData?.name || dummyCompanyData.name,
+          regNumber: companyData?.regNumber || dummyCompanyData.regNumber,
+          vatNumber: companyData?.vatNumber || dummyCompanyData.vatNumber
+        },
         invoice: {
           date: new Date().toISOString().split("T")[0],
           documentNumber: Math.floor(100000000 + Math.random() * 900000000).toString(),
@@ -186,28 +206,40 @@ export function CompanyInvoice({ car, customerData }) {
             car?.chassis_number ||
             "REF" + Math.floor(100000 + Math.random() * 900000)
         },
-        customer: customerData || defaultCustomer,
-        banking: bankingDetails || defaultBanking,
+        customer: {
+          name: customerData.name,
+          number: customerData.number,
+          bondStore: customerData.bondStore,
+          address: customerData.address
+        },
+        banking: {
+          bankName: bankingData?.bankName || dummyBankingData.bankName,
+          accountName: bankingData?.accountName || dummyBankingData.accountName,
+          accountNumber: bankingData?.accountNumber || dummyBankingData.accountNumber,
+          branchCode: bankingData?.branchCode || dummyBankingData.branchCode,
+          swiftCode: bankingData?.swiftCode || dummyBankingData.swiftCode,
+          address: bankingData?.address || dummyBankingData.address
+        },
         vehicle: {
-          carId: car?._id || car?.car_index_id || "N/A",
-          chassisNo: car?.chassis_number || car?.details?.stock_no || "N/A",
-          makeModel: car?.name || "N/A",
-          borderPost: "KFN", // You might want to make this dynamic too
-          country: "GE6-1079193", // You might want to make this dynamic too
-          color: car?.details?.color || "N/A",
-          engineNo: car?.engine_number || car?.details?.engine_type || "N/A",
+          carId: car?._id || car?.car_index_id || "68bd6331a4ab7c5b68df10eb",
+          chassisNo: car?.chassis_number || "A80503080",
+          makeModel: car?.name || "HONDA FIT",
+          borderPost: "KFN",
+          country: "GE6-1079193",
+          color: car?.details?.color || car?.color || "Blue",
+          engineNo: car?.engine_number || car?.details?.engineNo || "L13A 4088336",
           doors: car?.details?.doors || "5",
           condition: car?.details?.condition || "Used",
-          engineCapacity: car?.details?.engine_size || "N/A",
+          engineCapacity: car?.details?.engine_size || "2008",
           seats: car?.details?.seats || "5",
           fuelType: car?.details?.fuel || "Petrol",
-          grossMass: car?.details?.grossMass || "-",
+          grossMass: "-",
           carrierDetails: car?.details?.transmission || "Automatic"
         },
         price: {
-          vehiclePrice: car?.actual_price_bwp || car?.real_price_bwp || "0",
-          transport: "200", // You might want to make this dynamic
-          total: (parseInt(car?.actual_price_bwp || car?.real_price_bwp || 0) + 200).toString()
+          vehiclePrice: car?.actual_price_bwp || "1200",
+          transport: "200",
+          total: (parseInt(car?.actual_price_bwp || 1200) + 200).toString()
         }
       };
 
@@ -256,25 +288,24 @@ export function CompanyInvoice({ car, customerData }) {
     if (!open) {
       setShowModifyDetails(false);
       setGeneratedInvoiceData(null);
+      // Reset customer data when dialog closes
+      setCustomerData({
+        name: "",
+        number: "",
+        bondStore: "",
+        address: ""
+      });
     }
   };
 
-  // Helper function to get current date in required format
+  // Get current date for invoice
   const getCurrentDate = () => {
     return new Date().toISOString().split("T")[0];
   };
 
-  // Helper function to format price
-  const formatPrice = (price) => {
-    return parseInt(price || 0).toLocaleString();
-  };
-
-  // Calculate total price
-  const calculateTotal = () => {
-    const vehiclePrice = parseInt(car?.actual_price_bwp || car?.real_price_bwp || 0);
-    const transport = 200; // You can make this dynamic
-    return vehiclePrice + transport;
-  };
+  // Determine which banking data to display
+  const displayBankingData = bankingData || dummyBankingData;
+  const displayCompanyData = companyData || dummyCompanyData;
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
@@ -299,72 +330,115 @@ export function CompanyInvoice({ car, customerData }) {
                   </div>
                   <div className="ml-2">
                     <h1 className={`text-6xl text-red-600 ${lobster.className}`}>
-                      {companyDetails?.name || "Red Apple Cars"}
+                      {displayCompanyData.name}
                     </h1>
                     <p className="text-2xl mt-2">Car Payment Invoice</p>
                   </div>
                 </div>
                 <div className="text-left">
                   <h1 className="text-2xl font-bold">TAX INVOICE</h1>
-                  <p>Company Reg # {companyDetails?.regNumber || "2019/475390/07"}</p>
-                  <p>VAT Reg # {companyDetails?.vatNumber || "4190288680"}</p>
+                  <p>Company Reg # {displayCompanyData.regNumber}</p>
+                  <p>VAT Reg # {displayCompanyData.vatNumber}</p>
                   <p>Invoice Date {getCurrentDate()}</p>
                   <p>
                     Document Number {Math.floor(100000000 + Math.random() * 900000000).toString()}
                   </p>
-                  <p>Reference {car?.details?.stock_no || car?.chassis_number || "N/A"}</p>
+                  <p>Reference {car?.details?.stock_no || car?.chassis_number || "A80503080"}</p>
                 </div>
               </div>
 
               <div className="bg-red-500 h-1 my-2"></div>
+
+              {/* Customer Details Section with Input Fields */}
               <div className="flex justify-between border border-b border-gray-400/40 my-4 w-full">
                 <div className="w-[40%] m-2">
-                  <h2 className="font-bold text-lg">Customer Details</h2>
-                  <div className="flex items-center">
-                    <h2 className="font-bold">Customer:</h2>
-                    <p>{customerData?.name || "Dream drive motor"}</p>
+                  <h2 className="font-bold text-lg mb-4">Customer Details</h2>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Customer Name *</label>
+                      <input
+                        type="text"
+                        value={customerData.name}
+                        onChange={(e) => handleCustomerDataChange("name", e.target.value)}
+                        className="w-full p-2 border rounded"
+                        placeholder="Enter customer name"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Customer Number *</label>
+                      <input
+                        type="text"
+                        value={customerData.number}
+                        onChange={(e) => handleCustomerDataChange("number", e.target.value)}
+                        className="w-full p-2 border rounded"
+                        placeholder="Enter customer number"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Bond Store *</label>
+                      <input
+                        type="text"
+                        value={customerData.bondStore}
+                        onChange={(e) => handleCustomerDataChange("bondStore", e.target.value)}
+                        className="w-full p-2 border rounded"
+                        placeholder="Enter bond store"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Address *</label>
+                      <textarea
+                        value={customerData.address}
+                        onChange={(e) => handleCustomerDataChange("address", e.target.value)}
+                        className="w-full p-2 border rounded"
+                        placeholder="Enter customer address"
+                        rows="2"
+                      />
+                    </div>
                   </div>
-                  <div className="flex items-center">
-                    <h2 className="font-bold">Customer Number: </h2>
-                    <p>{customerData?.number || "988738379"}</p>
-                  </div>
-                  <p className="font-bold">
-                    Bond Store: {customerData?.bondStore || "Value Marketing (PTY) LTD"}
-                  </p>
-                  <p>{customerData?.address || "Gaborone, Botswana."}</p>
                 </div>
 
                 <div className="border-r border-gray-400/40"></div>
 
                 <div className="w-[45%] m-2">
-                  <h2 className="font-bold text-lg">Banking Details - PULA ACCOUNT</h2>
-                  <div className="flex items-center">
-                    <h2 className="font-bold min-w-fit">Bank name: </h2>
-                    <p>{bankingDetails?.bankName || "Bidvest Bank"}</p>
+                  <h2 className="font-bold text-lg mb-4">Banking Details - PULA ACCOUNT</h2>
+                  <div className="space-y-2">
+                    <div className="flex items-start">
+                      <h2 className="font-bold min-w-fit">Bank name: </h2>
+                      <p className="ml-2">{displayBankingData.bankName}</p>
+                    </div>
+                    <div className="flex items-start">
+                      <h2 className="font-bold min-w-fit">Beneficiary Account name:</h2>
+                      <p className="ml-2">{displayBankingData.accountName}</p>
+                    </div>
+                    <div className="flex">
+                      <h2 className="min-w-fit font-bold">Account Number:</h2>
+                      <p className="ml-2">{displayBankingData.accountNumber}</p>
+                    </div>
+                    <div className="flex">
+                      <h2 className="min-w-fit font-bold">Branch Code:</h2>
+                      <p className="ml-2">{displayBankingData.branchCode}</p>
+                    </div>
+                    <div className="flex">
+                      <h2 className="min-w-fit font-bold">SWIFT Code:</h2>
+                      <p className="ml-2">{displayBankingData.swiftCode}</p>
+                    </div>
+                    <div className="flex">
+                      <h2 className="min-w-fit font-bold">Beneficiary address:</h2>
+                      <p className="ml-2">{displayBankingData.address}</p>
+                    </div>
                   </div>
-                  <div className="flex items-center">
-                    <h2 className="font-bold min-w-fit">Beneficiary Account name:</h2>
-                    <p>{bankingDetails?.accountName || "Red Apple Cars (Pty) Ltd"}</p>
-                  </div>
-                  <div className="flex">
-                    <h2 className="min-w-fit font-bold">Account Number:</h2>
-                    <p>{bankingDetails?.accountNumber || "31400008206"}</p>
-                  </div>
-                  <div className="flex">
-                    <h2 className="min-w-fit font-bold">Branch Code:</h2>
-                    <p>{bankingDetails?.branchCode || "462-005"}</p>
-                  </div>
-                  <div className="flex">
-                    <h2 className="min-w-fit font-bold"> SWIFT Code:</h2>
-                    <p>{bankingDetails?.swiftCode || "BIDBZAJJ"}</p>
-                  </div>
-                  <div className="flex">
-                    <h2 className="min-w-fit font-bold">Beneficiary address:</h2>
-                    <p>
-                      {bankingDetails?.address ||
-                        "Unit 6, No 56 Shepstone Place, Westville 3630, South Africa"}
-                    </p>
-                  </div>
+                  {!bankingData && (
+                    <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded">
+                      <p className="text-yellow-700 text-sm">
+                        <strong>Note:</strong> Using default banking details. To customize, add
+                        banking details to localStorage.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -381,10 +455,8 @@ export function CompanyInvoice({ car, customerData }) {
                   </thead>
                   <tbody>
                     <tr>
-                      <td className="text-center p-2">
-                        {car?.chassis_number || car?.details?.stock_no || "N/A"}
-                      </td>
-                      <td className="text-center p-2">{car?.name || "N/A"}</td>
+                      <td className="text-center p-2">{car?.chassis_number || "A80503080"}</td>
+                      <td className="text-center p-2">{car?.name || "HONDA FIT"}</td>
                       <td className="text-center p-2">KFN</td>
                       <td className="text-center p-2">GE6-1079193</td>
                     </tr>
@@ -403,16 +475,19 @@ export function CompanyInvoice({ car, customerData }) {
                   </thead>
                   <tbody>
                     <tr className="border border-gray-400/40">
-                      <td className="text-center p-2">{car?.details?.color || "N/A"}</td>
                       <td className="text-center p-2">
-                        {car?.engine_number || car?.details?.engine_type || "N/A"}
+                        {car?.details?.color || car?.color || "Blue"}
+                      </td>
+                      <td className="text-center p-2">
+                        {car?.engine_number || car?.details?.engineNo || "L13A 4088336"}
                       </td>
                       <td className="text-center p-2">{car?.details?.doors || "5"}</td>
                       <td className="text-center p-2">{car?.details?.condition || "Used"}</td>
-                      <td className="text-center p-2">{car?.details?.engine_size || "N/A"}</td>
+                      <td className="text-center p-2">{car?.details?.engine_size || "2008"}</td>
                     </tr>
                   </tbody>
                 </table>
+
                 <table className="w-full border-collapse border border-gray-400/40 mb-4">
                   <thead>
                     <tr className="bg-red-100">
@@ -443,7 +518,7 @@ export function CompanyInvoice({ car, customerData }) {
                     <tr>
                       <td className="border border-gray-400/40 p-2 font-semibold">Vehicle Price</td>
                       <td className="border border-gray-400/40 p-2 text-right">
-                        P {formatPrice(car?.actual_price_bwp || car?.real_price_bwp)}
+                        P {car?.actual_price_bwp || "1200"}
                       </td>
                     </tr>
                     <tr>
@@ -453,7 +528,7 @@ export function CompanyInvoice({ car, customerData }) {
                     <tr className="bg-red-100">
                       <td className="border border-gray-400/40 p-2 font-bold">Total</td>
                       <td className="border border-gray-400/40 p-2 text-right font-bold">
-                        P {formatPrice(calculateTotal())}
+                        P {(parseInt(car?.actual_price_bwp || 1200) + 200).toLocaleString()}
                       </td>
                     </tr>
                   </tbody>
@@ -518,7 +593,17 @@ export function CompanyInvoice({ car, customerData }) {
               <DialogClose asChild>
                 <Button variant="outline">Close</Button>
               </DialogClose>
-              <Button onClick={handle_generate_invoice}>Generate Invoice</Button>
+              <Button
+                onClick={handle_generate_invoice}
+                disabled={
+                  !customerData.name ||
+                  !customerData.number ||
+                  !customerData.bondStore ||
+                  !customerData.address
+                }
+              >
+                Generate Invoice
+              </Button>
             </DialogFooter>
           </>
         ) : (
