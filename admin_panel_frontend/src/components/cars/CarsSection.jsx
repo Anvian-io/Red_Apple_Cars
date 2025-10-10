@@ -704,7 +704,7 @@ export function CarSection({ isExpanded }) {
                       </TableCell>
                     )}
                     {columnVisibility.actions && (
-                      <TableCell className="text-right sticky right-0 bg-tableBg z-10">
+                      <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button
                             onClick={() => handleEditCar(car._id)}
