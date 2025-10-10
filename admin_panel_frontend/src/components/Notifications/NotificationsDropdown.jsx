@@ -1,13 +1,17 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Bell, X, CheckCircle2, AlertCircle, Info, Calendar, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getAllNotification } from "@/services/notification/notificationServices";
+import {
+  getAllNotification,
+  getUserNotificationList,
+  updateUserNotificationStatus
+} from "@/services/notification/notificationServices";
 import { apiClientEvents } from "@/helper/commonHelper";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -17,14 +21,13 @@ export function NotificationsDropdown() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
+  const markAsReadTimeoutRef = useRef(null);
+  const hasMarkedAsReadRef = useRef(false);
 
   const fetchNotifications = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await getAllNotification({
-        page: 1,
-        limit: 10
-      });
+      const response = await getUserNotificationList({});
 
       if (response && response.data && response.data.status) {
         const newNotifications = response.data.data.notifications || [];
@@ -62,6 +65,78 @@ export function NotificationsDropdown() {
 
     return () => evtSource.close();
   }, [fetchNotifications]);
+
+  // Function to mark notifications as read
+  const markNotificationsAsRead = useCallback(async () => {
+    try {
+      // Get unread notification IDs
+      const unreadNotifications = notifications
+        .filter((notification) => !notification.notification.read)
+        .map((notification) => notification._id);
+
+      if (unreadNotifications.length === 0) return;
+
+      // Call the update notification status API
+      const response = await updateUserNotificationStatus({
+        notificationIds: unreadNotifications,
+        status: "read"
+      });
+
+      if (response && response.data && response.data.status) {
+        // Update local state to mark as read
+        setNotifications((prev) =>
+          prev.map((notif) =>
+            unreadNotifications.includes(notif._id)
+              ? {
+                  ...notif,
+                  notification: {
+                    ...notif.notification,
+                    read: true
+                  }
+                }
+              : notif
+          )
+        );
+        hasMarkedAsReadRef.current = true;
+        console.log("Notifications marked as read successfully");
+      } else {
+        console.error("Failed to mark notifications as read");
+      }
+    } catch (error) {
+      console.error("Error marking notifications as read:", error);
+    }
+  }, [notifications]);
+
+  // Effect to handle dropdown open/close and automatic marking as read
+  useEffect(() => {
+    if (open && !hasMarkedAsReadRef.current) {
+      // When dropdown opens, mark as read immediately
+      markNotificationsAsRead();
+
+      // Set timeout to update UI after 5 seconds (if needed for visual feedback)
+      markAsReadTimeoutRef.current = setTimeout(() => {
+        // Any additional UI updates after 5 seconds can go here
+      }, 5000);
+    } else {
+      // When dropdown closes, clear the timeout if it exists
+      if (markAsReadTimeoutRef.current) {
+        clearTimeout(markAsReadTimeoutRef.current);
+        markAsReadTimeoutRef.current = null;
+      }
+    }
+
+    // Reset the flag when dropdown closes
+    if (!open) {
+      hasMarkedAsReadRef.current = false;
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (markAsReadTimeoutRef.current) {
+        clearTimeout(markAsReadTimeoutRef.current);
+      }
+    };
+  }, [open, markNotificationsAsRead]);
 
   const getNotificationIcon = (type) => {
     switch (type?.toLowerCase()) {
@@ -114,32 +189,43 @@ export function NotificationsDropdown() {
     return `${Math.floor(diffInMinutes / 1440)}d ago`;
   };
 
-  const markAsRead = async (notificationId) => {
-    try {
-      // You'll need to implement this API call
-      // await markNotificationAsRead(notificationId);
-
-      // Update local state
-      setNotifications((prev) =>
-        prev.map((notif) => (notif._id === notificationId ? { ...notif, read: true } : notif))
-      );
-
-      toast.success("Notification marked as read");
-    } catch (error) {
-      console.error("Error marking notification as read:", error);
-      toast.error("Failed to mark notification as read");
-    }
-  };
-
   const markAllAsRead = async () => {
     try {
-      // You'll need to implement this API call
-      // await markAllNotificationsAsRead();
+      // Get all unread notification IDs
+      const unreadNotificationIds = notifications
+        .filter((notification) => !notification.notification.read)
+        .map((notification) => notification._id);
 
-      // Update local state
-      setNotifications((prev) => prev.map((notif) => ({ ...notif, read: true })));
+      if (unreadNotificationIds.length === 0) {
+        toast.info("All notifications are already read");
+        return;
+      }
 
-      toast.success("All notifications marked as read");
+      // Call API to mark all as read
+      const response = await updateUserNotificationStatus({
+        notificationIds: unreadNotificationIds,
+        status: "read"
+      });
+
+      if (response && response.data && response.data.status) {
+        // Update local state
+        setNotifications((prev) =>
+          prev.map((notif) =>
+            unreadNotificationIds.includes(notif._id)
+              ? {
+                  ...notif,
+                  notification: {
+                    ...notif.notification,
+                    read: true
+                  }
+                }
+              : notif
+          )
+        );
+        toast.success("All notifications marked as read");
+      } else {
+        toast.error("Failed to mark all notifications as read");
+      }
     } catch (error) {
       console.error("Error marking all notifications as read:", error);
       toast.error("Failed to mark all notifications as read");
@@ -177,9 +263,11 @@ export function NotificationsDropdown() {
         onClick={() => setOpen(!open)}
       >
         <Bell className="h-5 w-5" />
-        {notifications.length > 0 && (
+        {notifications.filter((n) => !n.notification.read).length > 0 && (
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center text-[10px] font-medium">
-            {notifications.length > 9 ? "9+" : notifications.length}
+            {notifications.filter((n) => !n.notification.read).length > 9
+              ? "9+"
+              : notifications.filter((n) => !n.notification.read).length}
           </span>
         )}
       </Button>
@@ -201,7 +289,7 @@ export function NotificationsDropdown() {
               </div>
               <div className="flex items-center space-x-2">
                 <Badge variant="secondary" className="bg-hoverBg">
-                  {notifications.filter((n) => !n.read).length} New
+                  {notifications.filter((n) => !n.notification.read).length} New
                 </Badge>
                 <Button
                   variant="ghost"
@@ -213,6 +301,23 @@ export function NotificationsDropdown() {
                 </Button>
               </div>
             </div>
+
+            {/* Action Buttons */}
+            {notifications.length > 0 && (
+              <div className="flex justify-between px-4 py-2 border-b">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={markAllAsRead}
+                  disabled={notifications.filter((n) => !n.notification.read).length === 0}
+                >
+                  Mark all as read
+                </Button>
+                <Button variant="ghost" size="sm" onClick={clearAllNotifications}>
+                  Clear all
+                </Button>
+              </div>
+            )}
 
             {/* Notifications List */}
             <div className="max-h-96 overflow-y-auto">
@@ -239,7 +344,7 @@ export function NotificationsDropdown() {
                     <Card
                       key={notification._id}
                       className={`mb-2 transition-colors ${
-                        !notification.read
+                        !notification.notification.read
                           ? "border-l-4 border-l-primary bg-blue-50 dark:bg-blue-950/20"
                           : ""
                       }`}
@@ -248,7 +353,7 @@ export function NotificationsDropdown() {
                         <div className="flex items-start space-x-3">
                           {/* Icon */}
                           <div className="flex-shrink-0">
-                            {getNotificationIcon(notification.type)}
+                            {getNotificationIcon(notification.notification.type)}
                           </div>
 
                           {/* Content */}
@@ -256,35 +361,26 @@ export function NotificationsDropdown() {
                             <div className="flex items-start justify-between mb-1">
                               <div className="flex items-center space-x-2">
                                 <p className="font-medium text-sm leading-tight">
-                                  {notification.title || "Notification"}
+                                  {notification?.notification.title || "Notification"}
                                 </p>
-                                {getNotificationBadge(notification?.type)}
+                                {getNotificationBadge(notification?.notification.type)}
                               </div>
-                              {!notification.read && (
+                              {!notification.notification.read && (
                                 <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-1" />
                               )}
                             </div>
 
                             <p className="text-sm text-muted-foreground mb-2 leading-tight">
-                              {notification.message || "No message content"}
+                              {notification.notification.message || "No message content"}
                             </p>
 
                             <div className="flex items-center justify-between">
                               <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                                 <Calendar className="h-3 w-3" />
-                                <span>{formatTime(notification.createdAt)}</span>
+                                <span>{formatTime(notification.notification.createdAt)}</span>
                               </div>
 
-                              {!notification.read && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-6 px-2 text-xs"
-                                  onClick={() => markAsRead(notification._id)}
-                                >
-                                  Mark read
-                                </Button>
-                              )}
+                              {/* Removed Mark read button */}
                             </div>
                           </div>
                         </div>
@@ -294,7 +390,6 @@ export function NotificationsDropdown() {
                 </div>
               )}
             </div>
-
           </CardContent>
         </Card>
       )}

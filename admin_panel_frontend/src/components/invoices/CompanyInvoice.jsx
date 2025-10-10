@@ -8,29 +8,23 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogTrigger
 } from "@/components/ui/dialog";
 import { lobster } from "@/lib/fonts";
 import {
   createAndDownloadInvoice,
-  update_invoice_car_details,
+  update_invoice_car_details
 } from "@/services/invoice/invoiceServices";
 import { useRouter } from "next/navigation";
 import { File } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
 function ModifyDetails({ carDetails, invoiceDetails, onSave, onClose }) {
   const [status, setStatus] = useState(carDetails.status || "pending");
-  const [invoiceStatus, setInvoiceStatus] = useState(
-    invoiceDetails.status || "pending"
-  );
-  const [paymentStatus, setPaymentStatus] = useState(
-    invoiceDetails.payment_status || "pending"
-  );
-  const [paymentType, setPaymentType] = useState(
-    invoiceDetails.payment_type || "online"
-  );
+  const [invoiceStatus, setInvoiceStatus] = useState(invoiceDetails.status || "pending");
+  const [paymentStatus, setPaymentStatus] = useState(invoiceDetails.payment_status || "pending");
+  const [paymentType, setPaymentType] = useState(invoiceDetails.payment_type || "online");
 
   const handleSave = () => {
     onSave({
@@ -40,7 +34,7 @@ function ModifyDetails({ carDetails, invoiceDetails, onSave, onClose }) {
       status,
       invoiceStatus,
       paymentStatus,
-      payment_type: paymentType,
+      payment_type: paymentType
     });
   };
 
@@ -85,9 +79,7 @@ function ModifyDetails({ carDetails, invoiceDetails, onSave, onClose }) {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">
-            Invoice Status
-          </label>
+          <label className="block text-sm font-medium mb-1">Invoice Status</label>
           <select
             value={invoiceStatus}
             onChange={(e) => setInvoiceStatus(e.target.value)}
@@ -99,9 +91,7 @@ function ModifyDetails({ carDetails, invoiceDetails, onSave, onClose }) {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">
-            Payment Status
-          </label>
+          <label className="block text-sm font-medium mb-1">Payment Status</label>
           <select
             value={paymentStatus}
             onChange={(e) => setPaymentStatus(e.target.value)}
@@ -136,65 +126,89 @@ function ModifyDetails({ carDetails, invoiceDetails, onSave, onClose }) {
   );
 }
 
-export function CompanyInvoice({ car }) {
+export function CompanyInvoice({ car, customerData }) {
   const router = useRouter();
   const [showModifyDetails, setShowModifyDetails] = useState(false);
   const [generatedInvoiceData, setGeneratedInvoiceData] = useState(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false); // Add this state
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [companyDetails, setCompanyDetails] = useState(null);
+  const [bankingDetails, setBankingDetails] = useState(null);
+
+  // Load company and banking details from localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedCompany = localStorage.getItem("companyDetails");
+      const storedBanking = localStorage.getItem("bankingDetails");
+
+      if (storedCompany) {
+        setCompanyDetails(JSON.parse(storedCompany));
+      }
+      if (storedBanking) {
+        setBankingDetails(JSON.parse(storedBanking));
+      }
+    }
+  }, []);
 
   const handle_generate_invoice = async () => {
     try {
+      // Default company details if not in localStorage
+      const defaultCompany = {
+        name: "Red Apple Cars",
+        regNumber: "2019/475390/07",
+        vatNumber: "4190288680"
+      };
+
+      // Default banking details if not in localStorage
+      const defaultBanking = {
+        bankName: "Bidvest Bank",
+        accountName: "Red Apple Cars (Pty) Ltd",
+        accountNumber: "31400008206",
+        branchCode: "462-005",
+        swiftCode: "BIDBZAJJ",
+        address: "Unit 6, No 56 Shepstone Place, Westville 3630, South Africa"
+      };
+
+      // Default customer data if not provided
+      const defaultCustomer = {
+        name: "Dream drive motor",
+        number: "988738379",
+        bondStore: "Value Marketing (PTY) LTD",
+        address: "Gaborone, Botswana."
+      };
+
       const payload = {
-        company: {
-          name: "Red Apple Cars",
-          regNumber: "2019/475390/07",
-          vatNumber: "4190288680",
-        },
+        company: companyDetails || defaultCompany,
         invoice: {
           date: new Date().toISOString().split("T")[0],
-          documentNumber: Math.floor(
-            100000000 + Math.random() * 900000000
-          ).toString(),
+          documentNumber: Math.floor(100000000 + Math.random() * 900000000).toString(),
           reference:
+            car?.details?.stock_no ||
             car?.chassis_number ||
-            "REF" + Math.floor(100000 + Math.random() * 900000),
+            "REF" + Math.floor(100000 + Math.random() * 900000)
         },
-        customer: {
-          name: "Dream drive motor",
-          number: "988738379",
-          bondStore: "Value Marketing (PTY) LTD",
-          address: "Gaborone, Botswana.",
-        },
-        banking: {
-          bankName: "Bidvest Bank",
-          accountName: "Red Apple Cars (Pty) Ltd",
-          accountNumber: "31400008206",
-          branchCode: "462-005",
-          swiftCode: "BIDBZAJJ",
-          address:
-            "Unit 6, No 56 Shepstone Place, Westville 3630, South Africa",
-        },
+        customer: customerData || defaultCustomer,
+        banking: bankingDetails || defaultBanking,
         vehicle: {
-          carId: car?._id || "68bd6331a4ab7c5b68df10eb",
-          chassisNo: car?.chassis_number || "A80503080",
-          makeModel: car?.name || "HONDA FIT",
-          borderPost: "KFN",
-          country: "GE6-1079193",
-          color: car?.color || "Blue",
-          engineNo: car?.engine_number || "L13A 4088336",
-          doors: "5",
-          condition: "Used",
-          engineCapacity: "2008",
-          seats: "5",
-          fuelType: "Petrol",
-          grossMass: "-",
-          carrierDetails: "Automatic",
+          carId: car?._id || car?.car_index_id || "N/A",
+          chassisNo: car?.chassis_number || car?.details?.stock_no || "N/A",
+          makeModel: car?.name || "N/A",
+          borderPost: "KFN", // You might want to make this dynamic too
+          country: "GE6-1079193", // You might want to make this dynamic too
+          color: car?.details?.color || "N/A",
+          engineNo: car?.engine_number || car?.details?.engine_type || "N/A",
+          doors: car?.details?.doors || "5",
+          condition: car?.details?.condition || "Used",
+          engineCapacity: car?.details?.engine_size || "N/A",
+          seats: car?.details?.seats || "5",
+          fuelType: car?.details?.fuel || "Petrol",
+          grossMass: car?.details?.grossMass || "-",
+          carrierDetails: car?.details?.transmission || "Automatic"
         },
         price: {
-          vehiclePrice: car?.actual_price_bwp || "1200",
-          transport: "200",
-          total: (parseInt(car?.actual_price_bwp || 1200) + 200).toString(),
-        },
+          vehiclePrice: car?.actual_price_bwp || car?.real_price_bwp || "0",
+          transport: "200", // You might want to make this dynamic
+          total: (parseInt(car?.actual_price_bwp || car?.real_price_bwp || 0) + 200).toString()
+        }
       };
 
       const response = await createAndDownloadInvoice(payload, router);
@@ -206,7 +220,7 @@ export function CompanyInvoice({ car }) {
           customerName: payload.customer.name,
           status: "pending",
           payment_status: "pending",
-          payment_type: "online",
+          payment_type: "online"
         });
         setShowModifyDetails(true);
         toast.success("Invoice generated successfully");
@@ -222,13 +236,12 @@ export function CompanyInvoice({ car }) {
 
   const handleSaveDetails = async (data) => {
     try {
-      // Call API to update invoice and car details
       const response = await update_invoice_car_details(data, router);
 
       if (response.data) {
         toast.success("Details updated successfully");
         setShowModifyDetails(false);
-        setIsDialogOpen(false); // Close the dialog on success
+        setIsDialogOpen(false);
       } else {
         toast.error(response.data.message || "Failed to update details");
       }
@@ -238,18 +251,34 @@ export function CompanyInvoice({ car }) {
     }
   };
 
-    const handleDialogOpenChange = (open) => {
-      setIsDialogOpen(open);
-      if (!open) {
-        // Reset state when dialog closes
-        setShowModifyDetails(false);
-        setGeneratedInvoiceData(null);
-      }
-    };
+  const handleDialogOpenChange = (open) => {
+    setIsDialogOpen(open);
+    if (!open) {
+      setShowModifyDetails(false);
+      setGeneratedInvoiceData(null);
+    }
+  };
+
+  // Helper function to get current date in required format
+  const getCurrentDate = () => {
+    return new Date().toISOString().split("T")[0];
+  };
+
+  // Helper function to format price
+  const formatPrice = (price) => {
+    return parseInt(price || 0).toLocaleString();
+  };
+
+  // Calculate total price
+  const calculateTotal = () => {
+    const vehiclePrice = parseInt(car?.actual_price_bwp || car?.real_price_bwp || 0);
+    const transport = 200; // You can make this dynamic
+    return vehiclePrice + transport;
+  };
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
-      <DialogTrigger asChild onClick={() => setIsDialogOpen(true)}  >
+      <DialogTrigger asChild onClick={() => setIsDialogOpen(true)}>
         <div className="flex justify-center cursor-pointer">
           <File size={20} />
         </div>
@@ -266,29 +295,24 @@ export function CompanyInvoice({ car }) {
               <div className="flex justify-between items-start">
                 <div className="flex items-center">
                   <div className="h-[150px] mr-2">
-                    <img
-                      src="/logo.png"
-                      alt="Company Logo"
-                      className="h-full mb-2"
-                    />
+                    <img src="/logo.png" alt="Company Logo" className="h-full mb-2" />
                   </div>
                   <div className="ml-2">
-                    <h1
-                      className={`text-6xl text-red-600 ${lobster.className}`}
-                    >
-                      Red Apple Cars
+                    <h1 className={`text-6xl text-red-600 ${lobster.className}`}>
+                      {companyDetails?.name || "Red Apple Cars"}
                     </h1>
-
                     <p className="text-2xl mt-2">Car Payment Invoice</p>
                   </div>
                 </div>
                 <div className="text-left">
                   <h1 className="text-2xl font-bold">TAX INVOICE</h1>
-                  <p>Company Reg # 2019/475390/07</p>
-                  <p>VAT Reg # 4190288680</p>
-                  <p>Invoice Date 2025-06-23</p>
-                  <p>Document Number 166810710</p>
-                  <p>Reference A80503080</p>
+                  <p>Company Reg # {companyDetails?.regNumber || "2019/475390/07"}</p>
+                  <p>VAT Reg # {companyDetails?.vatNumber || "4190288680"}</p>
+                  <p>Invoice Date {getCurrentDate()}</p>
+                  <p>
+                    Document Number {Math.floor(100000000 + Math.random() * 900000000).toString()}
+                  </p>
+                  <p>Reference {car?.details?.stock_no || car?.chassis_number || "N/A"}</p>
                 </div>
               </div>
 
@@ -298,53 +322,47 @@ export function CompanyInvoice({ car }) {
                   <h2 className="font-bold text-lg">Customer Details</h2>
                   <div className="flex items-center">
                     <h2 className="font-bold">Customer:</h2>
-                    <p> Dream drive motor</p>
+                    <p>{customerData?.name || "Dream drive motor"}</p>
                   </div>
                   <div className="flex items-center">
                     <h2 className="font-bold">Customer Number: </h2>
-                    <p>988738379</p>
+                    <p>{customerData?.number || "988738379"}</p>
                   </div>
                   <p className="font-bold">
-                    Bond Store: Value Marketing (PTY) LTD
+                    Bond Store: {customerData?.bondStore || "Value Marketing (PTY) LTD"}
                   </p>
-                  <p>Gaborone, Botswana.</p>
+                  <p>{customerData?.address || "Gaborone, Botswana."}</p>
                 </div>
 
                 <div className="border-r border-gray-400/40"></div>
 
                 <div className="w-[45%] m-2">
-                  <h2 className="font-bold text-lg">
-                    Banking Details - PULA ACCOUNT
-                  </h2>
+                  <h2 className="font-bold text-lg">Banking Details - PULA ACCOUNT</h2>
                   <div className="flex items-center">
                     <h2 className="font-bold min-w-fit">Bank name: </h2>
-                    <p>Bidvest Bank</p>
+                    <p>{bankingDetails?.bankName || "Bidvest Bank"}</p>
                   </div>
                   <div className="flex items-center">
-                    <h2 className="font-bold min-w-fit">
-                      Beneficiary Account name:
-                    </h2>
-                    <p> Red Apple Cars (Pty) Ltd</p>
+                    <h2 className="font-bold min-w-fit">Beneficiary Account name:</h2>
+                    <p>{bankingDetails?.accountName || "Red Apple Cars (Pty) Ltd"}</p>
                   </div>
                   <div className="flex">
                     <h2 className="min-w-fit font-bold">Account Number:</h2>
-                    <p>31400008206</p>
+                    <p>{bankingDetails?.accountNumber || "31400008206"}</p>
                   </div>
                   <div className="flex">
                     <h2 className="min-w-fit font-bold">Branch Code:</h2>
-                    <p>462-005</p>
+                    <p>{bankingDetails?.branchCode || "462-005"}</p>
                   </div>
                   <div className="flex">
                     <h2 className="min-w-fit font-bold"> SWIFT Code:</h2>
-                    <p>BIDBZAJJ</p>
+                    <p>{bankingDetails?.swiftCode || "BIDBZAJJ"}</p>
                   </div>
                   <div className="flex">
-                    <h2 className="min-w-fit font-bold">
-                      Beneficiary address:
-                    </h2>
+                    <h2 className="min-w-fit font-bold">Beneficiary address:</h2>
                     <p>
-                      Unit 6, No 56 Shepstone Place, Westville 3630, South
-                      Africa
+                      {bankingDetails?.address ||
+                        "Unit 6, No 56 Shepstone Place, Westville 3630, South Africa"}
                     </p>
                   </div>
                 </div>
@@ -363,8 +381,10 @@ export function CompanyInvoice({ car }) {
                   </thead>
                   <tbody>
                     <tr>
-                      <td className="text-center p-2">A80503080</td>
-                      <td className="text-center p-2">HONDA FIT</td>
+                      <td className="text-center p-2">
+                        {car?.chassis_number || car?.details?.stock_no || "N/A"}
+                      </td>
+                      <td className="text-center p-2">{car?.name || "N/A"}</td>
                       <td className="text-center p-2">KFN</td>
                       <td className="text-center p-2">GE6-1079193</td>
                     </tr>
@@ -383,11 +403,13 @@ export function CompanyInvoice({ car }) {
                   </thead>
                   <tbody>
                     <tr className="border border-gray-400/40">
-                      <td className="text-center p-2">Blue</td>
-                      <td className="text-center p-2">L13A 4088336</td>
-                      <td className="text-center p-2">5</td>
-                      <td className="text-center p-2">Used</td>
-                      <td className="text-center p-2">2008</td>
+                      <td className="text-center p-2">{car?.details?.color || "N/A"}</td>
+                      <td className="text-center p-2">
+                        {car?.engine_number || car?.details?.engine_type || "N/A"}
+                      </td>
+                      <td className="text-center p-2">{car?.details?.doors || "5"}</td>
+                      <td className="text-center p-2">{car?.details?.condition || "Used"}</td>
+                      <td className="text-center p-2">{car?.details?.engine_size || "N/A"}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -402,10 +424,12 @@ export function CompanyInvoice({ car }) {
                   </thead>
                   <tbody>
                     <tr>
-                      <td className="text-center p-2">5</td>
-                      <td className="text-center p-2">Petrol</td>
+                      <td className="text-center p-2">{car?.details?.seats || "5"}</td>
+                      <td className="text-center p-2">{car?.details?.fuel || "Petrol"}</td>
                       <td className="text-center p-2">-</td>
-                      <td className="text-center p-2">Automatic</td>
+                      <td className="text-center p-2">
+                        {car?.details?.transmission || "Automatic"}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -417,27 +441,19 @@ export function CompanyInvoice({ car }) {
                 <table className="w-full border-collapse border border-gray-400/40">
                   <tbody>
                     <tr>
-                      <td className="border border-gray-400/40 p-2 font-semibold">
-                        Vehicle Price
-                      </td>
+                      <td className="border border-gray-400/40 p-2 font-semibold">Vehicle Price</td>
                       <td className="border border-gray-400/40 p-2 text-right">
-                        P 1200
+                        P {formatPrice(car?.actual_price_bwp || car?.real_price_bwp)}
                       </td>
                     </tr>
                     <tr>
-                      <td className="border border-gray-400/40 p-2 font-semibold">
-                        Transport
-                      </td>
-                      <td className="border border-gray-400/40 p-2 text-right">
-                        P 200
-                      </td>
+                      <td className="border border-gray-400/40 p-2 font-semibold">Transport</td>
+                      <td className="border border-gray-400/40 p-2 text-right">P 200</td>
                     </tr>
                     <tr className="bg-red-100">
-                      <td className="border border-gray-400/40 p-2 font-bold">
-                        Total
-                      </td>
+                      <td className="border border-gray-400/40 p-2 font-bold">Total</td>
                       <td className="border border-gray-400/40 p-2 text-right font-bold">
-                        P 1,400
+                        P {formatPrice(calculateTotal())}
                       </td>
                     </tr>
                   </tbody>
@@ -449,9 +465,8 @@ export function CompanyInvoice({ car }) {
               {/* Payment Instructions */}
               <div className="my-6 p-4 bg-yellow-50 border border-yellow-200 rounded">
                 <p className="font-semibold">
-                  The Reference number should be mentioned as reference on bank
-                  slip/TT or EFT in order to ensure there are no delays in
-                  allocation your payment.
+                  The Reference number should be mentioned as reference on bank slip/TT or EFT in
+                  order to ensure there are no delays in allocation your payment.
                 </p>
               </div>
 
@@ -460,38 +475,30 @@ export function CompanyInvoice({ car }) {
                 <h2 className="font-bold text-lg mb-2">Terms & Conditions</h2>
                 <ol className="list-decimal pl-5 space-y-2">
                   <li>
-                    All cars sold &quot;AS IS&quot; and Does not include any
-                    warranty or Guarantee
+                    All cars sold &quot;AS IS&quot; and Does not include any warranty or Guarantee
                   </li>
                   <li>
-                    If paying in ZAR Rates of Exchange will have to be obtained
-                    on the day of effecting transaction. Kindly talk to our team
-                    to obtain an exchange rate.
+                    If paying in ZAR Rates of Exchange will have to be obtained on the day of
+                    effecting transaction. Kindly talk to our team to obtain an exchange rate.
+                  </li>
+                  <li>All bank transaction fees must be paid by the purchaser</li>
+                  <li>
+                    Cash deposits done to a South African bank will attract a further 2.5% cash
+                    deposit fee.
+                  </li>
+                  <li>Credit card payments will have attract a further 2% transaction fee</li>
+                  <li>
+                    Should you pay and decide to cancel your order you will be charged PULA 200 as
+                    cancellation fee.
                   </li>
                   <li>
-                    All bank transaction fees must be paid by the purchaser
+                    The Pictures and Information given are to the best of our ability in the event
+                    they don&apos;t match the product in the exact manner UFS Africa cannot be held
+                    liable.
                   </li>
                   <li>
-                    Cash deposits done to a South African bank will attract a
-                    further 2.5% cash deposit fee.
-                  </li>
-                  <li>
-                    Credit card payments will have attract a further 2%
-                    transaction fee
-                  </li>
-                  <li>
-                    Should you pay and decide to cancel your order you will be
-                    charged PULA 200 as cancellation fee.
-                  </li>
-                  <li>
-                    The Pictures and Information given are to the best of our
-                    ability in the event they don&apos;t match the product in
-                    the exact manner UFS Africa cannot be held liable.
-                  </li>
-                  <li>
-                    In the event of hijack or an accident where the vehicle is
-                    written off, invoice value would be the maximum value to be
-                    claimed under insurance.
+                    In the event of hijack or an accident where the vehicle is written off, invoice
+                    value would be the maximum value to be claimed under insurance.
                   </li>
                 </ol>
               </div>
@@ -499,33 +506,28 @@ export function CompanyInvoice({ car }) {
               {/* Contact Information */}
               <div className="my-6 p-4 bg-gray-100 rounded">
                 <p className="font-semibold mb-2">
-                  If you have any questions or queries, please contact UFS
-                  AFRICA on details below...
+                  If you have any questions or queries, please contact UFS AFRICA on details
+                  below...
                 </p>
                 <p className="font-semibold">UFS Africa (Pty) Ltd</p>
                 <p>Address: Old International Airport, Isipingo, Durban 4133</p>
-                <p>
-                  Email: accounts@ufsauto.com Web: www.ufsauto.com Phone: +27 84
-                  786 5492
-                </p>
+                <p>Email: accounts@ufsauto.com Web: www.ufsauto.com Phone: +27 84 786 5492</p>
               </div>
             </div>
             <DialogFooter>
               <DialogClose asChild>
                 <Button variant="outline">Close</Button>
               </DialogClose>
-              <Button onClick={handle_generate_invoice}>
-                Generate Invoice
-              </Button>
+              <Button onClick={handle_generate_invoice}>Generate Invoice</Button>
             </DialogFooter>
           </>
         ) : (
           <ModifyDetails
             carDetails={{
-              carId: car?.car_index_id,
+              carId: car?.car_index_id || car?._id,
               carName: car?.name,
               company: car?.car_company,
-              status: car?.status ? "sold" : "unsold",
+              status: car?.status || "unsold"
             }}
             invoiceDetails={generatedInvoiceData}
             onSave={handleSaveDetails}
