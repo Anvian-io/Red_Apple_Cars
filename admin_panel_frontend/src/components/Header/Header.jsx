@@ -5,11 +5,13 @@ import { BreadcrumbWrapper } from "..";
 import { Bell, User, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { NotificationsDropdown } from "../Notifications/NotificationsDropdown";
+import { useRouter } from "next/navigation";
 
 export function Header({ isExpanded, pages }) {
   const [time, setTime] = useState(null);
   const [user, setUser] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     // Get user from localStorage
@@ -71,6 +73,7 @@ export function Header({ isExpanded, pages }) {
     localStorage.removeItem("User");
     setUser(null);
     setShowDropdown(false);
+    router.push('/login')
     // You might want to redirect to login page or refresh the app
     // window.location.reload(); or router.push('/login');
   };

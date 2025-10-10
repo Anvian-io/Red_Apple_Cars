@@ -57,5 +57,12 @@ export const navItems = [
     href: "/website-services",
     id: "services",
     pages: "Home, Services"
+  },
+  {
+    icon: BriefcaseBusiness,
+    label: "Notifications",
+    href: "/all-notifications",
+    id: "all-notifications",
+    pages: "Home, Notifications"
   }
 ];

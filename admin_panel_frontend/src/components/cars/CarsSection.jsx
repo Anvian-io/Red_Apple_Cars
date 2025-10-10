@@ -62,9 +62,9 @@ function ColumnVisibility({ columnVisibility, setColumnVisibility }) {
   const [open, setOpen] = useState(false);
 
   const columns = [
-    { id: "sr", label: "SR", defaultVisible: true },
-    { id: "id", label: "ID", defaultVisible: true },
-    { id: "name", label: "Name", defaultVisible: true },
+    { id: "sr", label: "SR", defaultVisible: true,fixed:true },
+    { id: "id", label: "ID", defaultVisible: true, fixed: true },
+    { id: "name", label: "Name", defaultVisible: true, fixed: true },
     { id: "description", label: "Description", defaultVisible: true },
     { id: "brand", label: "Brand", defaultVisible: true },
     { id: "realPriceBWP", label: "Real Price (BWP)", defaultVisible: true },
@@ -80,7 +80,7 @@ function ColumnVisibility({ columnVisibility, setColumnVisibility }) {
     { id: "carStatus", label: "Car Status", defaultVisible: true },
     { id: "websiteState", label: "Website State", defaultVisible: true },
     { id: "history", label: "History", defaultVisible: true },
-    { id: "actions", label: "Actions", defaultVisible: true }
+    { id: "actions", label: "Actions", defaultVisible: true,fixed:true }
   ];
 
   return (
@@ -113,8 +113,12 @@ function ColumnVisibility({ columnVisibility, setColumnVisibility }) {
                     [column.id]: checked
                   })
                 }
+                disabled={column.fixed} // Disable switch for fixed columns
               />
-              <Label htmlFor={column.id}>{column.label}</Label>
+              <Label htmlFor={column.id} className={column.fixed ? "text-muted-foreground" : ""}>
+                {column.label}
+                {column.fixed && " (Fixed)"}
+              </Label>
             </div>
           ))}
         </div>
@@ -231,6 +235,8 @@ export function CarSection({ isExpanded }) {
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [moreInfoDialogOpen, setMoreInfoDialogOpen] = useState(false);
   const [selectedCar, setSelectedCar] = useState(null);
+
+  // Initialize column visibility with fixed columns always visible
   const [columnVisibility, setColumnVisibility] = useState({
     sr: true,
     id: true,
@@ -252,6 +258,7 @@ export function CarSection({ isExpanded }) {
     history: true,
     actions: true
   });
+
   const [filters, setFilters] = useState({
     name: "",
     brand: "",
@@ -697,7 +704,7 @@ export function CarSection({ isExpanded }) {
                       </TableCell>
                     )}
                     {columnVisibility.actions && (
-                      <TableCell className="text-right">
+                      <TableCell className="text-right sticky right-0 bg-tableBg z-10">
                         <div className="flex justify-end gap-2">
                           <Button
                             onClick={() => handleEditCar(car._id)}
@@ -765,6 +772,7 @@ export function CarSection({ isExpanded }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
       {/* Car Details Dialog */}
       <CarDetailsDialog
         open={detailsDialogOpen}
