@@ -11,7 +11,6 @@ import mongoose from "mongoose";
 import ExcelJS from "exceljs";
 import { sendNotificationToClients } from "../notifications/notificationRoute.js";
 
-
 // Create or Update Car
 export const createOrUpdateCar = asyncHandler(async (req, res) => {
     const {
@@ -330,7 +329,7 @@ export const createOrUpdateCar = asyncHandler(async (req, res) => {
         await createNotification({
             title: `Car ${action}`,
             message: `Car ${action} by ${Role.name}: ${req.user.name}`,
-            type: action,
+            type: action
         });
 
         sendNotificationToClients("notification_update");
@@ -389,6 +388,8 @@ export const getAllCars = asyncHandler(async (req, res) => {
     const status = req.query.status || "";
     const website_state = req.query.website_state || "";
     const skip = (page - 1) * limit;
+    const brand = req.query.brand;
+    const name = req.query.name;
 
     // Build filter
     const filter = {};
@@ -401,6 +402,12 @@ export const getAllCars = asyncHandler(async (req, res) => {
     }
     if (status) filter.status = status;
     if (website_state) filter.website_state = website_state;
+    if (brand) {
+        filter.car_company = { $regex: brand, $options: "i" };
+    }
+    if (name) {
+        filter.name = { $regex: name, $options: "i" };
+    }
 
     // Get cars with related data using aggregation
     const cars = await Car.aggregate([

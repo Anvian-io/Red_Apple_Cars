@@ -259,7 +259,10 @@ export function CarSection({ isExpanded }) {
     websiteState: "all"
   });
   const router = useRouter();
+
+  // Apply debouncing to all filter fields and search term
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const debouncedFilters = useDebounce(filters, 500);
 
   const fetchCars = useCallback(async () => {
     try {
@@ -268,10 +271,12 @@ export function CarSection({ isExpanded }) {
         search: debouncedSearchTerm,
         limit: itemsPerPage,
         page: currentPage,
-        ...(filters.name && { name: filters.name }),
-        ...(filters.brand && { brand: filters.brand }),
-        ...(filters.status !== "all" && { status: filters.status }),
-        ...(filters.websiteState !== "all" && { website_state: filters.websiteState === "active" })
+        ...(debouncedFilters.name && { name: debouncedFilters.name }),
+        ...(debouncedFilters.brand && { brand: debouncedFilters.brand }),
+        ...(debouncedFilters.status !== "all" && { status: debouncedFilters.status }),
+        ...(debouncedFilters.websiteState !== "all" && {
+          website_state: debouncedFilters.websiteState === "active"
+        })
       };
       const response = await getAllCars(payload, router);
       if (response.data.status) {
@@ -289,7 +294,7 @@ export function CarSection({ isExpanded }) {
       setLoading(false);
       setIsSearching(false);
     }
-  }, [debouncedSearchTerm, currentPage, itemsPerPage, router, filters]);
+  }, [debouncedSearchTerm, debouncedFilters, currentPage, itemsPerPage, router]);
 
   useEffect(() => {
     setLoading(isInitial === true);
@@ -303,8 +308,15 @@ export function CarSection({ isExpanded }) {
   };
 
   const applyFilters = () => {
+    // Reset all filters
+    setFilters({
+      name: "",
+      brand: "",
+      status: "all",
+      websiteState: "all"
+    });
+    setSearchTerm("");
     setCurrentPage(1);
-    fetchCars();
   };
 
   // Handle Excel export
@@ -317,7 +329,9 @@ export function CarSection({ isExpanded }) {
         ...(filters.name && { name: filters.name }),
         ...(filters.brand && { brand: filters.brand }),
         ...(filters.status !== "all" && { status: filters.status }),
-        ...(filters.websiteState !== "all" && { website_state: filters.websiteState === "active" })
+        ...(filters.websiteState !== "all" && {
+          website_state: filters.websiteState === "active"
+        })
       };
 
       await exportCarsToExcel(payload, router);
