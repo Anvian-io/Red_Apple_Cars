@@ -120,22 +120,10 @@ const CarPage = () => {
   return (
     <div className="min-h-screen bg-background text-text transition-colors duration-300">
       <main className="container mx-auto px-4 py-8">
-        {/* Breadcrumb */}
-        {/* <div className="mb-6 text-sm text-gray-500 dark:text-gray-400">
-          <a href="#" className="hover:text-hover-text">
-            Home
-          </a>{' '}
-          /
-          <a href="#" className="hover:text-hover-text">
-            {' '}
-            Inventory
-          </a>{' '}
-          /<span className="text-text"> {basicCarDetails.name}</span>
-        </div> */}
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column - Images Only (Fixed) */}
-          <div className="sticky top-8 self-start">
+          {/* Left Column - Images Only */}
+          <div className="lg:sticky lg:top-8 lg:self-start">
+            {/* Main Image */}
             <div className="bg-card-bg rounded-xl overflow-hidden shadow-lg mb-4">
               <div className="relative h-80 md:h-96">
                 <Image
@@ -148,25 +136,28 @@ const CarPage = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-5 gap-2">
-              {galleryImages.map((img, index) => (
-                <div
-                  key={index}
-                  className={`relative h-20 rounded-lg overflow-hidden cursor-pointer border-2 transition-all duration-200 ${
-                    activeImage === index
-                      ? 'border-primary scale-105 shadow-md'
-                      : 'border-transparent hover:border-gray-300'
-                  }`}
-                  onClick={() => setActiveImage(index)}
-                >
-                  <Image
-                    src={img}
-                    alt={`${basicCarDetails.name} view ${index + 1}`}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              ))}
+            {/* Thumbnail Gallery - Scrollable on mobile */}
+            <div className="overflow-x-auto lg:overflow-visible">
+              <div className="flex lg:grid lg:grid-cols-5 gap-2 min-w-max lg:min-w-0 pb-2 lg:pb-0">
+                {galleryImages.map((img, index) => (
+                  <div
+                    key={index}
+                    className={`relative h-20 w-20 lg:w-auto flex-shrink-0 rounded-lg overflow-hidden cursor-pointer border-2 transition-all duration-200 ${
+                      activeImage === index
+                        ? 'border-primary scale-105 shadow-md'
+                        : 'border-transparent hover:border-gray-300'
+                    }`}
+                    onClick={() => setActiveImage(index)}
+                  >
+                    <Image
+                      src={img}
+                      alt={`${basicCarDetails.name} view ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
