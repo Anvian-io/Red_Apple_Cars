@@ -275,6 +275,10 @@ export function CarSection({ isExpanded }) {
   });
   const router = useRouter();
 
+  // Apply debouncing to all filter fields and search term
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const debouncedFilters = useDebounce(filters, 500);
+
   // Fetch profile data only once when component mounts (on page reload)
   const fetchProfileData = useCallback(async () => {
     try {
@@ -300,10 +304,6 @@ export function CarSection({ isExpanded }) {
     }
   }, [router]);
 
-  // Apply debouncing to all filter fields and search term
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
-  const debouncedFilters = useDebounce(filters, 500);
-
   const fetchCars = useCallback(async () => {
     try {
       setIsSearching(isInitial === false);
@@ -318,6 +318,9 @@ export function CarSection({ isExpanded }) {
           website_state: debouncedFilters.websiteState === "active"
         })
       };
+
+      console.log("Fetching cars with payload:", payload); // Debug log
+
       const response = await getAllCars(payload, router);
       if (response.data.status) {
         setCars(response.data.data.cars);
@@ -326,6 +329,8 @@ export function CarSection({ isExpanded }) {
         setTotalCars(pagination_data.totalCars);
         setCurrentPage(pagination_data.currentPage);
         setTotalPages(pagination_data.totalPages);
+      } else {
+        toast.error(response.data.message || "Failed to fetch cars");
       }
     } catch (error) {
       console.error("Error fetching cars:", error);
@@ -334,7 +339,14 @@ export function CarSection({ isExpanded }) {
       setLoading(false);
       setIsSearching(false);
     }
-  }, [debouncedSearchTerm, debouncedFilters, currentPage, itemsPerPage, router]);
+  }, [debouncedSearchTerm, debouncedFilters, currentPage, itemsPerPage, router, isInitial]);
+
+  // Effect to fetch cars when search, filters, or pagination changes
+  useEffect(() => {
+    if (!isInitial) {
+      fetchCars();
+    }
+  }, [debouncedSearchTerm, debouncedFilters, currentPage, itemsPerPage, isInitial, fetchCars]);
 
   // Load profile data and cars on component mount
   useEffect(() => {
@@ -349,6 +361,7 @@ export function CarSection({ isExpanded }) {
   }, []); // Empty dependency array ensures this runs only once on mount
 
   const handleSearch = (term) => {
+    console.log("Search term:", term); // Debug log
     setSearchTerm(term);
     setCurrentPage(1);
   };

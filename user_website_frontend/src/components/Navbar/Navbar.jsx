@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Search,
   ShoppingCart,
@@ -12,13 +12,49 @@ import {
   Car,
   Phone,
   Heart,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useTheme } from "../Theme/ThemeProvider";
-import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
-import { getAllCars } from "@/services/cars/carServices";
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useTheme } from '../Theme/ThemeProvider';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
+import { getAllCars } from '@/services/cars/carServices';
+import { useRouter } from 'next/navigation';
+
+// Search Results Skeleton Component
+const SearchResultsSkeleton = () => (
+  <div className="p-3">
+    {Array(4)
+      .fill(0)
+      .map((_, index) => (
+        <div key={index} className="flex items-center gap-4 p-3">
+          <div className="w-10 h-10 bg-gray-200 rounded animate-pulse"></div>
+          <div className="flex-1 space-y-2">
+            <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4"></div>
+            <div className="h-3 bg-gray-200 rounded animate-pulse w-1/2"></div>
+          </div>
+        </div>
+      ))}
+  </div>
+);
+
+// Custom debounce hook
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
 
 export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -26,11 +62,22 @@ export function Navbar() {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const searchRef = useRef(null);
   const searchInputRef = useRef(null);
+  const router = useRouter();
+
+  // Search related states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+  // Use the custom debounce hook
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   const handleThemeChange = () => {
-    const newTheme = theme === "dark" ? "light" : "dark";
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
+    localStorage.setItem('theme', newTheme);
   };
 
   const toggleMobileMenu = () => {
@@ -43,27 +90,99 @@ export function Navbar() {
       setTimeout(() => {
         searchInputRef.current?.focus();
       }, 100);
+    } else {
+      setSearchQuery('');
+      setIsSearchOpen(false);
     }
   };
 
-  const navItems = [
-    { href: "/", label: "Home" },
-    { href: "/cars", label: "Cars" },
-    { href: "/services", label: "Services" },
-    { href: "/about", label: "About" },
-    { href: "/contact", label: "Contact" },
-  ];
+  // Search effect using debounced value
+  useEffect(() => {
+    let isCurrent = true;
+
+    const performSearch = async () => {
+      // Clear results and loading state if search query is empty
+      if (!debouncedSearchQuery.trim()) {
+        setSearchResults([]);
+        setIsSearchLoading(false);
+        setIsSearchOpen(false);
+        return;
+      }
+
+      setIsSearchLoading(true);
+      setIsSearchOpen(true);
+
+      try {
+        const payload = {
+          searchTerm: debouncedSearchQuery,
+          limit: 4,
+          page: 1,
+        };
+        const response = await getAllCars(payload);
+
+        if (isCurrent) {
+          setSearchResults(response?.data.data.cars || []);
+        }
+      } catch (error) {
+        console.error('Search error:', error);
+        if (isCurrent) setSearchResults([]);
+      } finally {
+        if (isCurrent) setIsSearchLoading(false);
+      }
+    };
+
+    performSearch();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [debouncedSearchQuery]);
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleSearchFocus = () => {
+    setIsSearchFocused(true);
+    if (searchQuery) {
+      setIsSearchOpen(true);
+    }
+  };
+
+  const handleSearchBlur = () => {
+    setTimeout(() => {
+      setIsSearchFocused(false);
+      setIsSearchOpen(false);
+    }, 200);
+  };
+
+  const handleCarSelect = (car) => {
+    setSearchQuery('');
+    setIsSearchOpen(false);
+    setIsSearchFocused(false);
+    setIsSearchActive(false);
+    router.push(`/cars/${car?._id}`);
+  };
 
   // Close search on outside click
   useEffect(() => {
     function handleClickOutside(event) {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setIsSearchActive(false);
+        setIsSearchOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const navItems = [
+    { href: '/', label: 'Home' },
+    { href: '/cars', label: 'Cars' },
+    { href: '/services', label: 'Services' },
+    { href: '/about', label: 'About' },
+    { href: '/contact', label: 'Contact' },
+  ];
 
   return (
     <header className="sticky top-0 z-50 bg-background border-b border-border shadow-sm">
@@ -79,10 +198,11 @@ export function Navbar() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20 relative">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 z-10 flex-shrink-0">
+          <Link
+            href="/"
+            className="flex items-center space-x-2 z-10 flex-shrink-0"
+          >
             <div className="relative flex items-center">
-
-
               <Image
                 src="https://res.cloudinary.com/dp89draup/image/upload/v1757338015/real-red-apple_ncf7fx.png"
                 alt="Red Apple Cars Logo"
@@ -91,11 +211,13 @@ export function Navbar() {
                 className="object-contain w-[38px] h-[38px] md:w-[48px] md:h-[48px]"
                 priority
               />
-
-
               <div className="ml-2 flex flex-col">
-                <span className="text-xl font-bold text-heading">RED APPLE</span>
-                <span className="text-xs tracking-widest text-primary">CARS</span>
+                <span className="text-xl font-bold text-heading">
+                  RED APPLE
+                </span>
+                <span className="text-xs tracking-widest text-primary">
+                  CARS
+                </span>
               </div>
             </div>
           </Link>
@@ -149,7 +271,7 @@ export function Navbar() {
               className="text-foreground hover:bg-accent hover:text-primary hidden sm:flex"
               aria-label="Toggle theme"
             >
-              {theme === "dark" ? (
+              {theme === 'dark' ? (
                 <Sun className="h-5 w-5 text-text" />
               ) : (
                 <Moon className="h-5 w-5 text-text" />
@@ -221,16 +343,76 @@ export function Navbar() {
                       type="text"
                       placeholder="Search cars, models, brands..."
                       className="pl-10 pr-12 py-3 rounded-full border-2 border-primary bg-background text-base w-full shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/30"
+                      value={searchQuery}
+                      onChange={handleSearchChange}
+                      onFocus={handleSearchFocus}
+                      onBlur={handleSearchBlur}
                     />
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => setIsSearchActive(false)}
+                      onClick={() => {
+                        setIsSearchActive(false);
+                        setSearchQuery('');
+                        setIsSearchOpen(false);
+                      }}
                       className="absolute right-2 text-muted-foreground hover:text-primary hover:bg-transparent"
                     >
                       <X className="h-5 w-5 text-text" />
                     </Button>
                   </div>
+
+                  {/* Search Results Dropdown */}
+                  {isSearchOpen && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto z-50">
+                      {isSearchLoading ? (
+                        <SearchResultsSkeleton />
+                      ) : searchResults.length > 0 ? (
+                        searchResults.map((car) => (
+                          <Link key={car._id} href={`/car/${car._id}`}>
+                            <div
+                              className="p-3 hover:bg-gray-100 cursor-pointer flex items-center gap-4"
+                              onMouseDown={() => handleCarSelect(car)}
+                            >
+                              <img
+                                src={
+                                  car.main_image ||
+                                  car.images?.[0] ||
+                                  '/images/car-placeholder.jpg'
+                                }
+                                alt={car.name}
+                                className="w-12 h-12 rounded object-cover"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-gray-800 truncate">
+                                  {car.name}
+                                </div>
+                                <div className="text-sm text-gray-600">
+                                  {car.car_company}
+                                </div>
+                                <div className="text-sm font-semibold text-green-800">
+                                  ${car.real_price_bwp}
+                                  {car.actual_price_bwp &&
+                                    car.actual_price_bwp >
+                                      car.real_price_bwp && (
+                                      <span className="ml-2 text-gray-400 line-through">
+                                        ${car.actual_price_bwp}
+                                      </span>
+                                    )}
+                                </div>
+                              </div>
+                            </div>
+                          </Link>
+                        ))
+                      ) : (
+                        <div className="p-3 text-gray-500 text-center">
+                          {searchQuery
+                            ? `No cars found for "${searchQuery}"`
+                            : 'Start typing to search for cars'}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </motion.div>
               </motion.div>
             )}
@@ -243,7 +425,7 @@ export function Navbar() {
             <motion.div
               className="md:hidden border-t border-border bg-background"
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
+              animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
             >
@@ -268,7 +450,7 @@ export function Navbar() {
                       onClick={handleThemeChange}
                       className="text-foreground hover:bg-accent w-full justify-start text-text"
                     >
-                      {theme === "dark" ? (
+                      {theme === 'dark' ? (
                         <>
                           <Sun className="h-5 w-5 mr-2 text-text" />
                           Light Mode
@@ -290,7 +472,65 @@ export function Navbar() {
                         type="text"
                         placeholder="Search inventory..."
                         className="pl-10 pr-4 py-2 rounded-md border border-input bg-background text-sm w-full"
+                        value={searchQuery}
+                        onChange={handleSearchChange}
+                        onFocus={handleSearchFocus}
+                        onBlur={handleSearchBlur}
                       />
+
+                      {/* Mobile Search Results Dropdown */}
+                      {isSearchOpen && (
+                        <div className="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto z-50">
+                          {isSearchLoading ? (
+                            <SearchResultsSkeleton />
+                          ) : searchResults.length > 0 ? (
+                            searchResults.map((car) => (
+                              <div
+                                key={car._id}
+                                className="p-3 hover:bg-gray-100 cursor-pointer flex items-center gap-4"
+                                onMouseDown={() => {
+                                  handleCarSelect(car);
+                                  toggleMobileMenu();
+                                }}
+                              >
+                                <img
+                                  src={
+                                    car.main_image ||
+                                    car.images?.[0] ||
+                                    '/images/car-placeholder.jpg'
+                                  }
+                                  alt={car.name}
+                                  className="w-10 h-10 rounded object-cover"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-medium text-gray-800 truncate">
+                                    {car.name}
+                                  </div>
+                                  <div className="text-sm text-gray-600">
+                                    {car.car_company}
+                                  </div>
+                                  <div className="text-sm font-semibold text-green-800">
+                                    ${car.real_price_bwp}
+                                    {car.actual_price_bwp &&
+                                      car.actual_price_bwp >
+                                        car.real_price_bwp && (
+                                        <span className="ml-2 text-gray-400 line-through">
+                                          ${car.actual_price_bwp}
+                                        </span>
+                                      )}
+                                  </div>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="p-3 text-gray-500 text-center">
+                              {searchQuery
+                                ? `No cars found for "${searchQuery}"`
+                                : 'Start typing to search'}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
 

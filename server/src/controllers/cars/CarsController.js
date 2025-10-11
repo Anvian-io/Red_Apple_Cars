@@ -652,7 +652,7 @@ export const getAllZambiaCars = asyncHandler(async (req, res) => {
 export const getAllBotswanaCars = asyncHandler(async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const search = req.query.search || "";
+    const search = req.query.searchTerm || "";
     const status = req.query.status || "";
     const skip = (page - 1) * limit;
     const brand = req.query.brand;
