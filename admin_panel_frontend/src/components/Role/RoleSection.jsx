@@ -20,6 +20,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/useDebounce";
 import SearchLoader from "@/components/custom_ui/SearchLoader"; // Import the SearchLoader
 import { useRouter } from "next/navigation";
+import { CrudDetailsHoverCard } from "..";
+
 
 export function RoleSection({ isExpanded }) {
   const [add_or_update_role, set_add_or_update_role] = useState(false);
@@ -121,7 +123,6 @@ export function RoleSection({ isExpanded }) {
         // </div>
       )}
       <SecondaryHeader
-
         title="Roles"
         searchPlaceholder="Search Roles"
         buttonText="Create New Role"
@@ -137,8 +138,7 @@ export function RoleSection({ isExpanded }) {
           ) : totalProducts > 0 ? (
             <Badge className="bg-hoverBg">
               Showing {(currentPage - 1) * itemsPerPage + 1}-
-              {Math.min(currentPage * itemsPerPage, totalProducts)} of{" "}
-              {totalProducts} Roles
+              {Math.min(currentPage * itemsPerPage, totalProducts)} of {totalProducts} Roles
             </Badge>
           ) : (
             <Badge className="bg-hoverBg">No Roles Found</Badge>
@@ -148,19 +148,15 @@ export function RoleSection({ isExpanded }) {
 
       <div className="mx-1 mt-6 rounded-md max-w-[99vw] border overflow-x-auto bg-tableBg">
         <Table className="min-w-[800px] lg:min-w-full">
-          <TableCaption className="mb-2">
-            A list of available user roles
-          </TableCaption>
+          <TableCaption className="mb-2">A list of available user roles</TableCaption>
           <TableHeader className="bg-hoverBg">
             <TableRow>
               <TableHead className="w-[200px]">Role Name</TableHead>
               <TableHead className="w-[300px]">Description</TableHead>
               <TableHead className="w-[100px] text-center">Users</TableHead>
-              <TableHead className="w-[120px] text-center">
-                Permissions
-              </TableHead>
+              <TableHead className="w-[120px] text-center">Permissions</TableHead>
+              <TableHead className="w-[150px]">History</TableHead>
               <TableHead className="w-[100px] text-right">Actions</TableHead>
-              <TableHead className="w-[150px]">Last Updated</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -168,15 +164,14 @@ export function RoleSection({ isExpanded }) {
               ? skeletonRows
               : roles.map((roleData) => (
                   <TableRow key={roleData?._id}>
-                    <TableCell className="font-medium">
-                      {roleData?.name}
-                    </TableCell>
+                    <TableCell className="font-medium">{roleData?.name}</TableCell>
                     <TableCell className="text-muted-foreground">
                       {roleData?.description ?? "No description"}
                     </TableCell>
                     <TableCell className="text-center">0</TableCell>
-                    <TableCell className="text-center">
-                      {roleData?.totalPermissionNo}
+                    <TableCell className="text-center">{roleData?.totalPermissionNo}</TableCell>
+                    <TableCell>
+                      <CrudDetailsHoverCard car={roleData}></CrudDetailsHoverCard>
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
@@ -187,7 +182,6 @@ export function RoleSection({ isExpanded }) {
                         <SquarePen className="h-4 w-4" />
                       </Button>
                     </TableCell>
-                    <TableCell>{formatDate(roleData?.updatedAt)}</TableCell>
                   </TableRow>
                 ))}
           </TableBody>
