@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Star, Fuel, Users, Calendar, Car } from "lucide-react";
+import Link from "next/link";
 
 // Enhanced CarCard Component
 const CarCard = ({ car }) => {

@@ -518,20 +518,111 @@ export const getAllCars = asyncHandler(async (req, res) => {
 export const getAllZambiaCars = asyncHandler(async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || "";
+    const status = req.query.status || "";
     const skip = (page - 1) * limit;
+    const brand = req.query.brand;
+    const name = req.query.name;
 
+    // Build filter - website_state is always true for Zambia cars
     const filter = { website_state: true };
+    
+    if (search) {
+        filter.$or = [
+            { name: { $regex: search, $options: "i" } },
+            { car_company: { $regex: search, $options: "i" } },
+            { description: { $regex: search, $options: "i" } }
+        ];
+    }
+    if (status) filter.status = status;
+    if (brand) {
+        filter.car_company = { $regex: brand, $options: "i" };
+    }
+    if (name) {
+        filter.name = { $regex: name, $options: "i" };
+    }
 
-    const cars = await Car.find(filter)
-        .populate("created_by", "name email")
-        .populate("updated_by", "name email")
-        .sort({ updatedAt: -1 })
-        .skip(skip)
-        .limit(limit);
+    // Get cars with aggregation pipeline (same as getAllCars)
+    const cars = await Car.aggregate([
+        { $match: filter },
+        {
+            $lookup: {
+                from: "cardetails",
+                localField: "_id",
+                foreignField: "car_id",
+                as: "details"
+            }
+        },
+        {
+            $lookup: {
+                from: "carmoreinfos",
+                localField: "_id",
+                foreignField: "car_id",
+                as: "moreInfo"
+            }
+        },
+        {
+            $lookup: {
+                from: "carimages",
+                localField: "_id",
+                foreignField: "car_id",
+                as: "images"
+            }
+        },
+        // Modified lookup for created_by with projection
+        {
+            $lookup: {
+                from: "users",
+                let: { createdById: "$created_by" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ["$_id", "$$createdById"] }
+                        }
+                    },
+                    {
+                        $project: {
+                            name: 1,
+                            _id: 1
+                        }
+                    }
+                ],
+                as: "created_by"
+            }
+        },
+        // Modified lookup for updated_by with projection
+        {
+            $lookup: {
+                from: "users",
+                let: { updatedById: "$updated_by" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ["$_id", "$$updatedById"] }
+                        }
+                    },
+                    {
+                        $project: {
+                            name: 1,
+                            _id: 1
+                        }
+                    }
+                ],
+                as: "updated_by"
+            }
+        },
+        { $unwind: { path: "$created_by", preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: "$updated_by", preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: "$details", preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: "$moreInfo", preserveNullAndEmptyArrays: true } },
+        { $sort: { updatedAt: -1 } },
+        { $skip: skip },
+        { $limit: limit }
+    ]);
 
     // Format with Zambia currency (ZMW)
     const formattedCars = cars.map((car) => ({
-        ...car.toObject(),
+        ...car,
         real_price: car.real_price_zmw,
         actual_price: car.actual_price_zmw,
         currency: "ZMW"
@@ -561,20 +652,111 @@ export const getAllZambiaCars = asyncHandler(async (req, res) => {
 export const getAllBotswanaCars = asyncHandler(async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || "";
+    const status = req.query.status || "";
     const skip = (page - 1) * limit;
+    const brand = req.query.brand;
+    const name = req.query.name;
 
+    // Build filter - website_state is always true for Botswana cars
     const filter = { website_state: true };
+    
+    if (search) {
+        filter.$or = [
+            { name: { $regex: search, $options: "i" } },
+            { car_company: { $regex: search, $options: "i" } },
+            { description: { $regex: search, $options: "i" } }
+        ];
+    }
+    if (status) filter.status = status;
+    if (brand) {
+        filter.car_company = { $regex: brand, $options: "i" };
+    }
+    if (name) {
+        filter.name = { $regex: name, $options: "i" };
+    }
 
-    const cars = await Car.find(filter)
-        .populate("created_by", "name email")
-        .populate("updated_by", "name email")
-        .sort({ updatedAt: -1 })
-        .skip(skip)
-        .limit(limit);
+    // Get cars with aggregation pipeline (same as getAllCars)
+    const cars = await Car.aggregate([
+        { $match: filter },
+        {
+            $lookup: {
+                from: "cardetails",
+                localField: "_id",
+                foreignField: "car_id",
+                as: "details"
+            }
+        },
+        {
+            $lookup: {
+                from: "carmoreinfos",
+                localField: "_id",
+                foreignField: "car_id",
+                as: "moreInfo"
+            }
+        },
+        {
+            $lookup: {
+                from: "carimages",
+                localField: "_id",
+                foreignField: "car_id",
+                as: "images"
+            }
+        },
+        // Modified lookup for created_by with projection
+        {
+            $lookup: {
+                from: "users",
+                let: { createdById: "$created_by" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ["$_id", "$$createdById"] }
+                        }
+                    },
+                    {
+                        $project: {
+                            name: 1,
+                            _id: 1
+                        }
+                    }
+                ],
+                as: "created_by"
+            }
+        },
+        // Modified lookup for updated_by with projection
+        {
+            $lookup: {
+                from: "users",
+                let: { updatedById: "$updated_by" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ["$_id", "$$updatedById"] }
+                        }
+                    },
+                    {
+                        $project: {
+                            name: 1,
+                            _id: 1
+                        }
+                    }
+                ],
+                as: "updated_by"
+            }
+        },
+        { $unwind: { path: "$created_by", preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: "$updated_by", preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: "$details", preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: "$moreInfo", preserveNullAndEmptyArrays: true } },
+        { $sort: { updatedAt: -1 } },
+        { $skip: skip },
+        { $limit: limit }
+    ]);
 
     // Format with Botswana currency (BWP)
     const formattedCars = cars.map((car) => ({
-        ...car.toObject(),
+        ...car,
         real_price: car.real_price_bwp,
         actual_price: car.actual_price_bwp,
         currency: "BWP"
