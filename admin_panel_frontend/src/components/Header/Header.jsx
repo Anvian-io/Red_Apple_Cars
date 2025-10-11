@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { BreadcrumbWrapper } from "..";
 import { Bell, User, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,6 +12,7 @@ export function Header({ isExpanded, pages }) {
   const [user, setUser] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const router = useRouter();
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     // Get user from localStorage
@@ -69,13 +70,34 @@ export function Header({ isExpanded, pages }) {
     return () => clearInterval(interval);
   }, []);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleAvatarClick = () => {
+    setShowDropdown(!showDropdown);
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("User");
     setUser(null);
     setShowDropdown(false);
-    router.push('/login')
-    // You might want to redirect to login page or refresh the app
-    // window.location.reload(); or router.push('/login');
+    router.push("/login");
+  };
+
+  const handleProfile = () => {
+    setShowDropdown(false);
+    router.push("/profile");
   };
 
   // Skeleton component for loading state
@@ -157,12 +179,11 @@ export function Header({ isExpanded, pages }) {
         <NotificationsDropdown />
 
         {/* Profile with Dropdown */}
-        <div
-          className="relative"
-          onMouseEnter={() => setShowDropdown(true)}
-          onMouseLeave={() => setShowDropdown(false)}
-        >
-          <Avatar className="w-8 h-8 rounded-lg flex items-center justify-center bg-hoverBg cursor-pointer">
+        <div className="relative" ref={dropdownRef}>
+          <Avatar
+            className="w-10 h-10 rounded-lg flex items-center justify-center bg-hoverBg cursor-pointer"
+            onClick={handleAvatarClick}
+          >
             <AvatarImage src="/profile.jpg" alt="@user" />
             <AvatarFallback className="text-sm font-medium">
               {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
@@ -171,11 +192,7 @@ export function Header({ isExpanded, pages }) {
 
           {/* Dropdown Menu */}
           {showDropdown && (
-            <div
-              onMouseEnter={() => setShowDropdown(true)}
-              onMouseLeave={() => setShowDropdown(false)}
-              className="absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg border border-border z-20"
-            >
+            <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg border border-border z-20">
               {/* User Info */}
               <div className="px-4 py-3 border-b border-border">
                 <p className="text-sm font-medium text-gray-900">{user?.name || "User"}</p>
@@ -183,6 +200,13 @@ export function Header({ isExpanded, pages }) {
                   {user?.gmail || user?.email || "No email"}
                 </p>
               </div>
+              <button
+                onClick={handleProfile}
+                className="border-b border-border w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors"
+              >
+                <User size={16} />
+                Profile
+              </button>
 
               {/* Logout Button */}
               <button
