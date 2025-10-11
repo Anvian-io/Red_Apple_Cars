@@ -4,7 +4,7 @@ import { Car, Fuel, Users, Calendar } from 'lucide-react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '../Theme/ThemeProvider';
-
+import Link from 'next/link';
 export default function CarCard({ car }) {
   const { theme } = useTheme();
 
@@ -61,9 +61,11 @@ export default function CarCard({ car }) {
           </div>
         </div>
 
-        <Button className="w-full bg-primary hover:bg-primary/90 text-white py-2 text-sm">
-          View Details
-        </Button>
+        <Link href={`/car/${car.id}`}>
+          <Button className="w-full bg-primary hover:bg-primary/90 text-white py-2 text-sm">
+            View Details
+          </Button>
+        </Link>
       </div>
     </motion.div>
   );

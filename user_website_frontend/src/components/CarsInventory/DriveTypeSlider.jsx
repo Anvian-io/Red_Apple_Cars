@@ -7,13 +7,13 @@ import Link from "next/link";
 // Enhanced CarCard Component
 const CarCard = ({ car }) => {
   return (
-    <motion.div 
+    <motion.div
       className="bg-card-bg rounded-xl shadow-lg overflow-hidden border border-border transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
       whileHover={{ y: -5 }}
     >
       <div className="relative h-68 overflow-hidden">
-        <img 
-          src={car.image} 
+        <img
+          src={car.image}
           alt={car.name}
           className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
         />
@@ -26,16 +26,18 @@ const CarCard = ({ car }) => {
           </div>
         )}
       </div>
-      
+
       <div className="p-4">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="font-bold text-lg text-card-text truncate">{car.name}</h3>
+          <h3 className="font-bold text-lg text-card-text truncate">
+            {car.name}
+          </h3>
           <div className="flex items-center text-yellow-500">
             <Star size={14} fill="currentColor" />
             <span className="text-xs ml-1 text-gray-600">{car.rating}</span>
           </div>
         </div>
-        
+
         <div className="flex items-center text-sm text-gray-500 mb-3">
           <span className="flex items-center mr-3">
             <Fuel size={14} className="mr-1" />
@@ -50,22 +52,26 @@ const CarCard = ({ car }) => {
             {car.year}
           </span>
         </div>
-        
+
         <div className="flex justify-between items-center mb-3">
           <div className="flex flex-col">
             <span className="text-xs text-gray-500">Price</span>
-            <span className="font-bold text-lg text-primary">${car.numericPrice.toLocaleString()}</span>
+            <span className="font-bold text-lg text-primary">
+              ${car.numericPrice.toLocaleString()}
+            </span>
           </div>
           <div className="flex flex-col items-end">
             <span className="text-xs text-gray-500">Mileage</span>
             <span className="font-semibold text-sm">{car.mileage}</span>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-2 gap-2">
-          <button className="bg-primary hover:bg-red-700 text-white py-2 px-3 rounded-lg text-sm font-semibold transition-colors">
-            View Details
-          </button>
+          <Link href={`/car/${car.id}`}>
+            <button className="bg-primary hover:bg-red-700 text-white py-2 px-3 rounded-lg text-sm font-semibold transition-colors">
+              View Details
+            </button>
+          </Link>
           <button className="border border-primary text-primary hover:bg-red-50 py-2 px-3 rounded-lg text-sm font-semibold transition-colors">
             Save Car
           </button>
