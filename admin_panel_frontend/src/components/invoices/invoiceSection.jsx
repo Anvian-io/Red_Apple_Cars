@@ -8,7 +8,7 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
+  TableRow
 } from "@/components/ui/table";
 import { SquarePen, Trash2, Eye, Download, Bold } from "lucide-react";
 import { Button } from "../ui/button";
@@ -17,6 +17,7 @@ import { Badge } from "../ui/badge";
 import {
   getAllInvoices,
   deleteInvoice,
+  update_invoice_car_details
 } from "@/services/invoice/invoiceServices";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -29,10 +30,103 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
+  DialogFooter
 } from "@/components/ui/dialog";
 import { CrudDetailsHoverCard } from "..";
 
+// ModifyDetails component for editing invoice details
+function ModifyDetails({ invoiceData, onSave, onClose }) {
+  const [status, setStatus] = useState(invoiceData?.status || "pending");
+  const [paymentStatus, setPaymentStatus] = useState(invoiceData?.payment_status || "pending");
+  const [paymentType, setPaymentType] = useState(invoiceData?.payment_type || "online");
+
+  const handleSave = () => {
+    onSave({
+      carId: invoiceData?.car_id?.car_index_id || invoiceData?.car_id?._id,
+      invoiceId: invoiceData?._id,
+      invoice_index_id: invoiceData?.invoice_index_id,
+      status: invoiceData?.car_id?.status || "pending", // Car status
+      invoiceStatus: status, // Invoice status
+      paymentStatus: paymentStatus,
+      payment_type: paymentType
+    });
+  };
+
+  return (
+    <div className="bg-white text-black p-6 rounded-lg mt-4">
+      <h2 className="text-xl font-bold mb-4">Update Invoice Details</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <h3 className="font-semibold">Car Information</h3>
+          <p>
+            <strong>Car ID:</strong> {invoiceData?.car_id?.car_index_id || invoiceData?.car_id?._id}
+          </p>
+          <p>
+            <strong>Car Name:</strong> {invoiceData?.car_id?.name}
+          </p>
+          <p>
+            <strong>Company:</strong> {invoiceData?.car_id?.car_company}
+          </p>
+        </div>
+        <div>
+          <h3 className="font-semibold">Invoice Information</h3>
+          <p>
+            <strong>Customer Name:</strong> {invoiceData?.customer_name}
+          </p>
+          <p>
+            <strong>Invoice ID:</strong> {invoiceData?.invoice_index_id}
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Invoice Status</label>
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="w-full p-2 border rounded"
+          >
+            <option value="success">Success</option>
+            <option value="failed">Failed</option>
+            <option value="pending">Pending</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Payment Status</label>
+          <select
+            value={paymentStatus}
+            onChange={(e) => setPaymentStatus(e.target.value)}
+            className="w-full p-2 border rounded"
+          >
+            <option value="success">Success</option>
+            <option value="pending">Pending</option>
+            <option value="failed">Failed</option>
+            <option value="refund">Refund</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Payment Type</label>
+          <select
+            value={paymentType}
+            onChange={(e) => setPaymentType(e.target.value)}
+            className="w-full p-2 border rounded"
+          >
+            <option value="online">Online</option>
+            <option value="offline">Offline</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="flex justify-end gap-2 mt-6">
+        <Button variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button onClick={handleSave}>Save Changes</Button>
+      </div>
+    </div>
+  );
+}
 
 export function InvoiceSection({ isExpanded }) {
   const [invoices, setInvoices] = useState([]);
@@ -46,6 +140,8 @@ export function InvoiceSection({ isExpanded }) {
   const [isInitial, setIsInitial] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [invoiceToDelete, setInvoiceToDelete] = useState(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [invoiceToEdit, setInvoiceToEdit] = useState(null);
   const router = useRouter();
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [isFixed, setIsFixed] = useState(false);
@@ -56,7 +152,7 @@ export function InvoiceSection({ isExpanded }) {
       const payload = {
         search: debouncedSearchTerm,
         limit: itemsPerPage,
-        page: currentPage,
+        page: currentPage
       };
       const response = await getAllInvoices(payload, router);
       if (response.data.status) {
@@ -99,7 +195,6 @@ export function InvoiceSection({ isExpanded }) {
     return `${dd}-${mm}-${yyyy} ${hh}:${min}`;
   };
 
-
   const handleViewInvoice = (pdfUrl) => {
     window.open(pdfUrl, "_blank");
   };
@@ -111,6 +206,11 @@ export function InvoiceSection({ isExpanded }) {
   const handleDeleteClick = (invoice) => {
     setInvoiceToDelete(invoice);
     setDeleteDialogOpen(true);
+  };
+
+  const handleEditClick = (invoice) => {
+    setInvoiceToEdit(invoice);
+    setEditDialogOpen(true);
   };
 
   const confirmDelete = async () => {
@@ -128,6 +228,24 @@ export function InvoiceSection({ isExpanded }) {
     } finally {
       setDeleteDialogOpen(false);
       setInvoiceToDelete(null);
+    }
+  };
+
+  const handleSaveDetails = async (data) => {
+    try {
+      const response = await update_invoice_car_details(data, router);
+
+      if (response.data) {
+        toast.success("Invoice details updated successfully");
+        setEditDialogOpen(false);
+        setInvoiceToEdit(null);
+        fetchInvoices(); // Refresh the invoices list
+      } else {
+        toast.error(response.data.message || "Failed to update details");
+      }
+    } catch (error) {
+      console.error("Error updating invoice details:", error);
+      toast.error("Error updating invoice details");
     }
   };
 
@@ -215,6 +333,7 @@ export function InvoiceSection({ isExpanded }) {
           <Skeleton className="h-8 w-8 bg-border" />
           <Skeleton className="h-8 w-8 bg-border" />
           <Skeleton className="h-8 w-8 bg-border" />
+          <Skeleton className="h-8 w-8 bg-border" />
         </div>
       </TableCell>
     </TableRow>
@@ -243,8 +362,7 @@ export function InvoiceSection({ isExpanded }) {
           ) : totalInvoices > 0 ? (
             <Badge className="bg-hoverBg">
               Showing {(currentPage - 1) * itemsPerPage + 1}-
-              {Math.min(currentPage * itemsPerPage, totalInvoices)} of{" "}
-              {totalInvoices} Invoices
+              {Math.min(currentPage * itemsPerPage, totalInvoices)} of {totalInvoices} Invoices
             </Badge>
           ) : (
             <Badge className="bg-hoverBg">No Invoices Found</Badge>
@@ -254,9 +372,7 @@ export function InvoiceSection({ isExpanded }) {
 
       <div className="mx-1 mt-6 rounded-md max-w-[99vw] border overflow-x-auto bg-tableBg">
         <Table className="min-w-[1200px] lg:min-w-full">
-          <TableCaption className="mb-2">
-            A list of system invoices
-          </TableCaption>
+          <TableCaption className="mb-2">A list of system invoices</TableCaption>
           <TableHeader className="bg-hoverBg">
             <TableRow>
               <TableHead className="min-w-[50px]">Sr</TableHead>
@@ -269,9 +385,7 @@ export function InvoiceSection({ isExpanded }) {
               <TableHead className="min-w-[100px]">Payment Status</TableHead>
               <TableHead className="min-w-[100px]">Payment Type</TableHead>
               <TableHead className="min-w-[100px]">History</TableHead>
-              <TableHead className="min-w-[100px] text-right">
-                Actions
-              </TableHead>
+              <TableHead className="min-w-[100px] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -279,12 +393,8 @@ export function InvoiceSection({ isExpanded }) {
               ? skeletonRows
               : invoices.map((invoice, index) => (
                   <TableRow key={invoice?._id}>
-                    <TableCell>
-                      {(currentPage - 1) * itemsPerPage + index + 1}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {invoice?.invoice_index_id}
-                    </TableCell>
+                    <TableCell>{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
+                    <TableCell className="font-medium">{invoice?.invoice_index_id}</TableCell>
                     <TableCell>{invoice?.customer_name}</TableCell>
                     <TableCell>{invoice?.car_id?.car_index_id}</TableCell>
                     <TableCell>{invoice?.car_id?.name}</TableCell>
@@ -295,19 +405,13 @@ export function InvoiceSection({ isExpanded }) {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        className={getPaymentStatusBadgeClass(
-                          invoice?.payment_status
-                        )}
-                      >
+                      <Badge className={getPaymentStatusBadgeClass(invoice?.payment_status)}>
                         {invoice?.payment_status}
                       </Badge>
                     </TableCell>
+                    <TableCell>{getPaymentTypeText(invoice?.payment_type)}</TableCell>
                     <TableCell>
-                      {getPaymentTypeText(invoice?.payment_type)}
-                    </TableCell>
-                    <TableCell>
-                        <CrudDetailsHoverCard car={invoice}/>
+                      <CrudDetailsHoverCard car={invoice} />
                     </TableCell>
 
                     <TableCell className="text-right">
@@ -329,6 +433,15 @@ export function InvoiceSection({ isExpanded }) {
                           title="Download invoice"
                         >
                           <Download className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          onClick={() => handleEditClick(invoice)}
+                          variant="ghost"
+                          size="icon"
+                          className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                          title="Edit invoice"
+                        >
+                          <SquarePen className="h-4 w-4" />
                         </Button>
                         <Button
                           onClick={() => handleDeleteClick(invoice)}
@@ -364,21 +477,36 @@ export function InvoiceSection({ isExpanded }) {
             <DialogTitle>Confirm Deletion</DialogTitle>
             <DialogDescription>
               Are you sure you want to delete the invoice{" "}
-              <strong>{invoiceToDelete?.invoice_index_id}</strong>? This action
-              cannot be undone.
+              <strong>{invoiceToDelete?.invoice_index_id}</strong>? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex gap-2 justify-end">
-            <Button
-              variant="outline"
-              onClick={() => setDeleteDialogOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
               Cancel
             </Button>
             <Button variant="destructive" onClick={confirmDelete}>
               Delete
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Invoice Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-center">Edit Invoice Details</DialogTitle>
+          </DialogHeader>
+          {invoiceToEdit && (
+            <ModifyDetails
+              invoiceData={invoiceToEdit}
+              onSave={handleSaveDetails}
+              onClose={() => {
+                setEditDialogOpen(false);
+                setInvoiceToEdit(null);
+              }}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>
