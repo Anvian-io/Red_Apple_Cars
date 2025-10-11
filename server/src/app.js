@@ -12,7 +12,7 @@ import carsWebsiteRouter from "./controllers/cars/CarWebsiteRoutes.js";
 import invoiceRouter from "./controllers/invoices/invoiceRoute.js";
 import notificationRouter from "./controllers/notifications/notificationRoute.js";
 import user from "./controllers/website_services/websiteServicesRoute.js"
-
+import profileRouter from "./controllers/profile/profileRouter.js"
 const app = express();
 
 app.use(
@@ -43,6 +43,7 @@ app.use("/api/role", roleRouter);
 app.use("/api/user_management", userRouter);
 app.use("/api/notifications", notificationRouter);
 app.use("/api/invoice", invoiceRouter);
+app.use("/api/profile", profileRouter);
 // "http://localhost:8000/api/suthakar/name"
 
 export { app };

@@ -73,6 +73,42 @@ export const apiClient = {
     );
   },
 
+  put: async (url, data, headers = {}) => {
+    if (data instanceof FormData) {
+      delete headers["Content-Type"];
+    } else if (!headers["Content-Type"]) {
+      headers["Content-Type"] = "application/json";
+    }
+
+    return handleRequest(() =>
+      axios.put(`${base_url}${url}`, data, {
+        headers: {
+          ...headers,
+          Authorization: `Bearer ${getAccessToken()}` // ✅ attach token
+        },
+        withCredentials: true
+      })
+    );
+  },
+
+  patch: async (url, data, headers = {}) => {
+    if (data instanceof FormData) {
+      delete headers["Content-Type"];
+    } else if (!headers["Content-Type"]) {
+      headers["Content-Type"] = "application/json";
+    }
+
+    return handleRequest(() =>
+      axios.patch(`${base_url}${url}`, data, {
+        headers: {
+          ...headers,
+          Authorization: `Bearer ${getAccessToken()}` // ✅ attach token
+        },
+        withCredentials: true
+      })
+    );
+  },
+
   delete: async (url, headers = {}) =>
     handleRequest(() =>
       axios.delete(`${base_url}${url}`, {
@@ -82,7 +118,7 @@ export const apiClient = {
         },
         withCredentials: true
       })
-    ),
+    )
 };
 
 export const apiClientEvents = {

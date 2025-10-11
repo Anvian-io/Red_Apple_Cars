@@ -56,13 +56,14 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { getProfile } from "@/services/profile/profileServices";
 
 // Column Visibility Component
 function ColumnVisibility({ columnVisibility, setColumnVisibility }) {
   const [open, setOpen] = useState(false);
 
   const columns = [
-    { id: "sr", label: "SR", defaultVisible: true,fixed:true },
+    { id: "sr", label: "SR", defaultVisible: true, fixed: true },
     { id: "id", label: "ID", defaultVisible: true, fixed: true },
     { id: "name", label: "Name", defaultVisible: true, fixed: true },
     { id: "description", label: "Description", defaultVisible: true },
@@ -80,7 +81,7 @@ function ColumnVisibility({ columnVisibility, setColumnVisibility }) {
     { id: "carStatus", label: "Car Status", defaultVisible: true },
     { id: "websiteState", label: "Website State", defaultVisible: true },
     { id: "history", label: "History", defaultVisible: true },
-    { id: "actions", label: "Actions", defaultVisible: true,fixed:true }
+    { id: "actions", label: "Actions", defaultVisible: true, fixed: true }
   ];
 
   return (
@@ -113,7 +114,7 @@ function ColumnVisibility({ columnVisibility, setColumnVisibility }) {
                     [column.id]: checked
                   })
                 }
-                disabled={column.fixed} // Disable switch for fixed columns
+                disabled={column.fixed}
               />
               <Label htmlFor={column.id} className={column.fixed ? "text-muted-foreground" : ""}>
                 {column.label}
@@ -236,6 +237,13 @@ export function CarSection({ isExpanded }) {
   const [moreInfoDialogOpen, setMoreInfoDialogOpen] = useState(false);
   const [selectedCar, setSelectedCar] = useState(null);
 
+  // State for profile data
+  const [profileData, setProfileData] = useState({
+    companyData: null,
+    bankingData: null,
+    loading: true
+  });
+
   // Initialize column visibility with fixed columns always visible
   const [columnVisibility, setColumnVisibility] = useState({
     sr: true,
@@ -266,6 +274,31 @@ export function CarSection({ isExpanded }) {
     websiteState: "all"
   });
   const router = useRouter();
+
+  // Fetch profile data only once when component mounts (on page reload)
+  const fetchProfileData = useCallback(async () => {
+    try {
+      setProfileData((prev) => ({ ...prev, loading: true }));
+      const response = await getProfile(router);
+      if (response.data.status) {
+        const storedCompanyData = response.data.data.company;
+        const storedBankingData = response.data.data.banks?.filter((d) => d.isActive == true);
+
+        setProfileData({
+          companyData: storedCompanyData || null,
+          bankingData: storedBankingData?.[0] || null,
+          loading: false
+        });
+      } else {
+        toast.error("Failed to fetch profile data");
+        setProfileData((prev) => ({ ...prev, loading: false }));
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      toast.error("Failed to fetch profile data");
+      setProfileData((prev) => ({ ...prev, loading: false }));
+    }
+  }, [router]);
 
   // Apply debouncing to all filter fields and search term
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
@@ -303,11 +336,17 @@ export function CarSection({ isExpanded }) {
     }
   }, [debouncedSearchTerm, debouncedFilters, currentPage, itemsPerPage, router]);
 
+  // Load profile data and cars on component mount
   useEffect(() => {
-    setLoading(isInitial === true);
-    fetchCars();
-    setIsInitial(false);
-  }, [fetchCars]);
+    const loadInitialData = async () => {
+      setLoading(true);
+      await fetchProfileData();
+      await fetchCars();
+      setIsInitial(false);
+    };
+
+    loadInitialData();
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   const handleSearch = (term) => {
     setSearchTerm(term);
@@ -407,6 +446,11 @@ export function CarSection({ isExpanded }) {
       setDeleteDialogOpen(false);
       setCarToDelete(null);
     }
+  };
+
+  // Handle invoice update callback
+  const handleInvoiceUpdate = () => {
+    fetchCars(); // Refresh cars data after invoice update
   };
 
   const skeletonRows = Array.from({ length: itemsPerPage }, (_, i) => (
@@ -640,7 +684,12 @@ export function CarSection({ isExpanded }) {
                     )}
                     {columnVisibility.invoice && (
                       <TableCell className="text-center">
-                        <CompanyInvoice car={car} />
+                        <CompanyInvoice
+                          car={car}
+                          companyData={profileData.companyData}
+                          bankingData={profileData.bankingData}
+                          onInvoiceUpdate={fetchCars}
+                        />
                       </TableCell>
                     )}
                     {columnVisibility.carInfoImg && (

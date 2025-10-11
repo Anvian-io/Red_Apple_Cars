@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { File } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { ButtonLoader } from "@/components";
 
 function ModifyDetails({ carDetails, invoiceDetails, onSave, onClose }) {
   const [status, setStatus] = useState(carDetails.status || "pending");
@@ -143,11 +144,12 @@ const dummyCompanyData = {
   vatNumber: "4190288680"
 };
 
-export function CompanyInvoice({ car }) {
+export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate }) {
   const router = useRouter();
   const [showModifyDetails, setShowModifyDetails] = useState(false);
   const [generatedInvoiceData, setGeneratedInvoiceData] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // State for dynamic data
   const [customerData, setCustomerData] = useState({
@@ -156,21 +158,6 @@ export function CompanyInvoice({ car }) {
     bondStore: "",
     address: ""
   });
-  const [companyData, setCompanyData] = useState(null);
-  const [bankingData, setBankingData] = useState(null);
-
-  // Load company and banking details from localStorage on component mount
-  useEffect(() => {
-    const storedCompanyData = localStorage.getItem("companyDetails");
-    const storedBankingData = localStorage.getItem("bankingDetails");
-
-    if (storedCompanyData) {
-      setCompanyData(JSON.parse(storedCompanyData));
-    }
-    if (storedBankingData) {
-      setBankingData(JSON.parse(storedBankingData));
-    }
-  }, []);
 
   const handleCustomerDataChange = (field, value) => {
     setCustomerData((prev) => ({
@@ -192,6 +179,7 @@ export function CompanyInvoice({ car }) {
     }
 
     try {
+      setIsGenerating(true);
       const payload = {
         company: {
           name: companyData?.name || dummyCompanyData.name,
@@ -263,6 +251,8 @@ export function CompanyInvoice({ car }) {
     } catch (error) {
       console.error("Error:", error);
       toast.error("Error generating invoice");
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -274,6 +264,11 @@ export function CompanyInvoice({ car }) {
         toast.success("Details updated successfully");
         setShowModifyDetails(false);
         setIsDialogOpen(false);
+
+        // Call the callback to refresh cars data
+        if (onInvoiceUpdate) {
+          onInvoiceUpdate();
+        }
       } else {
         toast.error(response.data.message || "Failed to update details");
       }
@@ -434,8 +429,8 @@ export function CompanyInvoice({ car }) {
                   {!bankingData && (
                     <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded">
                       <p className="text-yellow-700 text-sm">
-                        <strong>Note:</strong> Using default banking details. To customize, add
-                        banking details to localStorage.
+                        <strong>Note:</strong> Using default banking details. To customize, please
+                        update your profile banking information.
                       </p>
                     </div>
                   )}
@@ -596,13 +591,14 @@ export function CompanyInvoice({ car }) {
               <Button
                 onClick={handle_generate_invoice}
                 disabled={
+                  isGenerating ||
                   !customerData.name ||
                   !customerData.number ||
                   !customerData.bondStore ||
                   !customerData.address
                 }
               >
-                Generate Invoice
+                {isGenerating ? <ButtonLoader /> : "Generate Invoice"}
               </Button>
             </DialogFooter>
           </>

@@ -1,0 +1,197 @@
+"use client";
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SquarePen, Upload, X } from "lucide-react";
+import Image from "next/image";
+import { toast } from "sonner";
+import { updateCompany } from "@/services/profile/profileServices";
+import { useRouter } from "next/navigation";
+
+export function CompanyForm({ companyData, onCompanyUpdated }) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    regNumber: "",
+    vatNumber: ""
+  });
+  const [logo, setLogo] = useState(null);
+  const [logoPreview, setLogoPreview] = useState("");
+
+  useEffect(() => {
+    if (companyData) {
+      setFormData({
+        name: companyData.name || "",
+        regNumber: companyData.regNumber || "",
+        vatNumber: companyData.vatNumber || ""
+      });
+      setLogoPreview(companyData.logo || "");
+    }
+  }, [companyData]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please select a valid image file");
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image size should be less than 5MB");
+        return;
+      }
+
+      setLogo(file);
+      setLogoPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const removeLogo = () => {
+    setLogo(null);
+    setLogoPreview("");
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const submitData = new FormData();
+      submitData.append("name", formData.name);
+      submitData.append("regNumber", formData.regNumber);
+      submitData.append("vatNumber", formData.vatNumber);
+
+      if (logo) {
+        submitData.append("logo", logo);
+      }
+
+      const response = await updateCompany(submitData, router);
+
+      if (response.data.status) {
+        toast.success("Company details updated successfully");
+        onCompanyUpdated(response.data.data.company);
+      } else {
+        toast.error(response.data.message || "Failed to update company details");
+      }
+    } catch (error) {
+      console.error("Error updating company:", error);
+      toast.error("Failed to update company details");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <SquarePen className="h-5 w-5" />
+          Company Information
+        </CardTitle>
+        <CardDescription>Update your company details and logo</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Logo Upload */}
+          <div className="space-y-4">
+            <Label htmlFor="logo">Company Logo</Label>
+            <div className="flex items-center gap-4">
+              {logoPreview ? (
+                <div className="relative">
+                  <Image
+                    src={logoPreview}
+                    alt="Company Logo"
+                    width={100}
+                    height={100}
+                    className="rounded-lg border"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute -top-2 -right-2 h-6 w-6"
+                    onClick={removeLogo}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center bg-muted/50">
+                  <Upload className="h-8 w-8 text-muted-foreground" />
+                </div>
+              )}
+              <div className="flex-1">
+                <Input
+                  id="logo"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoChange}
+                  className="cursor-pointer"
+                />
+                <p className="text-sm text-muted-foreground mt-1">
+                  Recommended: 500x500px, max 5MB
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Company Details */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Company Name *</Label>
+              <Input
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                placeholder="Enter company name"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="regNumber">Registration Number *</Label>
+              <Input
+                id="regNumber"
+                name="regNumber"
+                value={formData.regNumber}
+                onChange={handleInputChange}
+                placeholder="Enter registration number"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="vatNumber">VAT Number</Label>
+              <Input
+                id="vatNumber"
+                name="vatNumber"
+                value={formData.vatNumber}
+                onChange={handleInputChange}
+                placeholder="Enter VAT number"
+              />
+            </div>
+          </div>
+
+          <Button type="submit" disabled={loading} className="w-full md:w-auto">
+            {loading ? "Updating..." : "Update Company Details"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}

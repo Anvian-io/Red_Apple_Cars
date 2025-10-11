@@ -81,9 +81,9 @@ export default function Notifications() {
 
   const getNotificationIcon = (type) => {
     switch (type?.toLowerCase()) {
-      case "success":
+      case "created":
         return <CheckCircle2 className="h-5 w-5 text-green-500" />;
-      case "warning":
+      case "updated":
         return <AlertCircle className="h-5 w-5 text-yellow-500" />;
       case "error":
         return <X className="h-5 w-5 text-red-500" />;
@@ -94,9 +94,9 @@ export default function Notifications() {
 
   const getNotificationBadge = (type) => {
     switch (type?.toLowerCase()) {
-      case "success":
+      case "created":
         return <Badge className="bg-green-500 hover:bg-green-600">Success</Badge>;
-      case "warning":
+      case "updated":
         return <Badge className="bg-yellow-500 hover:bg-yellow-600">Warning</Badge>;
       case "error":
         return <Badge className="bg-red-500 hover:bg-red-600">Error</Badge>;
@@ -182,14 +182,6 @@ export default function Notifications() {
             ) : (
               <Badge className="bg-hoverBg">No Notifications Found</Badge>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={markAllAsRead}
-              disabled={notifications.length === 0 || notifications.every((n) => n.read)}
-            >
-              Mark all as read
-            </Button>
           </div>
         </div>
 
@@ -214,11 +206,7 @@ export default function Notifications() {
             notifications.map((notification) => (
               <Card
                 key={notification._id}
-                className={`transition-colors ${
-                  !notification.read
-                    ? "border-l-4 border-l-primary bg-blue-50 dark:bg-blue-950/20"
-                    : ""
-                }`}
+                className={`transition-color`}
               >
                 <CardContent className="p-4">
                   <div className="flex items-start space-x-4">
@@ -234,9 +222,6 @@ export default function Notifications() {
                           </p>
                           {getNotificationBadge(notification.type)}
                         </div>
-                        {!notification.read && (
-                          <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-2" />
-                        )}
                       </div>
 
                       <p className="text-sm text-muted-foreground mb-2">
@@ -248,17 +233,6 @@ export default function Notifications() {
                           <Calendar className="h-3 w-3" />
                           <span>{formatDate(notification.createdAt)}</span>
                         </div>
-
-                        {!notification.read && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 px-2 text-xs"
-                            onClick={() => markAsRead(notification._id)}
-                          >
-                            Mark as read
-                          </Button>
-                        )}
                       </div>
                     </div>
                   </div>
