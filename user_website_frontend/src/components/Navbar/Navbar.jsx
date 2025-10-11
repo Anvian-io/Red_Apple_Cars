@@ -18,6 +18,7 @@ import { useTheme } from "../Theme/ThemeProvider";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import { getAllCars } from "@/services/cars/carServices";
 
 export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

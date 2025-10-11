@@ -24,9 +24,9 @@ const Page = () => {
             try {
                 const response = await getAllCars({});
                 console.log("API Response for cars:", response);
-                if (response.data && response.data.status) {
+                if (response.data && response.data.data.status) {
 
-                    const mappedCars = response.data.data.map((car) => {
+                    const mappedCars = response.data.data.cars.map((car) => {
                         const mileageStr = car.details.mileage || "0";
                         const numericMileage = parseFloat(mileageStr);
                         return {

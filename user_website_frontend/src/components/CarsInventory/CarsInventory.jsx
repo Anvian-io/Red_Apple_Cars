@@ -17,7 +17,7 @@ export default function CarsInventory() {
         
         if (response.data && response.data.status) {
           // Map API data to frontend format
-          const mappedCars = response.data.data.map(car => ({
+          const mappedCars = response.data.data.cars.map(car => ({
             id: car._id,
             name: car.name,
             price: `$${car.real_price_bwp.toLocaleString()}`,
