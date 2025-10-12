@@ -3,7 +3,7 @@ import { getAllCars } from "@/services/cars/carServices";
 import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, SlidersHorizontal, Car, DollarSign } from "lucide-react";
+import { Search, SlidersHorizontal, Car, DollarSign, ChevronDown, ChevronUp } from "lucide-react";
 
 const Page = () => {
     const [cars, setCars] = useState([]);
@@ -12,6 +12,7 @@ const Page = () => {
     const [minPrice, setMinPrice] = useState(0);
     const [maxPrice, setMaxPrice] = useState(500000);
     const [isLoading, setIsLoading] = useState(true);
+    const [showFilters, setShowFilters] = useState(false); // New state for filter visibility
 
     useEffect(() => {
         const fetchCars = async () => {
@@ -23,6 +24,13 @@ const Page = () => {
                     const mappedCars = response.data.data.cars.map((car) => {
                         const mileageStr = car.details.mileage || "0";
                         const numericMileage = parseFloat(mileageStr);
+
+                        // Function to remove HTML tags from description
+                        const stripHtmlTags = (html) => {
+                            if (!html) return '';
+                            return html.replace(/<[^>]*>/g, '');
+                        };
+
                         return {
                             id: car._id,
                             name: car.name,
@@ -35,7 +43,7 @@ const Page = () => {
                             seats: 5,
                             driveType: car.details.drive,
                             image: car.main_image,
-                            description: car.description,
+                            description: stripHtmlTags(car.description), // Clean HTML tags
                             car_company: car.car_company,
                             transmission: car.details.transmission,
                             condition: car.details.condition,
@@ -43,7 +51,7 @@ const Page = () => {
                         }
                     });
                     setCars(mappedCars);
-                    
+
                     const prices = mappedCars.map(car => car.numericPrice);
                     const actualMaxPrice = Math.max(...prices);
                     setMaxPrice(actualMaxPrice);
@@ -63,7 +71,7 @@ const Page = () => {
 
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
-            updatedCars = updatedCars.filter((car) => 
+            updatedCars = updatedCars.filter((car) =>
                 car.name.toLowerCase().includes(query) ||
                 car.car_company.toLowerCase().includes(query) ||
                 car.description.toLowerCase().includes(query) ||
@@ -99,12 +107,12 @@ const Page = () => {
     };
 
     const cardVariants = {
-        hidden: { 
-            opacity: 0, 
-            y: 30 
+        hidden: {
+            opacity: 0,
+            y: 30
         },
-        visible: { 
-            opacity: 1, 
+        visible: {
+            opacity: 1,
             y: 0,
             transition: {
                 duration: 0.6,
@@ -145,18 +153,7 @@ const Page = () => {
             {/* Hero Section */}
             <div className="bg-gradient-to-br from-[var(--primary)]/10 to-[var(--secondary-bg)] border-b border-[var(--border)]">
                 <div className="container mx-auto px-6 py-12">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-center mb-8"
-                    >
-                        <h1 className="text-4xl md:text-5xl font-bold text-[var(--header)] mb-4">
-                            Premium Vehicle Collection
-                        </h1>
-                        <p className="text-lg text-[var(--text)] max-w-2xl mx-auto">
-                            Discover your perfect vehicle from our curated selection of premium automobiles
-                        </p>
-                    </motion.div>
+
 
                     {/* Search and Filters */}
                     <motion.div
@@ -166,72 +163,121 @@ const Page = () => {
                         className="max-w-6xl mx-auto space-y-6"
                     >
                         {/* Search Bar */}
-                        <div className="relative">
-                            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[var(--text)]/60 w-5 h-5" />
-                            <input
-                                type="text"
-                                placeholder="Search by model, brand, or features..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-12 pr-4 py-4 rounded-xl border border-[var(--border)] bg-[var(--card-bg)] text-[var(--text)] placeholder-[var(--text)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/20 focus:border-[var(--primary)] transition-all text-base backdrop-blur-sm"
-                            />
+                        <div className="relative flex items-center max-w-3xl mx-auto bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-sm overflow-hidden transition-all focus-within:ring-2 focus-within:ring-[var(--primary)]/20 focus-within:border-[var(--primary)] backdrop-blur-sm">
+  {/* Search Icon */}
+  <Search className="absolute left-4 text-[var(--text)]/60 w-5 h-5" />
+
+  {/* Input */}
+  <input
+    type="text"
+    placeholder="Search by model, brand, transmission, or fuel type..."
+    value={searchQuery}
+    onChange={(e) => setSearchQuery(e.target.value)}
+    className="w-full pl-12 pr-12 py-3.5 text-[var(--text)] bg-transparent focus:outline-none placeholder-[var(--text)]/50 text-base"
+  />
+
+  {/* Clear Button */}
+  {searchQuery && (
+    <motion.button
+      onClick={() => setSearchQuery("")}
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.8 }}
+      whileHover={{ rotate: 90 }}
+      transition={{ duration: 0.2 }}
+      className="absolute right-4 text-[var(--text)]/60 hover:text-[var(--primary)] transition-all"
+    >
+      ✕
+    </motion.button>
+  )}
+</div>
+
+                        {/* Filter Toggle Button */}
+                        <div className="flex justify-center">
+                            <motion.button
+                                onClick={() => setShowFilters(!showFilters)}
+                                className="flex items-center gap-2 px-6 py-3 rounded-lg border border-[var(--border)] bg-[var(--card-bg)] text-[var(--text)] hover:bg-[var(--primary)]/10 hover:border-[var(--primary)]/30 transition-all duration-300"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                            >
+                                <SlidersHorizontal className="w-4 h-4" />
+                                {showFilters ? 'Hide Filters' : 'Show Filters'}
+                                {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                            </motion.button>
                         </div>
 
-                        {/* Price Filter */}
-                        <div className="bg-[var(--card-bg)] rounded-xl border border-[var(--border)] p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-3">
-                                    <DollarSign className="w-5 h-5 text-[var(--primary)]" />
-                                    <span className="font-semibold text-[var(--heading)]">Price Range</span>
-                                </div>
-                                {hasActiveFilters && (
-                                    <motion.button
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        onClick={resetFilters}
-                                        className="text-sm text-[var(--primary)] hover:text-[var(--hover-text)] transition-colors px-3 py-1 rounded-lg hover:bg-[var(--primary)]/10"
-                                    >
-                                        Clear filters
-                                    </motion.button>
-                                )}
-                            </div>
-                            
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-4">
-                                    <div className="flex-1">
-                                        <label className="text-sm text-[var(--text)]/70 mb-2 block">Minimum</label>
-                                        <input
-                                            type="number"
-                                            value={minPrice}
-                                            onChange={(e) => setMinPrice(Number(e.target.value))}
-                                            className="w-full p-3 rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] transition-all"
-                                            placeholder="0"
-                                        />
+                        {/* Collapsible Price Filter */}
+                        <AnimatePresence>
+                            {showFilters && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: "auto" }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="overflow-hidden"
+                                >
+                                    <div className="bg-[var(--card-bg)] rounded-xl border border-[var(--border)] p-5 flex flex-col gap-4 shadow-sm">
+                                        {/* Header Row */}
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2 text-[var(--heading)] font-semibold">
+                                                <DollarSign className="w-4 h-4 text-[var(--primary)]" />
+                                                Price Range
+                                            </div>
+                                            {hasActiveFilters && (
+                                                <button
+                                                    onClick={resetFilters}
+                                                    className="text-xs text-[var(--primary)] hover:text-[var(--hover-text)] transition-all"
+                                                >
+                                                    Reset
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        {/* Inputs and Range in one line */}
+                                        <div className="flex flex-col sm:flex-row items-center gap-3">
+                                            <input
+                                                type="number"
+                                                value={minPrice}
+                                                onChange={(e) => setMinPrice(Number(e.target.value))}
+                                                className="w-full sm:w-1/2 p-2 text-sm rounded-md border border-[var(--border)] bg-[var(--background)] text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                                                placeholder="Min"
+                                            />
+                                            <span className="text-[var(--text)]/60 hidden sm:inline">—</span>
+                                            <input
+                                                type="number"
+                                                value={maxPrice}
+                                                onChange={(e) => setMaxPrice(Number(e.target.value))}
+                                                className="w-full sm:w-1/2 p-2 text-sm rounded-md border border-[var(--border)] bg-[var(--background)] text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                                                placeholder="Max"
+                                            />
+                                        </div>
+
+                                        {/* Slider */}
+                                        <div className="flex flex-col gap-1">
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max={Math.max(...cars.map((car) => car.numericPrice))}
+                                                value={maxPrice}
+                                                onChange={(e) => setMaxPrice(Number(e.target.value))}
+                                                className="w-full h-1.5 bg-[var(--border)] rounded-full appearance-none cursor-pointer
+              [&::-webkit-slider-thumb]:appearance-none 
+              [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 
+              [&::-webkit-slider-thumb]:rounded-full 
+              [&::-webkit-slider-thumb]:bg-[var(--primary)] 
+              [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white 
+              [&::-webkit-slider-thumb]:shadow-md"
+                                            />
+                                            <div className="flex justify-between text-xs text-[var(--text)]/60">
+                                                <span>${minPrice.toLocaleString()}</span>
+                                                <span>${maxPrice.toLocaleString()}</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="flex-1">
-                                        <label className="text-sm text-[var(--text)]/70 mb-2 block">Maximum</label>
-                                        <input
-                                            type="number"
-                                            value={maxPrice}
-                                            onChange={(e) => setMaxPrice(Number(e.target.value))}
-                                            className="w-full p-3 rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] transition-all"
-                                            placeholder={Math.max(...cars.map(car => car.numericPrice)).toLocaleString()}
-                                        />
-                                    </div>
-                                </div>
-                                
-                                <div className="pt-2">
-                                    <input
-                                        type="range"
-                                        min="0"
-                                        max={Math.max(...cars.map(car => car.numericPrice))}
-                                        value={maxPrice}
-                                        onChange={(e) => setMaxPrice(Number(e.target.value))}
-                                        className="w-full h-1.5 bg-[var(--border)] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--primary)] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-lg"
-                                    />
-                                </div>
-                            </div>
-                        </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
 
                         {/* Results Summary */}
                         <motion.div
@@ -304,7 +350,7 @@ const Page = () => {
                                                     {car.car_company}
                                                 </p>
                                             </div>
-                                            
+
                                             <div className="flex items-center justify-between">
                                                 <div className="text-2xl font-bold text-[var(--primary)]">
                                                     {car.price}
