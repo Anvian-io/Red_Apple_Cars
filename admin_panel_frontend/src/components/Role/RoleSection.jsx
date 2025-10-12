@@ -91,7 +91,7 @@ export function RoleSection({ isExpanded }) {
 
   const handleAddRole = () => {
     // Check permission for create operation
-    if (!checkPermission("roles", "create")) {
+    if (!checkPermission("roles", "edit")) {
       toast.error("You don't have permission to create roles");
       return;
     }
