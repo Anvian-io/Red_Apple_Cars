@@ -387,7 +387,7 @@ export function CarSection({ isExpanded }) {
   // Handle Excel export with permission check
   const handleExportToExcel = async () => {
     if (!hasPermission("download")) {
-      toast.error("You don't have permission to download Excel files");
+      toast.error("You don't have permission to download Excel files in Cars page");
       return;
     }
 

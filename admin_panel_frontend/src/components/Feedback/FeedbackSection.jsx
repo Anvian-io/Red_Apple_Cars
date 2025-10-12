@@ -8,7 +8,7 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
+  TableRow
 } from "@/components/ui/table";
 import { getAllFeedback, deleteFeedback } from "@/services/feedback/feedbackServices";
 import { SquarePen, Trash2, User, Calendar } from "lucide-react";
@@ -24,7 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Star } from "lucide-react";
 import { toast } from "sonner";
 import { CrudDetailsHoverCard } from "..";
-
+import { checkPermission } from "@/helper/commonHelper";
 
 export function FeedbackSection({ isExpanded }) {
   const [add_or_update_feedback, set_add_or_update_feedback] = useState(false);
@@ -62,7 +62,7 @@ export function FeedbackSection({ isExpanded }) {
         setFeedbacks([]);
         setTotalFeedbacks(0);
         setTotalPages(0);
-        toast.error("Failed to fetch testimonials");
+        toast.error("Failed to fetch feeback");
       }
 
       setLoading(false);
@@ -75,7 +75,7 @@ export function FeedbackSection({ isExpanded }) {
       setTotalPages(0);
       setLoading(false);
       setIsSearching(false);
-      toast.error("Failed to fetch testimonials");
+      toast.error("Failed to fetch feeback");
     }
   }, [debouncedSearchTerm, currentPage, itemsPerPage, isInitial]);
 
@@ -91,24 +91,40 @@ export function FeedbackSection({ isExpanded }) {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric"
     });
   };
 
   const handleEditFeedback = (feedbackId) => {
+    // Check permission for edit operation
+    if (!checkPermission("feedback", "edit")) {
+      toast.error("You don't have permission to edit feeback");
+      return;
+    }
     setCurrentFeedbackId(feedbackId);
     set_add_or_update_feedback(true);
   };
 
   const handleAddFeedback = () => {
+    // Check permission for add operation (assuming it's the same as edit for feedback)
+    if (!checkPermission("feedback", "edit")) {
+      toast.error("You don't have permission to add feeback");
+      return;
+    }
     setCurrentFeedbackId(null);
     set_add_or_update_feedback(true);
   };
 
   const handleDeleteFeedback = async (feedbackId) => {
+    // Check permission for delete operation
+    if (!checkPermission("feedback", "delete")) {
+      toast.error("You don't have permission to delete feeback");
+      return;
+    }
+
     try {
       const response = await deleteFeedback(feedbackId);
       if (response && response.data && response.data.status) {
@@ -133,8 +149,9 @@ export function FeedbackSection({ isExpanded }) {
         {[...Array(5)].map((_, i) => (
           <Star
             key={i}
-            className={`h-4 w-4 ${i < rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
-              }`}
+            className={`h-4 w-4 ${
+              i < rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
+            }`}
           />
         ))}
         <span className="ml-1 text-sm text-muted-foreground">({rating})</span>
@@ -178,7 +195,7 @@ export function FeedbackSection({ isExpanded }) {
       {isSearching && <SearchLoader />}
       <SecondaryHeader
         title="Customer Testimonials"
-        searchPlaceholder="Search testimonials..."
+        searchPlaceholder="Search feeback..."
         buttonText="Add New Testimonial"
         tooltipText="Add New Testimonial"
         onButtonClick={handleAddFeedback}
@@ -192,8 +209,8 @@ export function FeedbackSection({ isExpanded }) {
           ) : totalFeedbacks > 0 ? (
             <Badge className="bg-hoverBg">
               Showing {(currentPage - 1) * itemsPerPage + 1}-
-              {Math.min(currentPage * itemsPerPage, totalFeedbacks)} of{" "}
-              {totalFeedbacks} Testimonials
+              {Math.min(currentPage * itemsPerPage, totalFeedbacks)} of {totalFeedbacks}{" "}
+              Testimonials
             </Badge>
           ) : (
             <Badge className="bg-hoverBg">No Testimonials Found</Badge>
@@ -203,9 +220,7 @@ export function FeedbackSection({ isExpanded }) {
 
       <div className="mx-1 mt-6 rounded-md max-w-[99vw] border overflow-x-auto bg-tableBg">
         <Table className="min-w-[1000px] lg:min-w-full">
-          <TableCaption className="mb-2">
-            A list of customer testimonials
-          </TableCaption>
+          <TableCaption className="mb-2">A list of customer feeback</TableCaption>
           <TableHeader className="bg-hoverBg">
             <TableRow>
               <TableHead className="w-[120px]">Image</TableHead>
@@ -221,79 +236,73 @@ export function FeedbackSection({ isExpanded }) {
             {loading
               ? skeletonRows
               : feedbacks.map((feedback) => (
-                <TableRow key={feedback._id}>
-                  <TableCell>
-                    {feedback.image ? (
-                      <Avatar className="h-28 w-28 rounded-none">
-                        <AvatarImage src={feedback.image} alt={feedback.CustomerName} />
-                        <AvatarFallback>
-                          <User className="h-5 w-5" />
-                        </AvatarFallback>
-                      </Avatar>
-                    ) : (
-                      <Avatar className="h-10 w-10">
-                        <AvatarFallback>
-                          <User className="h-5 w-5" />
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
-                  </TableCell>
+                  <TableRow key={feedback._id}>
+                    <TableCell>
+                      {feedback.image ? (
+                        <Avatar className="h-28 w-28 rounded-none">
+                          <AvatarImage src={feedback.image} alt={feedback.CustomerName} />
+                          <AvatarFallback>
+                            <User className="h-5 w-5" />
+                          </AvatarFallback>
+                        </Avatar>
+                      ) : (
+                        <Avatar className="h-10 w-10">
+                          <AvatarFallback>
+                            <User className="h-5 w-5" />
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+                    </TableCell>
 
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
-                        <AvatarFallback>
-                          <User className="h-5 w-5" />
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">
-                          {feedback.CustomerName}
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarFallback>
+                            <User className="h-5 w-5" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium">{feedback.CustomerName}</div>
                         </div>
                       </div>
-                    </div>
-                  </TableCell>
+                    </TableCell>
 
-                  <TableCell className="max-w-xs">
-                    <div className="line-clamp-2">{feedback.Testimonial}</div>
-                  </TableCell>
-                  <TableCell>{renderRating(feedback.rating)}</TableCell>
-                  <TableCell>
-                    <Badge
-                      className={
-                        feedback.Status === "published"
-                          ? "bg-green-500"
-                          : "bg-gray-500"
-                      }
-                    >
-                      {feedback.Status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <CrudDetailsHoverCard car={feedback}/>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        onClick={() => handleEditFeedback(feedback._id)}
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
+                    <TableCell className="max-w-xs">
+                      <div className="line-clamp-2">{feedback.Testimonial}</div>
+                    </TableCell>
+                    <TableCell>{renderRating(feedback.rating)}</TableCell>
+                    <TableCell>
+                      <Badge
+                        className={feedback.Status === "published" ? "bg-green-500" : "bg-gray-500"}
                       >
-                        <SquarePen className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        onClick={() => handleDeleteFeedback(feedback._id)}
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+                        {feedback.Status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <CrudDetailsHoverCard car={feedback} />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          onClick={() => handleEditFeedback(feedback._id)}
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                        >
+                          <SquarePen className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          onClick={() => handleDeleteFeedback(feedback._id)}
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
           </TableBody>
         </Table>
       </div>

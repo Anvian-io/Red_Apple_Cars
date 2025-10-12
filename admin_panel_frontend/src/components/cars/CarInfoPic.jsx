@@ -30,7 +30,7 @@ export function CarInfoPic({ car }) {
 
   const handleDownloadImage = async (imageType = "png") => {
     if(!checkPermission("cars","download")){
-      toast.error("You don't have permission to download")
+      toast.error("You don't have permission to download in Cars Page")
       return;
     }
     if (!cardRef.current) return;

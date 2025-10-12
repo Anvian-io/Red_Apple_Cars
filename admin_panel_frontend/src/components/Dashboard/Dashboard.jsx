@@ -13,6 +13,8 @@ import {
 } from "recharts";
 import html2canvas from "html2canvas";
 import { getDashboardData } from "@/services/dashboard/dashboardServices";
+import { toast } from "sonner";
+import { checkPermission } from "@/helper/commonHelper";
 
 export function Dashboard() {
   const [activeTimeRange, setActiveTimeRange] = useState("6m");
@@ -52,6 +54,10 @@ export function Dashboard() {
 
   // Function to export chart as PNG
   const exportChartAsPNG = (chartRef, filename) => {
+    if(!checkPermission("profile","download")){
+      toast.error("You don't have the permission to download in Home page")
+      return;
+    }
     if (chartRef.current) {
       html2canvas(chartRef.current).then((canvas) => {
         const link = document.createElement("a");
