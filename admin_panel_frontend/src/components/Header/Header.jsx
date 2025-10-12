@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { BreadcrumbWrapper } from "..";
 import { Bell, User, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -10,14 +10,14 @@ export function Header({ isExpanded, pages }) {
   const [time, setTime] = useState(null);
   const [user, setUser] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
+  const profileRef = useRef(null); // ref for profile dropdown
 
+  // Load user & time
   useEffect(() => {
-    // Get user from localStorage
     const userData = localStorage.getItem("User");
     if (userData) {
       try {
-        const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
+        setUser(JSON.parse(userData));
       } catch (error) {
         console.error("Error parsing user data:", error);
       }
@@ -25,33 +25,23 @@ export function Header({ isExpanded, pages }) {
 
     const updateTime = () => {
       const now = new Date();
-      const options = {
-        timeZone: "Africa/Gaborone" // Botswana timezone
-      };
+      const options = { timeZone: "Africa/Gaborone" };
 
-      // Get individual time components
       const date = now.toLocaleDateString("en-GB", {
         weekday: "short",
         year: "numeric",
         month: "short",
         day: "numeric",
-        ...options
+        ...options,
       });
 
       const hours = now
-        .toLocaleString("en-GB", {
-          hour: "2-digit",
-          hour12: false,
-          ...options
-        })
+        .toLocaleString("en-GB", { hour: "2-digit", hour12: false, ...options })
         .split(":")[0]
         .padStart(2, "0");
 
       const minutes = now
-        .toLocaleString("en-GB", {
-          minute: "2-digit",
-          ...options
-        })
+        .toLocaleString("en-GB", { minute: "2-digit", ...options })
         .padStart(2, "0");
 
       const seconds = String(
@@ -63,78 +53,78 @@ export function Header({ isExpanded, pages }) {
 
     updateTime();
     const interval = setInterval(updateTime, 1000);
-
     return () => clearInterval(interval);
+  }, []);
+
+  // Close dropdown on outside click or Escape
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    }
+
+    function handleEsc(event) {
+      if (event.key === "Escape") setShowDropdown(false);
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEsc);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEsc);
+    };
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("User");
     setUser(null);
     setShowDropdown(false);
-    // You might want to redirect to login page or refresh the app
+    // Optional: redirect or refresh
     // window.location.reload(); or router.push('/login');
   };
 
-  // Skeleton component for loading state
+  // Timer skeleton
   const TimerSkeleton = () => (
     <div className="sm:flex items-center gap-2 hidden">
-      {/* Date */}
       <div className="lg:flex-col items-center hidden lg:flex">
         <span className="text-xs font-medium text-muted-foreground">{""}</span>
       </div>
-
-      {/* Time blocks */}
       <div className="flex items-center gap-1">
-        {/* Hours */}
-        <div className="flex flex-col items-center bg-primary/10 rounded-lg p-2 min-w-[3rem] border-border border">
-          <span className="text-lg font-bold text-text">{"00"}</span>
-        </div>
-
-        <div className="text-2xl font-bold text-text animate-pulse">:</div>
-
-        {/* Minutes */}
-        <div className="flex flex-col items-center bg-primary/10 rounded-lg p-2 min-w-[3rem] border-border border">
-          <span className="text-lg font-bold text-text">{"00"}</span>
-        </div>
-
-        <div className="text-2xl font-bold text-text animate-pulse">:</div>
-
-        {/* Seconds */}
-        <div className="flex flex-col items-center bg-primary/10 rounded-lg p-2 min-w-[3rem] border-border border">
-          <span className="text-lg font-bold text-text">{"00"}</span>
-        </div>
+        {["00", "00", "00"].map((t, i) => (
+          <>
+            <div
+              key={i}
+              className="flex flex-col items-center bg-primary/10 rounded-lg p-2 min-w-[3rem] border-border border"
+            >
+              <span className="text-lg font-bold text-text">{t}</span>
+            </div>
+            {i < 2 && <div className="text-2xl font-bold text-text animate-pulse">:</div>}
+          </>
+        ))}
       </div>
     </div>
   );
 
-  // Timer clock component
+  // Timer clock
   const TimerClock = ({ time }) => (
     <div className="flex items-center gap-2">
-      {/* Date */}
       <div className="lg:flex lg:flex-col items-center hidden">
         <span className="text-xs font-medium text-muted-foreground">{time.date}</span>
       </div>
-
-      {/* Time blocks */}
       <div className="sm:flex items-center gap-1 hidden">
-        {/* Hours */}
-        <div className="flex flex-col items-center bg-primary/10 rounded-lg p-2 min-w-[3rem] border-border border">
-          <span className="text-lg font-bold text-text">{time.hours}</span>
-        </div>
-
-        <div className="text-2xl font-bold text-text animate-pulse">:</div>
-
-        {/* Minutes */}
-        <div className="flex flex-col items-center bg-primary/10 rounded-lg p-2 min-w-[3rem] border-border border">
-          <span className="text-lg font-bold text-text">{time.minutes}</span>
-        </div>
-
-        <div className="text-2xl font-bold text-text animate-pulse">:</div>
-
-        {/* Seconds */}
-        <div className="flex flex-col items-center bg-primary/10 rounded-lg p-2 min-w-[3rem] border-border border">
-          <span className="text-lg font-bold text-text">{time.seconds}</span>
-        </div>
+        {[time.hours, time.minutes, time.seconds].map((t, i) => (
+          <>
+            <div
+              key={i}
+              className="flex flex-col items-center bg-primary/10 rounded-lg p-2 min-w-[3rem] border-border border"
+            >
+              <span className="text-lg font-bold text-text">{t}</span>
+            </div>
+            {i < 2 && <div className="text-2xl font-bold text-text animate-pulse">:</div>}
+          </>
+        ))}
       </div>
     </div>
   );
@@ -150,38 +140,26 @@ export function Header({ isExpanded, pages }) {
 
       {/* Right - Icons & Time */}
       <div className="flex items-center gap-4">
-        {/* Notification */}
         <NotificationsDropdown />
 
         {/* Profile with Dropdown */}
-        <div
-          className="relative"
-          onMouseEnter={() => setShowDropdown(true)}
-          onMouseLeave={() => setShowDropdown(false)}
-        >
-          <Avatar className="w-8 h-8 rounded-lg flex items-center justify-center bg-hoverBg cursor-pointer">
+        <div ref={profileRef} className="relative">
+          <Avatar
+            className="w-8 h-8 rounded-lg flex items-center justify-center bg-hoverBg cursor-pointer"
+            onClick={() => setShowDropdown((prev) => !prev)}
+          >
             <AvatarImage src="/profile.jpg" alt="@user" />
             <AvatarFallback className="text-sm font-medium">
               {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
             </AvatarFallback>
           </Avatar>
 
-          {/* Dropdown Menu */}
           {showDropdown && (
-            <div
-              onMouseEnter={() => setShowDropdown(true)}
-              onMouseLeave={() => setShowDropdown(false)}
-              className="absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg border border-border z-20"
-            >
-              {/* User Info */}
+            <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg border border-border z-20">
               <div className="px-4 py-3 border-b border-border">
                 <p className="text-sm font-medium text-gray-900">{user?.name || "User"}</p>
-                <p className="text-sm text-gray-500 truncate">
-                  {user?.gmail || user?.email || "No email"}
-                </p>
+                <p className="text-sm text-gray-500 truncate">{user?.gmail || user?.email || "No email"}</p>
               </div>
-
-              {/* Logout Button */}
               <button
                 onClick={handleLogout}
                 className="w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center gap-2 transition-colors"
@@ -193,7 +171,6 @@ export function Header({ isExpanded, pages }) {
           )}
         </div>
 
-        {/* Timer Clock */}
         {time ? <TimerClock time={time} /> : <TimerSkeleton />}
       </div>
     </header>

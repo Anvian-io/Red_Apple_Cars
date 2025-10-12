@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Bell, X, Plus, Edit, Trash2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,9 +12,9 @@ export function NotificationsDropdown() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchNotifications = async () => {
-    // if (!open) return;
+  const dropdownRef = useRef(null);
 
+  const fetchNotifications = async () => {
     setLoading(true);
     try {
       const data = await getAllNotification();
@@ -33,18 +33,34 @@ export function NotificationsDropdown() {
   useEffect(() => {
     const evtSource = apiClientEvents.events("/notifications/stream", {
       onMessage: (msg) => {
-        console.log(msg,'weofjeowij')
         if (msg.type == "notification_update") {
           fetchNotifications();
         }
       },
       onError: (err) => {
         console.error("SSE error:", err);
-      }
+      },
     });
 
     return () => evtSource.close();
   }, []);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    }
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [open]);
 
   const getNotificationIcon = (type) => {
     switch (type) {
@@ -64,7 +80,7 @@ export function NotificationsDropdown() {
       case "create":
         return "text-green-600 border-l-4 border-l-green-500";
       case "update":
-        return "text-blue-600 border-l-4 border-l-blue-500";
+        return "text-yellow-600 border-l-4 border-l-yellow-500";
       case "delete":
         return "text-red-600 border-l-4 border-l-red-500";
       default:
@@ -84,7 +100,7 @@ export function NotificationsDropdown() {
   };
 
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       {/* Bell Button with Notification Count */}
       <Button
         variant="ghost"
@@ -123,7 +139,6 @@ export function NotificationsDropdown() {
             {/* Notifications List */}
             <div className="max-h-60 overflow-y-auto">
               {loading ? (
-                // Loading state
                 <div className="px-4 py-3 border-b animate-pulse">
                   <div className="flex space-x-3">
                     <div className="h-10 w-10 rounded-full bg-hoverBg"></div>
@@ -134,13 +149,11 @@ export function NotificationsDropdown() {
                   </div>
                 </div>
               ) : notifications.length === 0 ? (
-                // Empty state
                 <div className="px-4 py-6 text-center text-muted-foreground">
                   <Bell className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
                   <p className="text-sm">No notifications yet</p>
                 </div>
               ) : (
-                // Notifications list
                 <ul>
                   {notifications.map((notification) => (
                     <li
@@ -150,7 +163,7 @@ export function NotificationsDropdown() {
                       )}`}
                     >
                       <div className="flex space-x-3">
-                        {/* Icon with type-based background */}
+                        {/* Icon */}
                         <div className="flex-shrink-0">
                           <div
                             className={`p-2 rounded-full ${
