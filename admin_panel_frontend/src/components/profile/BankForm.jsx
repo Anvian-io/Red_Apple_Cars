@@ -9,6 +9,7 @@ import { SquarePen, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { createOrUpdateBank } from "@/services/profile/profileServices";
 import { useRouter } from "next/navigation";
+import { checkPermission } from "@/helper/commonHelper";
 
 export function BankForm({ bankData, onBankUpdated, onCancel }) {
   const router = useRouter();
@@ -20,7 +21,7 @@ export function BankForm({ bankData, onBankUpdated, onCancel }) {
     branchCode: "",
     swiftCode: "",
     address: "",
-    currency: "bwp", // Default currency
+    currency: "bwp",
     isActive: false
   });
 
@@ -64,6 +65,12 @@ export function BankForm({ bankData, onBankUpdated, onCancel }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!checkPermission("profile", "edit")) {
+      toast.error("You don't have permission to modify bank accounts");
+      return;
+    }
+
     setLoading(true);
 
     try {

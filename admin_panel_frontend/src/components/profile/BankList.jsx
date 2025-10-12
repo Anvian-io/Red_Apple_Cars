@@ -7,15 +7,22 @@ import { SquarePen, Trash2, Star, StarOff } from "lucide-react";
 import { toast } from "sonner";
 import { deleteBank, setActiveBank } from "@/services/profile/profileServices";
 import { useRouter } from "next/navigation";
+import { checkPermission } from "@/helper/commonHelper";
 
 export function BankList({ banks, onEditBank, onBanksUpdated }) {
   const router = useRouter();
 
-  const handleSetActive = async (bankId,currency) => {
-    const payload={
-      id:bankId,
-      currency:currency
+  const handleSetActive = async (bankId, currency) => {
+    if (!checkPermission("profile", "edit")) {
+      toast.error("You don't have permission to set active bank account");
+      return;
     }
+
+    const payload = {
+      id: bankId,
+      currency: currency
+    };
+
     try {
       const response = await setActiveBank(payload, router);
       if (response.data.status) {
@@ -31,6 +38,11 @@ export function BankList({ banks, onEditBank, onBanksUpdated }) {
   };
 
   const handleDelete = async (bank) => {
+    if (!checkPermission("profile", "delete")) {
+      toast.error("You don't have permission to delete bank accounts");
+      return;
+    }
+
     if (!confirm(`Are you sure you want to delete bank account: ${bank.bankName}?`)) {
       return;
     }
@@ -88,7 +100,7 @@ export function BankList({ banks, onEditBank, onBanksUpdated }) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => handleSetActive(bank._id,bank.currency)}
+                  onClick={() => handleSetActive(bank._id, bank.currency)}
                   title={bank.isActive ? "Deactivate" : "Set as Active"}
                 >
                   {bank.isActive ? (
