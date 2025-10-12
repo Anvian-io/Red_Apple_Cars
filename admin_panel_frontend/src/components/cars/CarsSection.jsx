@@ -57,6 +57,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { getProfile } from "@/services/profile/profileServices";
+import { checkPermission } from "@/helper/commonHelper";
 
 // Column Visibility Component
 function ColumnVisibility({ columnVisibility, setColumnVisibility }) {

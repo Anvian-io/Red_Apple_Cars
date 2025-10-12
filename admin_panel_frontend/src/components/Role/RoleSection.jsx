@@ -7,7 +7,7 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
+  TableRow
 } from "@/components/ui/table";
 import { SquarePen } from "lucide-react";
 import { Button } from "../ui/button";
@@ -18,10 +18,11 @@ import React, { useState, useEffect, useCallback } from "react";
 import { get_all_roles } from "@/services/roles/roleServices";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/useDebounce";
-import SearchLoader from "@/components/custom_ui/SearchLoader"; // Import the SearchLoader
+import SearchLoader from "@/components/custom_ui/SearchLoader";
 import { useRouter } from "next/navigation";
 import { CrudDetailsHoverCard } from "..";
-
+import { checkPermission } from "@/helper/commonHelper";
+import { toast } from "sonner";
 
 export function RoleSection({ isExpanded }) {
   const [add_or_update_role, set_add_or_update_role] = useState(false);
@@ -40,13 +41,13 @@ export function RoleSection({ isExpanded }) {
 
   const fetchRoles = useCallback(async () => {
     try {
-      setIsSearching(isInitial == false ? true : false); // Set isSearching based on whether there's a search term
+      setIsSearching(isInitial == false ? true : false);
       const payload = {
         search: debouncedSearchTerm,
         limit: itemsPerPage,
-        page: currentPage,
+        page: currentPage
       };
-      const response = await get_all_roles(payload,router);
+      const response = await get_all_roles(payload, router);
       if (response.data.status) {
         setRoles(response.data.data.roles);
         const pagination_data = response.data.data.pagination;
@@ -59,7 +60,7 @@ export function RoleSection({ isExpanded }) {
       console.error("Error fetching roles:", error);
     } finally {
       setLoading(false);
-      setIsSearching(false); // Reset isSearching after fetch completes
+      setIsSearching(false);
     }
   }, [debouncedSearchTerm, currentPage, itemsPerPage]);
 
@@ -79,11 +80,21 @@ export function RoleSection({ isExpanded }) {
   };
 
   const handleEditRole = (roleId) => {
+    // Check permission for edit operation
+    if (!checkPermission("roles", "edit")) {
+      toast.error("You don't have permission to edit roles");
+      return;
+    }
     setCurrentRoleId(roleId);
     set_add_or_update_role(true);
   };
 
   const handleAddRole = () => {
+    // Check permission for create operation
+    if (!checkPermission("roles", "create")) {
+      toast.error("You don't have permission to create roles");
+      return;
+    }
     setCurrentRoleId(null);
     set_add_or_update_role(true);
   };
@@ -117,11 +128,7 @@ export function RoleSection({ isExpanded }) {
 
   return (
     <div className="w-full h-full">
-      {isSearching && (
-        // <div className="flex justify-center items-center p-8">
-        <SearchLoader />
-        // </div>
-      )}
+      {isSearching && <SearchLoader />}
       <SecondaryHeader
         title="Roles"
         searchPlaceholder="Search Roles"

@@ -71,7 +71,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="w-full h-full">
-        <SecondaryHeader title="Profile" />
+        {/* <SecondaryHeader title="Profile" /> */}
         <div className="p-6 space-y-6">
           <Skeleton className="h-64 w-full bg-border" />
           <Skeleton className="h-32 w-full bg-border" />

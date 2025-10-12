@@ -165,4 +165,22 @@ export const handleApiResponse = (response, router) => {
   return response;
 };
 
-export { asyncHandler, getCookie };
+// Helper function to check permissions
+const checkPermission = (page, operation) => {
+  if (typeof window === "undefined") return false;
+
+  try {
+    const permissionsStr = localStorage.getItem("permissions");
+    if (!permissionsStr) return false;
+
+    const permissions = JSON.parse(permissionsStr);
+    return permissions.some(
+      (permission) => permission.page === page && permission.operation === operation
+    );
+  } catch (error) {
+    console.error("Error checking permissions:", error);
+    return false;
+  }
+};
+
+export { asyncHandler, getCookie,checkPermission };

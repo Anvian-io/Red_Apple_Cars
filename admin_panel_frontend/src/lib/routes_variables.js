@@ -51,12 +51,19 @@ export const navItems = [
     id: "roles",
     pages: "Home, Roles"
   },
+  // {
+  //   icon: BriefcaseBusiness,
+  //   label: "Website Services",
+  //   href: "/website-services",
+  //   id: "services",
+  //   pages: "Home, Services"
+  // },
   {
     icon: BriefcaseBusiness,
-    label: "Website Services",
-    href: "/website-services",
-    id: "services",
-    pages: "Home, Services"
+    label: "Profile",
+    href: "/profile",
+    id: "profile",
+    pages: "Home, profile"
   },
   {
     icon: BriefcaseBusiness,
