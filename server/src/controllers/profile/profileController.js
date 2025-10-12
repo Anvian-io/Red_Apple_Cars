@@ -25,16 +25,16 @@ export const getProfile = asyncHandler(async (req, res) => {
 
 // Update Company Details
 export const updateCompany = asyncHandler(async (req, res) => {
-    const { 
-        name, 
-        regNumber, 
-        vatNumber, 
-        address, 
-        phoneNumber, 
-        whatsappNumber, 
-        instagramUrl, 
-        facebookUrl, 
-        twitterUrl 
+    const {
+        name,
+        regNumber,
+        vatNumber,
+        address,
+        phoneNumber,
+        whatsappNumber,
+        instagramUrl,
+        facebookUrl,
+        twitterUrl
     } = req.body;
 
     if (!name || !regNumber) {
@@ -130,15 +130,27 @@ export const createOrUpdateBank = asyncHandler(async (req, res) => {
         branchCode,
         swiftCode,
         address,
+        currency,
         isActive
     } = req.body;
 
-    if (!bankName || !accountName || !accountNumber || !branchCode) {
+    if (!bankName || !accountName || !accountNumber || !branchCode || !currency) {
         return sendResponse(
             res,
             false,
             null,
-            "Bank name, account name, account number and branch code are required",
+            "Bank name, account name, account number, branch code and currency are required",
+            statusType.BAD_REQUEST
+        );
+    }
+
+    // Validate currency
+    if (!["bwp", "zmw"].includes(currency)) {
+        return sendResponse(
+            res,
+            false,
+            null,
+            "Invalid currency. Must be either 'bwp' or 'zmw'",
             statusType.BAD_REQUEST
         );
     }
@@ -164,6 +176,7 @@ export const createOrUpdateBank = asyncHandler(async (req, res) => {
         bank.branchCode = branchCode;
         bank.swiftCode = swiftCode;
         bank.address = address;
+        bank.currency = currency;
         bank.isActive = isActive === "true";
         bank.updated_by = req.user._id;
 
@@ -177,6 +190,7 @@ export const createOrUpdateBank = asyncHandler(async (req, res) => {
             branchCode,
             swiftCode,
             address,
+            currency,
             isActive: isActive === "true",
             created_by: req.user._id,
             updated_by: req.user._id
@@ -228,9 +242,9 @@ export const deleteBank = asyncHandler(async (req, res) => {
 // Set Active Bank
 export const setActiveBank = asyncHandler(async (req, res) => {
     const { bankId } = req.params;
-
+    const { currency } = req.body;
     // Deactivate all banks
-    // await Bank.updateMany({ created_by: req.user._id }, { $set: { isActive: false } });
+    await Bank.updateMany({ currency: currency }, { $set: { isActive: false } });
 
     // Activate the selected bank
     const bank = await Bank.findOneAndUpdate(

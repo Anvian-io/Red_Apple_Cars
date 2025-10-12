@@ -25,7 +25,7 @@ export const deleteBank = async (bankId, router) => {
   return handleApiResponse(response, router);
 };
 
-export const setActiveBank = async (bankId, router) => {
-  const response = await apiClient.put(`/profile/bank/${bankId}/active`);
+export const setActiveBank = async (payload, router) => {
+  const response = await apiClient.put(`/profile/bank/${payload.id}/active`,payload);
   return handleApiResponse(response, router);
 };

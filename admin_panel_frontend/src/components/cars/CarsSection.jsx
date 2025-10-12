@@ -702,9 +702,11 @@ export function CarSection({ isExpanded }) {
                           companyData={profileData.companyData}
                           bankingData={profileData.bankingData}
                           onInvoiceUpdate={fetchCars}
+                          disabled={car.status === "sold"} // 👈 Disable when sold
                         />
                       </TableCell>
                     )}
+
                     {columnVisibility.carInfoImg && (
                       <TableCell className="text-center">
                         <CarInfoPic car={car} />

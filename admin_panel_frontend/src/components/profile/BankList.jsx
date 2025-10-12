@@ -11,9 +11,13 @@ import { useRouter } from "next/navigation";
 export function BankList({ banks, onEditBank, onBanksUpdated }) {
   const router = useRouter();
 
-  const handleSetActive = async (bankId) => {
+  const handleSetActive = async (bankId,currency) => {
+    const payload={
+      id:bankId,
+      currency:currency
+    }
     try {
-      const response = await setActiveBank(bankId, router);
+      const response = await setActiveBank(payload, router);
       if (response.data.status) {
         toast.success("Active bank account updated successfully");
         onBanksUpdated();
@@ -45,6 +49,17 @@ export function BankList({ banks, onEditBank, onBanksUpdated }) {
     }
   };
 
+  const getCurrencyDisplayName = (currency) => {
+    switch (currency) {
+      case "bwp":
+        return "Pula (BWP)";
+      case "zmw":
+        return "Zambian Kwacha (ZMW)";
+      default:
+        return currency;
+    }
+  };
+
   if (banks.length === 0) {
     return (
       <Card>
@@ -73,7 +88,7 @@ export function BankList({ banks, onEditBank, onBanksUpdated }) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => handleSetActive(bank._id)}
+                  onClick={() => handleSetActive(bank._id,bank.currency)}
                   title={bank.isActive ? "Deactivate" : "Set as Active"}
                 >
                   {bank.isActive ? (
@@ -114,6 +129,10 @@ export function BankList({ banks, onEditBank, onBanksUpdated }) {
                 <span className="font-medium">Branch Code:</span>
                 <p className="text-muted-foreground">{bank.branchCode}</p>
               </div>
+              <div>
+                <span className="font-medium">Currency:</span>
+                <p className="text-muted-foreground">{getCurrencyDisplayName(bank.currency)}</p>
+              </div>
               {bank.swiftCode && (
                 <div>
                   <span className="font-medium">SWIFT Code:</span>
@@ -121,7 +140,7 @@ export function BankList({ banks, onEditBank, onBanksUpdated }) {
                 </div>
               )}
               {bank.address && (
-                <div>
+                <div className="md:col-span-2 lg:col-span-4">
                   <span className="font-medium">Address:</span>
                   <p className="text-muted-foreground">{bank.address}</p>
                 </div>
