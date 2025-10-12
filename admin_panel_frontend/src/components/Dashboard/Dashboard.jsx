@@ -13,6 +13,9 @@ import {
 } from "recharts";
 import html2canvas from "html2canvas";
 import { getDashboardData } from "@/services/dashboard/dashboardServices";
+import { toast } from "sonner";
+import { checkPermission } from "@/helper/commonHelper";
+import SearchLoader from "../custom_ui/SearchLoader";
 
 export function Dashboard() {
   const [activeTimeRange, setActiveTimeRange] = useState("6m");
@@ -52,6 +55,10 @@ export function Dashboard() {
 
   // Function to export chart as PNG
   const exportChartAsPNG = (chartRef, filename) => {
+    if(!checkPermission("profile","download")){
+      toast.error("You don't have the permission to download in Home page")
+      return;
+    }
     if (chartRef.current) {
       html2canvas(chartRef.current).then((canvas) => {
         const link = document.createElement("a");
@@ -71,21 +78,22 @@ export function Dashboard() {
     return selectedCountry === "botswana" ? `P${formatted}` : `K${formatted}`;
   };
 
-  if (loading) {
-    return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: "var(--background)" }}
-      >
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4" style={{ color: "var(--text)" }}>
-            Loading dashboard data...
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+      // <div
+      //   className="min-h-screen flex items-center justify-center"
+      //   style={{ backgroundColor: "var(--background)" }}
+      // >
+      //   <div className="text-center">
+      //     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+      //     <p className="mt-4" style={{ color: "var(--text)" }}>
+      //       Loading dashboard data...
+      //     </p>
+      //   </div>
+      // </div>
+  //     <SearchLoader/>
+  //   );
+  // }
 
   const { salesData = [], financialData = [], statistics = {} } = dashboardData || {};
 
@@ -94,6 +102,7 @@ export function Dashboard() {
       className="min-h-screen"
       style={{ backgroundColor: "var(--background)", color: "var(--text)" }}
     >
+      {loading && <SearchLoader />}
       {/* Header */}
       <header
         className="border-b"

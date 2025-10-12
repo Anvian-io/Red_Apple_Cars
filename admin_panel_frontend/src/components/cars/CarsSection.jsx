@@ -57,6 +57,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { getProfile } from "@/services/profile/profileServices";
+import { checkPermission } from "@/helper/commonHelper";
 
 // Column Visibility Component
 function ColumnVisibility({ columnVisibility, setColumnVisibility }) {
@@ -275,6 +276,11 @@ export function CarSection({ isExpanded }) {
   });
   const router = useRouter();
 
+  // Permission check function
+  const hasPermission = (operation) => {
+    return checkPermission("cars", operation);
+  };
+
   // Apply debouncing to all filter fields and search term
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const debouncedFilters = useDebounce(filters, 500);
@@ -378,8 +384,13 @@ export function CarSection({ isExpanded }) {
     setCurrentPage(1);
   };
 
-  // Handle Excel export
+  // Handle Excel export with permission check
   const handleExportToExcel = async () => {
+    if (!hasPermission("download")) {
+      toast.error("You don't have permission to download Excel files in Cars page");
+      return;
+    }
+
     try {
       toast.info("Preparing Excel export...");
 
@@ -414,12 +425,20 @@ export function CarSection({ isExpanded }) {
   };
 
   const handleEditCar = (carId) => {
+    if (!hasPermission("edit")) {
+      toast.error("You don't have permission to edit cars");
+      return;
+    }
     const carToEdit = cars.find((car) => car._id === carId);
     setCurrentCarData(carToEdit);
     setAddOrUpdateCar(true);
   };
 
   const handleAddCar = () => {
+    if (!hasPermission("edit")) {
+      toast.error("You don't have permission to add cars");
+      return;
+    }
     setCurrentCarData(null);
     setAddOrUpdateCar(true);
   };
@@ -439,6 +458,10 @@ export function CarSection({ isExpanded }) {
   };
 
   const handleDeleteClick = (car) => {
+    if (!hasPermission("delete")) {
+      toast.error("You don't have permission to delete cars");
+      return;
+    }
     setCarToDelete(car);
     setDeleteDialogOpen(true);
   };
@@ -702,9 +725,11 @@ export function CarSection({ isExpanded }) {
                           companyData={profileData.companyData}
                           bankingData={profileData.bankingData}
                           onInvoiceUpdate={fetchCars}
+                          disabled={car.status === "sold"} // 👈 Disable when sold
                         />
                       </TableCell>
                     )}
+
                     {columnVisibility.carInfoImg && (
                       <TableCell className="text-center">
                         <CarInfoPic car={car} />
@@ -773,6 +798,7 @@ export function CarSection({ isExpanded }) {
                             variant="ghost"
                             size="icon"
                             title="Edit car"
+                            // disabled={!hasPermission("edit")}
                           >
                             <SquarePen className="h-4 w-4" />
                           </Button>
@@ -782,6 +808,7 @@ export function CarSection({ isExpanded }) {
                             size="icon"
                             className="text-red-500 hover:text-red-700 hover:bg-red-50"
                             title="Delete car"
+                            // disabled={!hasPermission("delete")}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>

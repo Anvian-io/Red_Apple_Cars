@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { navItems } from "@/lib/routes_variables";
-
+import SearchLoader from "./custom_ui/SearchLoader";
 export function RouteGuard({ children, requiredPermission = "read" }) {
   const [isAllowed, setIsAllowed] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
@@ -69,12 +69,13 @@ export function RouteGuard({ children, requiredPermission = "read" }) {
 
   if (isChecking) {
     return (
-      <div className="flex items-center justify-center min-h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-text">Checking permissions...</p>
-        </div>
-      </div>
+      // <div className="flex items-center justify-center min-h-64">
+      //   <div className="text-center">
+      //     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+      //     <p className="mt-2 text-text">Checking permissions...</p>
+      //   </div>
+      // </div>
+      <SearchLoader/>
     );
   }
 

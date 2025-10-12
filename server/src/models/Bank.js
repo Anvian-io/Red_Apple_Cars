@@ -34,6 +34,10 @@ const bankSchema = new mongoose.Schema(
             type: Boolean,
             default: false
         },
+        currency: {
+            type: String,
+            enum: ["bwp", "zmw"]
+        },
         created_by: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",

@@ -9,6 +9,7 @@ import Image from "next/image";
 import { toast } from "sonner";
 import { updateCompany } from "@/services/profile/profileServices";
 import { useRouter } from "next/navigation";
+import { checkPermission } from "@/helper/commonHelper";
 
 export function CompanyForm({ companyData, onCompanyUpdated }) {
   const router = useRouter();
@@ -55,13 +56,16 @@ export function CompanyForm({ companyData, onCompanyUpdated }) {
   const handleLogoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validate file type
+      if (!checkPermission("profile", "edit")) {
+        toast.error("You don't have permission to modify company details");
+        return;
+      }
+
       if (!file.type.startsWith("image/")) {
         toast.error("Please select a valid image file");
         return;
       }
 
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast.error("Image size should be less than 5MB");
         return;
@@ -73,12 +77,22 @@ export function CompanyForm({ companyData, onCompanyUpdated }) {
   };
 
   const removeLogo = () => {
+    if (!checkPermission("profile", "edit")) {
+      toast.error("You don't have permission to modify company details");
+      return;
+    }
     setLogo(null);
     setLogoPreview("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!checkPermission("profile", "edit")) {
+      toast.error("You don't have permission to modify company details");
+      return;
+    }
+
     setLoading(true);
 
     try {

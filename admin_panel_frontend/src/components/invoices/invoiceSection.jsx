@@ -33,6 +33,7 @@ import {
   DialogFooter
 } from "@/components/ui/dialog";
 import { CrudDetailsHoverCard } from "..";
+import { checkPermission } from "@/helper/commonHelper";
 
 // ModifyDetails component for editing invoice details
 function ModifyDetails({ invoiceData, onSave, onClose }) {
@@ -146,6 +147,15 @@ export function InvoiceSection({ isExpanded }) {
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [isFixed, setIsFixed] = useState(false);
 
+  // Permission check function
+  const checkPermissionAndNotify = (operation) => {
+    if (!checkPermission("invoices", operation)) {
+      toast.error(`You don't have permission to ${operation} invoices`);
+      return false;
+    }
+    return true;
+  };
+
   const fetchInvoices = useCallback(async () => {
     try {
       setIsSearching(isInitial === false);
@@ -196,6 +206,7 @@ export function InvoiceSection({ isExpanded }) {
   };
 
   const handleViewInvoice = (pdfUrl) => {
+    if (!checkPermissionAndNotify("download")) return;
     window.open(pdfUrl, "_blank");
   };
 
@@ -204,11 +215,13 @@ export function InvoiceSection({ isExpanded }) {
   };
 
   const handleDeleteClick = (invoice) => {
+    if (!checkPermissionAndNotify("delete")) return;
     setInvoiceToDelete(invoice);
     setDeleteDialogOpen(true);
   };
 
   const handleEditClick = (invoice) => {
+    if (!checkPermissionAndNotify("edit")) return;
     setInvoiceToEdit(invoice);
     setEditDialogOpen(true);
   };
@@ -333,7 +346,6 @@ export function InvoiceSection({ isExpanded }) {
           <Skeleton className="h-8 w-8 bg-border" />
           <Skeleton className="h-8 w-8 bg-border" />
           <Skeleton className="h-8 w-8 bg-border" />
-          <Skeleton className="h-8 w-8 bg-border" />
         </div>
       </TableCell>
     </TableRow>
@@ -425,14 +437,6 @@ export function InvoiceSection({ isExpanded }) {
                           title="View invoice details"
                         >
                           <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          onClick={() => handleDownloadInvoice(invoice.pdf_url)}
-                          variant="ghost"
-                          size="icon"
-                          title="Download invoice"
-                        >
-                          <Download className="h-4 w-4" />
                         </Button>
                         <Button
                           onClick={() => handleEditClick(invoice)}

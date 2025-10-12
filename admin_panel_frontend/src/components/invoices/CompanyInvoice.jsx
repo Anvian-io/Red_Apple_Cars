@@ -20,10 +20,10 @@ import { File } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { ButtonLoader } from "@/components";
+import { checkPermission } from "@/helper/commonHelper";
 
-function ModifyDetails({ carDetails, invoiceDetails, onSave, onClose }) {
+function ModifyDetails({ carDetails, invoiceDetails, onSave, onClose, selectedCurrency }) {
   const [status, setStatus] = useState(carDetails.status || "pending");
-  const [soldCurrency, setSoldCurrency] = useState(carDetails.sold_currency || "bwp");
   const [invoiceStatus, setInvoiceStatus] = useState(invoiceDetails.status || "pending");
   const [paymentStatus, setPaymentStatus] = useState(invoiceDetails.payment_status || "pending");
   const [paymentType, setPaymentType] = useState(invoiceDetails.payment_type || "online");
@@ -34,7 +34,7 @@ function ModifyDetails({ carDetails, invoiceDetails, onSave, onClose }) {
       invoiceId: invoiceDetails.invoiceId,
       invoice_index_id: invoiceDetails.invoice_index_id,
       status,
-      sold_currency: status === "sold" ? soldCurrency : undefined,
+      sold_currency: status === "sold" ? selectedCurrency.toLowerCase() : undefined,
       invoiceStatus,
       paymentStatus,
       payment_type: paymentType
@@ -56,6 +56,9 @@ function ModifyDetails({ carDetails, invoiceDetails, onSave, onClose }) {
           <p>
             <strong>Company:</strong> {carDetails.company}
           </p>
+          <p>
+            <strong>Selected Currency:</strong> {selectedCurrency}
+          </p>
         </div>
         <div>
           <h3 className="font-semibold">Invoice Information</h3>
@@ -68,7 +71,7 @@ function ModifyDetails({ carDetails, invoiceDetails, onSave, onClose }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mt-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
         <div>
           <label className="block text-sm font-medium mb-1">Car Status</label>
           <select
@@ -81,20 +84,6 @@ function ModifyDetails({ carDetails, invoiceDetails, onSave, onClose }) {
             <option value="unsold">Unsold</option>
           </select>
         </div>
-
-        {status === "sold" && (
-          <div>
-            <label className="block text-sm font-medium mb-1">Sold Currency</label>
-            <select
-              value={soldCurrency}
-              onChange={(e) => setSoldCurrency(e.target.value)}
-              className="w-full p-2 border rounded"
-            >
-              <option value="bwp">BWP (Pula)</option>
-              <option value="zmw">ZMW (Kwacha)</option>
-            </select>
-          </div>
-        )}
 
         <div>
           <label className="block text-sm font-medium mb-1">Invoice Status</label>
@@ -154,7 +143,7 @@ const dummyBankingData = [
     branchCode: "462-005",
     swiftCode: "BIDBZAJJ",
     address: "Unit 6, No 56 Shepstone Place, Westville 3630, South Africa",
-    currency: "PULA"
+    currency: "BWP"
   },
   {
     id: 2,
@@ -175,13 +164,15 @@ const dummyCompanyData = {
   vatNumber: "4190288680"
 };
 
-export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate }) {
+export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate, disabled }) {
   const router = useRouter();
   const [showModifyDetails, setShowModifyDetails] = useState(false);
   const [generatedInvoiceData, setGeneratedInvoiceData] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-
+  const hasInvoiceEditPermission = () => {
+    return checkPermission("invoices", "edit");
+  };
   // State for dynamic data
   const [customerData, setCustomerData] = useState({
     name: "",
@@ -190,9 +181,8 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
     address: ""
   });
 
-  // State for currency and bank account selection
-  const [selectedCurrency, setSelectedCurrency] = useState("PULA");
-  const [selectedBankAccount, setSelectedBankAccount] = useState(null);
+  // State for currency selection
+  const [selectedCurrency, setSelectedCurrency] = useState("BWP");
 
   // Get normalized banking data
   const displayBankingData = useMemo(() => {
@@ -204,30 +194,16 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
       // Use _id if available, otherwise use id, otherwise generate a unique key
       uniqueId: bank._id || bank.id || `bank-${Math.random().toString(36).substr(2, 9)}`,
       // Ensure currency is uppercase for consistency
-      currency: (bank.currency || "PULA").toUpperCase()
+      currency: (bank.currency || "BWP").toUpperCase()
     }));
   }, [bankingData]);
 
-  // Initialize selected bank account when displayBankingData changes
-  useEffect(() => {
-    if (displayBankingData.length > 0) {
-      // Set initial bank account based on selected currency
-      const initialBankAccount =
-        displayBankingData.find((bank) => bank.currency === selectedCurrency) ||
-        displayBankingData[0];
-      setSelectedBankAccount(initialBankAccount);
-    }
+  // Get current bank account based on selected currency
+  const currentBankAccount = useMemo(() => {
+    return (
+      displayBankingData.find((bank) => bank.currency === selectedCurrency) || displayBankingData[0]
+    );
   }, [displayBankingData, selectedCurrency]);
-
-  // Update selected bank account when currency changes
-  useEffect(() => {
-    if (displayBankingData.length > 0) {
-      const bankForCurrency = displayBankingData.find((bank) => bank.currency === selectedCurrency);
-      if (bankForCurrency) {
-        setSelectedBankAccount(bankForCurrency);
-      }
-    }
-  }, [selectedCurrency, displayBankingData]);
 
   const handleCustomerDataChange = (field, value) => {
     setCustomerData((prev) => ({
@@ -240,17 +216,9 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
     setSelectedCurrency(currency);
   };
 
-  const handleBankAccountChange = (uniqueId) => {
-    const selectedBank = displayBankingData.find((bank) => bank.uniqueId === uniqueId);
-    if (selectedBank) {
-      setSelectedBankAccount(selectedBank);
-      setSelectedCurrency(selectedBank.currency);
-    }
-  };
-
   // Calculate vehicle price based on selected currency
   const getVehiclePrice = () => {
-    if (selectedCurrency === "PULA") {
+    if (selectedCurrency === "BWP") {
       return car?.actual_price_bwp || "1200";
     } else {
       return car?.actual_price_zmw || "15000";
@@ -266,11 +234,21 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
 
   // Get currency symbol
   const getCurrencySymbol = () => {
-    return selectedCurrency === "PULA" ? "P" : "ZK";
+    return selectedCurrency === "BWP" ? "P" : "ZK";
   };
 
   const handle_generate_invoice = async () => {
     // Validate customer data
+    if (!hasInvoiceEditPermission()) {
+      toast.error("You don't have permission to edit invoices");
+      return;
+    }
+
+    // If disabled due to car status, show appropriate message
+    if (disabled) {
+      toast.error("Cannot generate invoice for sold car");
+      return;
+    }
     if (
       !customerData.name ||
       !customerData.number ||
@@ -283,8 +261,6 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
 
     try {
       setIsGenerating(true);
-
-      const currentBankAccount = selectedBankAccount || displayBankingData[0];
 
       const payload = {
         company: {
@@ -388,6 +364,11 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
   };
 
   const handleDialogOpenChange = (open) => {
+    if (!open && showModifyDetails) {
+      // Don't close the dialog if we're in modify details mode
+      return;
+    }
+
     setIsDialogOpen(open);
     if (!open) {
       setShowModifyDetails(false);
@@ -400,7 +381,7 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
         address: ""
       });
       // Reset to default currency
-      setSelectedCurrency("PULA");
+      setSelectedCurrency("BWP");
     }
   };
 
@@ -413,12 +394,33 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={handleDialogOpenChange}>
-      <DialogTrigger asChild onClick={() => setIsDialogOpen(true)}>
-        <div className="flex justify-center cursor-pointer">
+      <DialogTrigger asChild>
+        <div
+          onClick={(e) => {
+            if (car.status === "sold") {
+              e.preventDefault();
+              e.stopPropagation();
+              toast.error("Invoice cannot be generated for sold cars")
+              return;
+            }
+            setIsDialogOpen(true);
+          }}
+          className={`flex justify-center cursor-pointer ${
+            car.status === "sold" ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+        >
           <File size={20} />
         </div>
       </DialogTrigger>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+
+      <DialogContent
+        className="max-w-6xl max-h-[90vh] overflow-y-auto"
+        onInteractOutside={(e) => {
+          if (showModifyDetails) {
+            e.preventDefault();
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="text-center">Car Invoice</DialogTitle>
         </DialogHeader>
@@ -426,32 +428,64 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
         {!showModifyDetails ? (
           <>
             <div className="bg-white text-black p-6 rounded-lg">
-              {/* Currency and Bank Account Selection */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
-                <div>
+              {/* Currency Selection and Bank Account Display */}
+              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                <div className="mb-4">
                   <label className="block text-sm font-medium mb-2">Select Currency</label>
                   <select
                     value={selectedCurrency}
                     onChange={(e) => handleCurrencyChange(e.target.value)}
                     className="w-full p-2 border rounded"
                   >
-                    <option value="PULA">PULA (BWP)</option>
-                    <option value="ZMW">Zambian Kwacha (ZMW)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Select Bank Account</label>
-                  <select
-                    value={selectedBankAccount?.uniqueId || ""}
-                    onChange={(e) => handleBankAccountChange(e.target.value)}
-                    className="w-full p-2 border rounded"
-                  >
                     {displayBankingData.map((bank) => (
-                      <option key={bank.uniqueId} value={bank.uniqueId}>
-                        {bank.accountName} - {bank.currency}
+                      <option key={bank.uniqueId} value={bank.currency}>
+                        {bank.currency} - {bank.accountName}
                       </option>
                     ))}
                   </select>
+                </div>
+
+                {/* Bank Account Details Display */}
+                <div className="p-4 bg-white border rounded-lg">
+                  <h3 className="font-bold text-lg mb-3">
+                    Banking Details - {selectedCurrency} ACCOUNT
+                  </h3>
+                  {currentBankAccount && (
+                    <div className="space-y-2">
+                      <div className="flex items-start">
+                        <h2 className="font-bold min-w-[120px]">Bank name:</h2>
+                        <p className="ml-2">{currentBankAccount.bankName}</p>
+                      </div>
+                      <div className="flex items-start">
+                        <h2 className="font-bold min-w-[120px]">Account name:</h2>
+                        <p className="ml-2">{currentBankAccount.accountName}</p>
+                      </div>
+                      <div className="flex">
+                        <h2 className="min-w-[120px] font-bold">Account Number:</h2>
+                        <p className="ml-2">{currentBankAccount.accountNumber}</p>
+                      </div>
+                      <div className="flex">
+                        <h2 className="min-w-[120px] font-bold">Branch Code:</h2>
+                        <p className="ml-2">{currentBankAccount.branchCode}</p>
+                      </div>
+                      <div className="flex">
+                        <h2 className="min-w-[120px] font-bold">SWIFT Code:</h2>
+                        <p className="ml-2">{currentBankAccount.swiftCode}</p>
+                      </div>
+                      <div className="flex">
+                        <h2 className="min-w-[120px] font-bold">Address:</h2>
+                        <p className="ml-2">{currentBankAccount.address}</p>
+                      </div>
+                    </div>
+                  )}
+                  {(!bankingData || bankingData.length === 0) && (
+                    <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded">
+                      <p className="text-yellow-700 text-sm">
+                        <strong>Note:</strong> Using default banking details. To customize, please
+                        update your profile banking information.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -541,31 +575,31 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
                   <h2 className="font-bold text-lg mb-4">
                     Banking Details - {selectedCurrency} ACCOUNT
                   </h2>
-                  {selectedBankAccount && (
+                  {currentBankAccount && (
                     <div className="space-y-2">
                       <div className="flex items-start">
                         <h2 className="font-bold min-w-fit">Bank name: </h2>
-                        <p className="ml-2">{selectedBankAccount.bankName}</p>
+                        <p className="ml-2">{currentBankAccount.bankName}</p>
                       </div>
                       <div className="flex items-start">
                         <h2 className="font-bold min-w-fit">Beneficiary Account name:</h2>
-                        <p className="ml-2">{selectedBankAccount.accountName}</p>
+                        <p className="ml-2">{currentBankAccount.accountName}</p>
                       </div>
                       <div className="flex">
                         <h2 className="min-w-fit font-bold">Account Number:</h2>
-                        <p className="ml-2">{selectedBankAccount.accountNumber}</p>
+                        <p className="ml-2">{currentBankAccount.accountNumber}</p>
                       </div>
                       <div className="flex">
                         <h2 className="min-w-fit font-bold">Branch Code:</h2>
-                        <p className="ml-2">{selectedBankAccount.branchCode}</p>
+                        <p className="ml-2">{currentBankAccount.branchCode}</p>
                       </div>
                       <div className="flex">
                         <h2 className="min-w-fit font-bold">SWIFT Code:</h2>
-                        <p className="ml-2">{selectedBankAccount.swiftCode}</p>
+                        <p className="ml-2">{currentBankAccount.swiftCode}</p>
                       </div>
                       <div className="flex">
                         <h2 className="min-w-fit font-bold">Beneficiary address:</h2>
-                        <p className="ml-2">{selectedBankAccount.address}</p>
+                        <p className="ml-2">{currentBankAccount.address}</p>
                       </div>
                     </div>
                   )}
@@ -684,7 +718,7 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
                   order to ensure there are no delays in allocation your payment.
                 </p>
                 <p className="font-semibold mt-2">
-                  Currency: {selectedCurrency} | Account: {selectedBankAccount?.accountName}
+                  Currency: {selectedCurrency} | Account: {currentBankAccount?.accountName}
                 </p>
               </div>
 
@@ -756,12 +790,12 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
               carId: car?.car_index_id || car?._id,
               carName: car?.name,
               company: car?.car_company,
-              status: car?.status || "unsold",
-              sold_currency: car?.sold_currency || "bwp"
+              status: car?.status || "unsold"
             }}
             invoiceDetails={generatedInvoiceData}
             onSave={handleSaveDetails}
             onClose={() => setShowModifyDetails(false)}
+            selectedCurrency={selectedCurrency}
           />
         )}
       </DialogContent>

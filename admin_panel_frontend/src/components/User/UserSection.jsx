@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import SearchLoader from "@/components/custom_ui/SearchLoader"; // Import the SearchLoader
 import { useRouter } from "next/navigation";
 import { CrudDetailsHoverCard } from "..";
+import { checkPermission } from "@/helper/commonHelper";
 
 export function UserSection({ isExpanded }) {
   const [add_or_update_user, set_add_or_update_user] = useState(false);
@@ -84,16 +85,28 @@ export function UserSection({ isExpanded }) {
   };
 
   const handleEditUser = (userId) => {
+    if (!checkPermission("users", "edit")) {
+      toast.error("You don't have permission to edit users");
+      return;
+    }
     setCurrentUserId(userId);
     set_add_or_update_user(true);
   };
 
   const handleAddUser = () => {
+    if (!checkPermission("users", "edit")) {
+      toast.error("You don't have permission to create users");
+      return;
+    }
     setCurrentUserId(null);
     set_add_or_update_user(true);
   };
 
   const handleDeleteUser = async (userId) => {
+    if (!checkPermission("users", "delete")) {
+      toast.error("You don't have permission to delete users");
+      return;
+    }
     setUserToDelete(userId);
     setDeleteConfirmOpen(true);
   };
@@ -166,6 +179,11 @@ export function UserSection({ isExpanded }) {
     </TableRow>
   ));
 
+  // Check permissions for UI elements
+  const canCreateUser = checkPermission("users", "edit");
+  const canEditUser = checkPermission("users", "edit");
+  const canDeleteUser = checkPermission("users", "delete");
+
   return (
     <div className="w-full h-full">
       <SecondaryHeader
@@ -176,6 +194,7 @@ export function UserSection({ isExpanded }) {
         onButtonClick={handleAddUser}
         onMobileButtonClick={handleAddUser}
         onSearch={handleSearch}
+        showButton={canCreateUser} // Only show button if user has create permission
       />
 
       {/* Show search loader when searching */}
@@ -240,20 +259,28 @@ export function UserSection({ isExpanded }) {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end space-x-2">
-                          <Button
-                            onClick={() => handleEditUser(user._id)}
-                            variant="ghost"
-                            size="icon"
-                          >
-                            <SquarePen className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            onClick={() => handleDeleteUser(user._id)}
-                            variant="ghost"
-                            size="icon"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {canEditUser && (
+                            <Button
+                              onClick={() => handleEditUser(user._id)}
+                              variant="ghost"
+                              size="icon"
+                            >
+                              <SquarePen className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {canDeleteUser && (
+                            <Button
+                              onClick={() => handleDeleteUser(user._id)}
+                              variant="ghost"
+                              size="icon"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {/* Show message if no action permissions */}
+                          {!canEditUser && !canDeleteUser && (
+                            <span className="text-xs text-muted-foreground">No actions</span>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>

@@ -9,6 +9,7 @@ import { SquarePen, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { createOrUpdateBank } from "@/services/profile/profileServices";
 import { useRouter } from "next/navigation";
+import { checkPermission } from "@/helper/commonHelper";
 
 export function BankForm({ bankData, onBankUpdated, onCancel }) {
   const router = useRouter();
@@ -20,6 +21,7 @@ export function BankForm({ bankData, onBankUpdated, onCancel }) {
     branchCode: "",
     swiftCode: "",
     address: "",
+    currency: "bwp",
     isActive: false
   });
 
@@ -32,12 +34,21 @@ export function BankForm({ bankData, onBankUpdated, onCancel }) {
         branchCode: bankData.branchCode || "",
         swiftCode: bankData.swiftCode || "",
         address: bankData.address || "",
+        currency: bankData.currency || "bwp",
         isActive: bankData.isActive || false
       });
     }
   }, [bankData]);
 
   const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSelectChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -54,6 +65,12 @@ export function BankForm({ bankData, onBankUpdated, onCancel }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!checkPermission("profile", "edit")) {
+      toast.error("You don't have permission to modify bank accounts");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -142,6 +159,21 @@ export function BankForm({ bankData, onBankUpdated, onCancel }) {
                 placeholder="Enter branch code"
                 required
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="currency">Currency *</Label>
+              <select
+                id="currency"
+                name="currency"
+                value={formData.currency}
+                onChange={handleSelectChange}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                required
+              >
+                <option value="bwp">Pula (BWP)</option>
+                <option value="zmw">Zambian Kwacha (ZMW)</option>
+              </select>
             </div>
 
             <div className="space-y-2">

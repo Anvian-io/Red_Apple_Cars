@@ -10,6 +10,7 @@ import { getProfile } from "@/services/profile/profileServices";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { checkPermission } from "@/helper/commonHelper";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -27,9 +28,6 @@ export default function ProfilePage() {
       const response = await getProfile(router);
       if (response.data.status) {
         setProfileData(response.data.data);
-        // localStorage.setItem("companyDetails",response.data.data.company)
-        // const active_bank = 
-        // localStorage.setItem("bankingDetails", response.data.data.banks);
       } else {
         toast.error("Failed to fetch profile data");
       }
@@ -59,7 +57,19 @@ export default function ProfilePage() {
   };
 
   const handleEditBank = (bank) => {
+    if (!checkPermission("profile", "edit")) {
+      toast.error("You don't have permission to edit bank accounts");
+      return;
+    }
     setEditingBank(bank);
+    setShowBankForm(true);
+  };
+
+  const handleAddBank = () => {
+    if (!checkPermission("profile", "edit")) {
+      toast.error("You don't have permission to add bank accounts");
+      return;
+    }
     setShowBankForm(true);
   };
 
@@ -71,7 +81,6 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="w-full h-full">
-        <SecondaryHeader title="Profile" />
         <div className="p-6 space-y-6">
           <Skeleton className="h-64 w-full bg-border" />
           <Skeleton className="h-32 w-full bg-border" />
@@ -82,14 +91,6 @@ export default function ProfilePage() {
 
   return (
     <div className="w-full h-full">
-      {/* <SecondaryHeader
-        title="Profile"
-        buttonText="Add Bank Account"
-        tooltipText="Add New Bank Account"
-        onButtonClick={() => setShowBankForm(true)}
-        onMobileButtonClick={() => setShowBankForm(true)}
-      /> */}
-
       <div className="p-6 space-y-6">
         {/* Company Section */}
         <CompanyForm companyData={profileData.company} onCompanyUpdated={handleCompanyUpdated} />
@@ -99,7 +100,7 @@ export default function ProfilePage() {
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold tracking-tight">Banking Details</h2>
             {!showBankForm && (
-              <Button onClick={() => setShowBankForm(true)} className="flex items-center gap-2">
+              <Button onClick={handleAddBank} className="flex items-center gap-2">
                 <Plus className="h-4 w-4" />
                 Add Bank Account
               </Button>
