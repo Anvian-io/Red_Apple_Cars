@@ -3,7 +3,11 @@ import { getAllCars } from "@/services/cars/carServices";
 import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, SlidersHorizontal, Car, DollarSign, ChevronDown, ChevronUp } from "lucide-react";
+import { Search, SlidersHorizontal, Car, DollarSign, ChevronDown, ChevronUp,Heart,
+  Zap, Star,
+  Fuel,
+  Users,
+  Calendar, } from "lucide-react";
 
 const Page = () => {
     const [cars, setCars] = useState([]);
@@ -147,7 +151,105 @@ const Page = () => {
             </div>
         );
     }
+    const PremiumCarCard = ({ car }) => {
+        const [isLiked, setIsLiked] = useState(false);
 
+        return (
+            <motion.div
+                className="bg-card-bg rounded-xl shadow-lg overflow-hidden border border-border transition-all duration-300 hover:shadow-xl hover:scale-[1.02] group"
+                whileHover={{ y: -5 }}
+            >
+                {/* Image */}
+                <div className="relative h-72 overflow-hidden">
+                    <img
+                        src={car.image}
+                        alt={car.name}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+
+                    {/* Premium badge */}
+                    <div className="absolute top-3 left-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center">
+                        <Zap size={10} className="mr-1" fill="currentColor" />
+                        PREMIUM
+                    </div>
+
+                    {/* Like button */}
+                    <button
+                        onClick={() => setIsLiked(!isLiked)}
+                        className="absolute top-3 right-3 bg-white/90 dark:bg-gray-800/90 p-1.5 rounded-full shadow-md hover:bg-white dark:hover:bg-gray-700 transition-colors"
+                    >
+                        <Heart
+                            size={14}
+                            className={isLiked ? 'text-red-500 fill-current' : 'text-gray-600'}
+                        />
+                    </button>
+
+                    {/* Tag */}
+                    {car.tag && (
+                        <div className="absolute bottom-3 left-3 bg-primary text-white text-xs font-semibold px-2 py-1 rounded">
+                            {car.tag}
+                        </div>
+                    )}
+                </div>
+
+                {/* Content */}
+                <div className="p-4">
+                    <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-bold text-lg text-card-text truncate">
+                            {car.name}
+                        </h3>
+                        <div className="flex items-center text-amber-500">
+                            <Star size={14} fill="currentColor" />
+                            <span className="text-xs ml-1 text-gray-600 dark:text-gray-300">
+                                {car.rating}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-3">
+                        <span className="flex items-center mr-3">
+                            <Fuel size={14} className="mr-1" />
+                            {car.fuelType}
+                        </span>
+                        <span className="flex items-center mr-3">
+                            <Users size={14} className="mr-1" />
+                            {car.seats}
+                        </span>
+                        <span className="flex items-center">
+                            <Calendar size={14} className="mr-1" />
+                            {car.year}
+                        </span>
+                    </div>
+
+                    <div className="flex justify-between items-center mb-3">
+                        <div className="flex flex-col">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                Price
+                            </span>
+                            <span className="font-bold text-lg text-primary">{car.price}</span>
+                        </div>
+                        <div className="flex flex-col items-end">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                Mileage
+                            </span>
+                            <span className="font-semibold text-sm">{car.mileage}</span>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                        <Link href={`/car/${car.id}`}>
+                            <button className="bg-primary hover:bg-red-700 text-white py-2 px-3 rounded-lg text-sm font-semibold transition-colors">
+                                View Details
+                            </button>
+                        </Link>
+                        <button className="border border-primary text-primary hover:bg-red-50 py-2 px-3 rounded-lg text-sm font-semibold transition-colors">
+                            Save Car
+                        </button>
+                    </div>
+                </div>
+            </motion.div>
+        );
+    };
     return (
         <div className="min-h-screen bg-[var(--background)]">
             {/* Hero Section */}
@@ -164,33 +266,33 @@ const Page = () => {
                     >
                         {/* Search Bar */}
                         <div className="relative flex items-center max-w-3xl mx-auto bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-sm overflow-hidden transition-all focus-within:ring-2 focus-within:ring-[var(--primary)]/20 focus-within:border-[var(--primary)] backdrop-blur-sm">
-  {/* Search Icon */}
-  <Search className="absolute left-4 text-[var(--text)]/60 w-5 h-5" />
+                            {/* Search Icon */}
+                            <Search className="absolute left-4 text-[var(--text)]/60 w-5 h-5" />
 
-  {/* Input */}
-  <input
-    type="text"
-    placeholder="Search by model, brand, transmission, or fuel type..."
-    value={searchQuery}
-    onChange={(e) => setSearchQuery(e.target.value)}
-    className="w-full pl-12 pr-12 py-3.5 text-[var(--text)] bg-transparent focus:outline-none placeholder-[var(--text)]/50 text-base"
-  />
+                            {/* Input */}
+                            <input
+                                type="text"
+                                placeholder="Search by model, brand, transmission, or fuel type..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-12 pr-12 py-3.5 text-[var(--text)] bg-transparent focus:outline-none placeholder-[var(--text)]/50 text-base"
+                            />
 
-  {/* Clear Button */}
-  {searchQuery && (
-    <motion.button
-      onClick={() => setSearchQuery("")}
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.8 }}
-      whileHover={{ rotate: 90 }}
-      transition={{ duration: 0.2 }}
-      className="absolute right-4 text-[var(--text)]/60 hover:text-[var(--primary)] transition-all"
-    >
-      ✕
-    </motion.button>
-  )}
-</div>
+                            {/* Clear Button */}
+                            {searchQuery && (
+                                <motion.button
+                                    onClick={() => setSearchQuery("")}
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    whileHover={{ rotate: 90 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="absolute right-4 text-[var(--text)]/60 hover:text-[var(--primary)] transition-all"
+                                >
+                                    ✕
+                                </motion.button>
+                            )}
+                        </div>
 
                         {/* Filter Toggle Button */}
                         <div className="flex justify-center">
@@ -311,70 +413,13 @@ const Page = () => {
                             className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8"
                         >
                             {filteredCars.map((car) => (
-                                <motion.div
-                                    key={car.id}
-                                    variants={cardVariants}
-                                    whileHover="hover"
-                                    className="group cursor-pointer"
+                                <div
+                                    key={car._id}
+                                    className="flex-shrink-0"
+                                    
                                 >
-                                    <div className="bg-[var(--card-bg)] rounded-2xl overflow-hidden border border-[var(--border)] hover:border-[var(--primary)]/30 transition-all duration-300 shadow-sm hover:shadow-xl">
-                                        {/* Image Section - Dominant */}
-                                        <div className="relative aspect-[4/3] overflow-hidden">
-                                            <motion.img
-                                                src={car.image}
-                                                alt={car.name}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                whileHover={{ scale: 1.05 }}
-                                                transition={{ duration: 0.5 }}
-                                            />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                                            <div className="absolute top-4 right-4">
-                                                <span className="bg-[var(--primary)] text-white px-3 py-1.5 rounded-full text-sm font-medium shadow-lg">
-                                                    {car.year}
-                                                </span>
-                                            </div>
-                                            <div className="absolute bottom-4 left-4">
-                                                <span className="bg-black/70 text-white px-3 py-1.5 rounded-lg text-sm backdrop-blur-sm">
-                                                    {car.fuel}
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        {/* Content Section - Compact */}
-                                        <div className="p-6 space-y-4">
-                                            <div>
-                                                <h3 className="text-xl font-semibold text-[var(--card-text)] line-clamp-1 mb-1">
-                                                    {car.name}
-                                                </h3>
-                                                <p className="text-[var(--text)]/60 text-sm font-light">
-                                                    {car.car_company}
-                                                </p>
-                                            </div>
-
-                                            <div className="flex items-center justify-between">
-                                                <div className="text-2xl font-bold text-[var(--primary)]">
-                                                    {car.price}
-                                                </div>
-                                                <div className="text-sm text-[var(--text)]/60 bg-[var(--background)] px-3 py-1.5 rounded-full">
-                                                    {car.mileage} km
-                                                </div>
-                                            </div>
-
-                                            <p className="text-[var(--text)]/70 text-sm leading-relaxed line-clamp-2 font-light">
-                                                {car.description}
-                                            </p>
-
-                                            <div className="pt-2">
-                                                <Link
-                                                    href={`/car/${car.id}`}
-                                                    className="w-full inline-flex items-center justify-center bg-[var(--button-bg)] text-white font-medium py-3 px-6 rounded-lg hover:bg-[var(--hover-text)] transition-all duration-300 group-hover:shadow-lg text-sm"
-                                                >
-                                                    View Details
-                                                </Link>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </motion.div>
+                                    <PremiumCarCard car={car} />
+                                </div>
                             ))}
                         </motion.div>
                     ) : (
