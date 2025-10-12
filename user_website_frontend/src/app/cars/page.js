@@ -251,205 +251,209 @@ const Page = () => {
         );
     };
     return (
-        <div className="min-h-screen bg-[var(--background)]">
-            {/* Hero Section */}
-            <div className="bg-gradient-to-br from-[var(--primary)]/10 to-[var(--secondary-bg)] border-b border-[var(--border)]">
-                <div className="container mx-auto px-6 py-12">
+      <div className="min-h-screen bg-[var(--background)]">
+        {/* Hero Section */}
+        <div className="bg-gradient-to-br from-[var(--primary)]/10 to-[var(--secondary-bg)] border-b border-[var(--border)]">
+          <div className="container mx-auto px-6 py-12">
+            {/* Search and Filters */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="max-w-6xl mx-auto space-y-6"
+            >
+              {/* Search Bar */}
+              <div className="relative flex items-center max-w-3xl mx-auto bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-sm overflow-hidden transition-all focus-within:ring-2 focus-within:ring-[var(--primary)]/20 focus-within:border-[var(--primary)] backdrop-blur-sm">
+                {/* Search Icon */}
+                <Search className="absolute left-4 text-[var(--text)]/60 w-5 h-5" />
 
+                {/* Input */}
+                <input
+                  type="text"
+                  placeholder="Search by model, brand, transmission, or fuel type..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-12 pr-12 py-3.5 text-[var(--text)] bg-transparent focus:outline-none placeholder-[var(--text)]/50 text-base"
+                />
 
-                    {/* Search and Filters */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="max-w-6xl mx-auto space-y-6"
-                    >
-                        {/* Search Bar */}
-                        <div className="relative flex items-center max-w-3xl mx-auto bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-sm overflow-hidden transition-all focus-within:ring-2 focus-within:ring-[var(--primary)]/20 focus-within:border-[var(--primary)] backdrop-blur-sm">
-                            {/* Search Icon */}
-                            <Search className="absolute left-4 text-[var(--text)]/60 w-5 h-5" />
+                {/* Clear Button */}
+                {searchQuery && (
+                  <motion.button
+                    onClick={() => setSearchQuery('')}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    whileHover={{ rotate: 90 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute right-4 text-[var(--text)]/60 hover:text-[var(--primary)] transition-all"
+                  >
+                    ✕
+                  </motion.button>
+                )}
+              </div>
 
-                            {/* Input */}
-                            <input
-                                type="text"
-                                placeholder="Search by model, brand, transmission, or fuel type..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-12 pr-12 py-3.5 text-[var(--text)] bg-transparent focus:outline-none placeholder-[var(--text)]/50 text-base"
-                            />
+              {/* Filter Toggle Button */}
+              <div className="flex justify-center">
+                <motion.button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="flex items-center gap-2 px-6 py-3 rounded-lg border border-[var(--border)] bg-[var(--card-bg)] text-[var(--text)] hover:bg-[var(--primary)]/10 hover:border-[var(--primary)]/30 transition-all duration-300"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <SlidersHorizontal className="w-4 h-4" />
+                  {showFilters ? 'Hide Filters' : 'Show Filters'}
+                  {showFilters ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
+                </motion.button>
+              </div>
 
-                            {/* Clear Button */}
-                            {searchQuery && (
-                                <motion.button
-                                    onClick={() => setSearchQuery("")}
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.8 }}
-                                    whileHover={{ rotate: 90 }}
-                                    transition={{ duration: 0.2 }}
-                                    className="absolute right-4 text-[var(--text)]/60 hover:text-[var(--primary)] transition-all"
-                                >
-                                    ✕
-                                </motion.button>
-                            )}
+              {/* Collapsible Price Filter */}
+              <AnimatePresence>
+                {showFilters && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="bg-[var(--card-bg)] rounded-xl border border-[var(--border)] p-5 flex flex-col gap-4 shadow-sm">
+                      {/* Header Row */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-[var(--heading)] font-semibold">
+                          <DollarSign className="w-4 h-4 text-[var(--primary)]" />
+                          Price Range
                         </div>
+                        {hasActiveFilters && (
+                          <button
+                            onClick={resetFilters}
+                            className="text-xs text-[var(--primary)] hover:text-[var(--hover-text)] transition-all"
+                          >
+                            Reset
+                          </button>
+                        )}
+                      </div>
 
-                        {/* Filter Toggle Button */}
-                        <div className="flex justify-center">
-                            <motion.button
-                                onClick={() => setShowFilters(!showFilters)}
-                                className="flex items-center gap-2 px-6 py-3 rounded-lg border border-[var(--border)] bg-[var(--card-bg)] text-[var(--text)] hover:bg-[var(--primary)]/10 hover:border-[var(--primary)]/30 transition-all duration-300"
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                            >
-                                <SlidersHorizontal className="w-4 h-4" />
-                                {showFilters ? 'Hide Filters' : 'Show Filters'}
-                                {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                            </motion.button>
-                        </div>
+                      {/* Inputs and Range in one line */}
+                      <div className="flex flex-col sm:flex-row items-center gap-3">
+                        <input
+                          type="number"
+                          value={minPrice}
+                          onChange={(e) => setMinPrice(Number(e.target.value))}
+                          className="w-full sm:w-1/2 p-2 text-sm rounded-md border border-[var(--border)] bg-[var(--background)] text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                          placeholder="Min"
+                        />
+                        <span className="text-[var(--text)]/60 hidden sm:inline">
+                          —
+                        </span>
+                        <input
+                          type="number"
+                          value={maxPrice}
+                          onChange={(e) => setMaxPrice(Number(e.target.value))}
+                          className="w-full sm:w-1/2 p-2 text-sm rounded-md border border-[var(--border)] bg-[var(--background)] text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                          placeholder="Max"
+                        />
+                      </div>
 
-                        {/* Collapsible Price Filter */}
-                        <AnimatePresence>
-                            {showFilters && (
-                                <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: "auto" }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                    className="overflow-hidden"
-                                >
-                                    <div className="bg-[var(--card-bg)] rounded-xl border border-[var(--border)] p-5 flex flex-col gap-4 shadow-sm">
-                                        {/* Header Row */}
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2 text-[var(--heading)] font-semibold">
-                                                <DollarSign className="w-4 h-4 text-[var(--primary)]" />
-                                                Price Range
-                                            </div>
-                                            {hasActiveFilters && (
-                                                <button
-                                                    onClick={resetFilters}
-                                                    className="text-xs text-[var(--primary)] hover:text-[var(--hover-text)] transition-all"
-                                                >
-                                                    Reset
-                                                </button>
-                                            )}
-                                        </div>
-
-                                        {/* Inputs and Range in one line */}
-                                        <div className="flex flex-col sm:flex-row items-center gap-3">
-                                            <input
-                                                type="number"
-                                                value={minPrice}
-                                                onChange={(e) => setMinPrice(Number(e.target.value))}
-                                                className="w-full sm:w-1/2 p-2 text-sm rounded-md border border-[var(--border)] bg-[var(--background)] text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                                                placeholder="Min"
-                                            />
-                                            <span className="text-[var(--text)]/60 hidden sm:inline">—</span>
-                                            <input
-                                                type="number"
-                                                value={maxPrice}
-                                                onChange={(e) => setMaxPrice(Number(e.target.value))}
-                                                className="w-full sm:w-1/2 p-2 text-sm rounded-md border border-[var(--border)] bg-[var(--background)] text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
-                                                placeholder="Max"
-                                            />
-                                        </div>
-
-                                        {/* Slider */}
-                                        <div className="flex flex-col gap-1">
-                                            <input
-                                                type="range"
-                                                min="0"
-                                                max={Math.max(...cars.map((car) => car.numericPrice))}
-                                                value={maxPrice}
-                                                onChange={(e) => setMaxPrice(Number(e.target.value))}
-                                                className="w-full h-1.5 bg-[var(--border)] rounded-full appearance-none cursor-pointer
+                      {/* Slider */}
+                      <div className="flex flex-col gap-1">
+                        <input
+                          type="range"
+                          min="0"
+                          max={Math.max(...cars.map((car) => car.numericPrice))}
+                          value={maxPrice}
+                          onChange={(e) => setMaxPrice(Number(e.target.value))}
+                          className="w-full h-1.5 bg-[var(--border)] rounded-full appearance-none cursor-pointer
               [&::-webkit-slider-thumb]:appearance-none 
               [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 
               [&::-webkit-slider-thumb]:rounded-full 
               [&::-webkit-slider-thumb]:bg-[var(--primary)] 
               [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white 
               [&::-webkit-slider-thumb]:shadow-md"
-                                            />
-                                            <div className="flex justify-between text-xs text-[var(--text)]/60">
-                                                <span>${minPrice.toLocaleString()}</span>
-                                                <span>${maxPrice.toLocaleString()}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                        />
+                        <div className="flex justify-between text-xs text-[var(--text)]/60">
+                          <span>${minPrice.toLocaleString()}</span>
+                          <span>${maxPrice.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-
-                        {/* Results Summary */}
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="flex items-center justify-between text-sm text-[var(--text)]/70"
-                        >
-                            <span>
-                                Showing <strong className="text-[var(--primary)]">{filteredCars.length}</strong> of {cars.length} vehicles
-                            </span>
-                            {hasActiveFilters && (
-                                <span className="flex items-center gap-1">
-                                    <SlidersHorizontal className="w-4 h-4" />
-                                    Filters active
-                                </span>
-                            )}
-                        </motion.div>
-                    </motion.div>
-                </div>
-            </div>
-
-            {/* Cars Grid */}
-            <div className="container mx-auto px-6 py-12">
-                <AnimatePresence mode="wait">
-                    {filteredCars.length > 0 ? (
-                        <motion.div
-                            key="cars-grid"
-                            variants={containerVariants}
-                            initial="hidden"
-                            animate="visible"
-                            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8"
-                        >
-                            {filteredCars.map((car) => (
-                                <div
-                                    key={car._id}
-                                    className="flex-shrink-0"
-                                    
-                                >
-                                    <PremiumCarCard car={car} />
-                                </div>
-                            ))}
-                        </motion.div>
-                    ) : (
-                        <motion.div
-                            key="no-cars"
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="text-center py-20"
-                        >
-                            <Car className="w-24 h-24 text-[var(--border)] mx-auto mb-6 opacity-50" />
-                            <h3 className="text-2xl font-semibold text-[var(--header)] mb-3">
-                                No vehicles found
-                            </h3>
-                            <p className="text-[var(--text)]/70 max-w-md mx-auto mb-8">
-                                We couldn't find any vehicles matching your criteria. Try adjusting your search or filters.
-                            </p>
-                            {hasActiveFilters && (
-                                <button
-                                    onClick={resetFilters}
-                                    className="bg-[var(--button-bg)] text-white px-6 py-3 rounded-lg hover:bg-[var(--hover-text)] transition-colors font-medium"
-                                >
-                                    Clear All Filters
-                                </button>
-                            )}
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
+              {/* Results Summary */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex items-center justify-between text-sm text-[var(--text)]/70"
+              >
+                <span>
+                  Showing{' '}
+                  <strong className="text-[var(--primary)]">
+                    {filteredCars.length}
+                  </strong>{' '}
+                  of {cars.length} vehicles
+                </span>
+                {hasActiveFilters && (
+                  <span className="flex items-center gap-1">
+                    <SlidersHorizontal className="w-4 h-4" />
+                    Filters active
+                  </span>
+                )}
+              </motion.div>
+            </motion.div>
+          </div>
         </div>
+
+        {/* Cars Grid */}
+        <div className="container mx-auto px-6 py-12">
+          <AnimatePresence mode="wait">
+            {filteredCars.length > 0 ? (
+              <motion.div
+                key="cars-grid"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8"
+              >
+                {filteredCars.map((car) => (
+                  <div key={car._id} className="flex-shrink-0">
+                    <PremiumCarCard car={car} />
+                  </div>
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="no-cars"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="text-center py-20"
+              >
+                <Car className="w-24 h-24 text-[var(--border)] mx-auto mb-6 opacity-50" />
+                <h3 className="text-2xl font-semibold text-[var(--header)] mb-3">
+                  No vehicles found
+                </h3>
+                <p className="text-[var(--text)]/70 max-w-md mx-auto mb-8">
+                  We couldn&apos;t find any vehicles matching your criteria. Try
+                  adjusting your search or filters.
+                </p>
+                {hasActiveFilters && (
+                  <button
+                    onClick={resetFilters}
+                    className="bg-[var(--button-bg)] text-white px-6 py-3 rounded-lg hover:bg-[var(--hover-text)] transition-colors font-medium"
+                  >
+                    Clear All Filters
+                  </button>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
     );
 };
 
