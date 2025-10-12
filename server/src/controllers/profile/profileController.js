@@ -25,7 +25,17 @@ export const getProfile = asyncHandler(async (req, res) => {
 
 // Update Company Details
 export const updateCompany = asyncHandler(async (req, res) => {
-    const { name, regNumber, vatNumber } = req.body;
+    const { 
+        name, 
+        regNumber, 
+        vatNumber, 
+        address, 
+        phoneNumber, 
+        whatsappNumber, 
+        instagramUrl, 
+        facebookUrl, 
+        twitterUrl 
+    } = req.body;
 
     if (!name || !regNumber) {
         return sendResponse(
@@ -44,6 +54,12 @@ export const updateCompany = asyncHandler(async (req, res) => {
         company.name = name;
         company.regNumber = regNumber;
         company.vatNumber = vatNumber;
+        company.address = address;
+        company.phoneNumber = phoneNumber;
+        company.whatsappNumber = whatsappNumber;
+        company.instagramUrl = instagramUrl;
+        company.facebookUrl = facebookUrl;
+        company.twitterUrl = twitterUrl;
         company.updated_by = req.user._id;
 
         // Handle logo upload if provided
@@ -73,6 +89,12 @@ export const updateCompany = asyncHandler(async (req, res) => {
             name,
             regNumber,
             vatNumber,
+            address,
+            phoneNumber,
+            whatsappNumber,
+            instagramUrl,
+            facebookUrl,
+            twitterUrl,
             logo: logoUrl,
             created_by: req.user._id,
             updated_by: req.user._id
@@ -208,7 +230,7 @@ export const setActiveBank = asyncHandler(async (req, res) => {
     const { bankId } = req.params;
 
     // Deactivate all banks
-    await Bank.updateMany({ created_by: req.user._id }, { $set: { isActive: false } });
+    // await Bank.updateMany({ created_by: req.user._id }, { $set: { isActive: false } });
 
     // Activate the selected bank
     const bank = await Bank.findOneAndUpdate(

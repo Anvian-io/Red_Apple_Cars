@@ -16,7 +16,13 @@ export function CompanyForm({ companyData, onCompanyUpdated }) {
   const [formData, setFormData] = useState({
     name: "",
     regNumber: "",
-    vatNumber: ""
+    vatNumber: "",
+    address: "",
+    phoneNumber: "",
+    whatsappNumber: "",
+    instagramUrl: "",
+    facebookUrl: "",
+    twitterUrl: ""
   });
   const [logo, setLogo] = useState(null);
   const [logoPreview, setLogoPreview] = useState("");
@@ -26,7 +32,13 @@ export function CompanyForm({ companyData, onCompanyUpdated }) {
       setFormData({
         name: companyData.name || "",
         regNumber: companyData.regNumber || "",
-        vatNumber: companyData.vatNumber || ""
+        vatNumber: companyData.vatNumber || "",
+        address: companyData.address || "",
+        phoneNumber: companyData.phoneNumber || "",
+        whatsappNumber: companyData.whatsappNumber || "",
+        instagramUrl: companyData.instagramUrl || "",
+        facebookUrl: companyData.facebookUrl || "",
+        twitterUrl: companyData.twitterUrl || ""
       });
       setLogoPreview(companyData.logo || "");
     }
@@ -74,6 +86,12 @@ export function CompanyForm({ companyData, onCompanyUpdated }) {
       submitData.append("name", formData.name);
       submitData.append("regNumber", formData.regNumber);
       submitData.append("vatNumber", formData.vatNumber);
+      submitData.append("address", formData.address);
+      submitData.append("phoneNumber", formData.phoneNumber);
+      submitData.append("whatsappNumber", formData.whatsappNumber);
+      submitData.append("instagramUrl", formData.instagramUrl);
+      submitData.append("facebookUrl", formData.facebookUrl);
+      submitData.append("twitterUrl", formData.twitterUrl);
 
       if (logo) {
         submitData.append("logo", logo);
@@ -183,6 +201,79 @@ export function CompanyForm({ companyData, onCompanyUpdated }) {
                 value={formData.vatNumber}
                 onChange={handleInputChange}
                 placeholder="Enter VAT number"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phoneNumber">Phone Number</Label>
+              <Input
+                id="phoneNumber"
+                name="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={handleInputChange}
+                placeholder="Enter phone number"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="whatsappNumber">WhatsApp Number</Label>
+              <Input
+                id="whatsappNumber"
+                name="whatsappNumber"
+                value={formData.whatsappNumber}
+                onChange={handleInputChange}
+                placeholder="Enter WhatsApp number"
+              />
+            </div>
+          </div>
+
+          {/* Address Field - Full Width */}
+          <div className="space-y-2">
+            <Label htmlFor="address">Address</Label>
+            <Input
+              id="address"
+              name="address"
+              value={formData.address}
+              onChange={handleInputChange}
+              placeholder="Enter company address"
+            />
+          </div>
+
+          {/* Social Media URLs */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="instagramUrl">Instagram URL</Label>
+              <Input
+                id="instagramUrl"
+                name="instagramUrl"
+                type="url"
+                value={formData.instagramUrl}
+                onChange={handleInputChange}
+                placeholder="https://instagram.com/yourcompany"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="facebookUrl">Facebook URL</Label>
+              <Input
+                id="facebookUrl"
+                name="facebookUrl"
+                type="url"
+                value={formData.facebookUrl}
+                onChange={handleInputChange}
+                placeholder="https://facebook.com/yourcompany"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="twitterUrl">Twitter URL</Label>
+              <Input
+                id="twitterUrl"
+                name="twitterUrl"
+                type="url"
+                value={formData.twitterUrl}
+                onChange={handleInputChange}
+                placeholder="https://twitter.com/yourcompany"
               />
             </div>
           </div>

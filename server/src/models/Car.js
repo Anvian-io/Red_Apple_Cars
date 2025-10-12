@@ -52,6 +52,10 @@ const carSchema = new mongoose.Schema(
             default:"unsold",
             required: true
         },
+        sold_currency:{
+            type:String,
+            enum:["bwp","zmw"]
+        },
         created_by: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",

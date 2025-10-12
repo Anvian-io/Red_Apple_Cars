@@ -82,13 +82,13 @@ export default function ProfilePage() {
 
   return (
     <div className="w-full h-full">
-      <SecondaryHeader
+      {/* <SecondaryHeader
         title="Profile"
         buttonText="Add Bank Account"
         tooltipText="Add New Bank Account"
         onButtonClick={() => setShowBankForm(true)}
         onMobileButtonClick={() => setShowBankForm(true)}
-      />
+      /> */}
 
       <div className="p-6 space-y-6">
         {/* Company Section */}

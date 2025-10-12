@@ -17,12 +17,13 @@ import {
 } from "@/services/invoice/invoiceServices";
 import { useRouter } from "next/navigation";
 import { File } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { ButtonLoader } from "@/components";
 
 function ModifyDetails({ carDetails, invoiceDetails, onSave, onClose }) {
   const [status, setStatus] = useState(carDetails.status || "pending");
+  const [soldCurrency, setSoldCurrency] = useState(carDetails.sold_currency || "bwp");
   const [invoiceStatus, setInvoiceStatus] = useState(invoiceDetails.status || "pending");
   const [paymentStatus, setPaymentStatus] = useState(invoiceDetails.payment_status || "pending");
   const [paymentType, setPaymentType] = useState(invoiceDetails.payment_type || "online");
@@ -33,6 +34,7 @@ function ModifyDetails({ carDetails, invoiceDetails, onSave, onClose }) {
       invoiceId: invoiceDetails.invoiceId,
       invoice_index_id: invoiceDetails.invoice_index_id,
       status,
+      sold_currency: status === "sold" ? soldCurrency : undefined,
       invoiceStatus,
       paymentStatus,
       payment_type: paymentType
@@ -66,7 +68,7 @@ function ModifyDetails({ carDetails, invoiceDetails, onSave, onClose }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mt-4">
         <div>
           <label className="block text-sm font-medium mb-1">Car Status</label>
           <select
@@ -79,6 +81,21 @@ function ModifyDetails({ carDetails, invoiceDetails, onSave, onClose }) {
             <option value="unsold">Unsold</option>
           </select>
         </div>
+
+        {status === "sold" && (
+          <div>
+            <label className="block text-sm font-medium mb-1">Sold Currency</label>
+            <select
+              value={soldCurrency}
+              onChange={(e) => setSoldCurrency(e.target.value)}
+              className="w-full p-2 border rounded"
+            >
+              <option value="bwp">BWP (Pula)</option>
+              <option value="zmw">ZMW (Kwacha)</option>
+            </select>
+          </div>
+        )}
+
         <div>
           <label className="block text-sm font-medium mb-1">Invoice Status</label>
           <select
@@ -127,15 +144,29 @@ function ModifyDetails({ carDetails, invoiceDetails, onSave, onClose }) {
   );
 }
 
-// Dummy banking data to show when no data is found in localStorage
-const dummyBankingData = {
-  bankName: "Bidvest Bank",
-  accountName: "Red Apple Cars (Pty) Ltd",
-  accountNumber: "31400008206",
-  branchCode: "462-005",
-  swiftCode: "BIDBZAJJ",
-  address: "Unit 6, No 56 Shepstone Place, Westville 3630, South Africa"
-};
+// Dummy banking data array to show when no data is found in localStorage
+const dummyBankingData = [
+  {
+    id: 1,
+    bankName: "Bidvest Bank",
+    accountName: "Red Apple Cars (Pty) Ltd - PULA Account",
+    accountNumber: "31400008206",
+    branchCode: "462-005",
+    swiftCode: "BIDBZAJJ",
+    address: "Unit 6, No 56 Shepstone Place, Westville 3630, South Africa",
+    currency: "PULA"
+  },
+  {
+    id: 2,
+    bankName: "Standard Chartered Bank Zambia",
+    accountName: "Red Apple Cars (Pty) Ltd - ZMW Account",
+    accountNumber: "0100123456789",
+    branchCode: "040-001",
+    swiftCode: "SCBLZMLX",
+    address: "Stand 2379, Cairo Road, Lusaka, Zambia",
+    currency: "ZMW"
+  }
+];
 
 // Dummy company data
 const dummyCompanyData = {
@@ -159,11 +190,83 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
     address: ""
   });
 
+  // State for currency and bank account selection
+  const [selectedCurrency, setSelectedCurrency] = useState("PULA");
+  const [selectedBankAccount, setSelectedBankAccount] = useState(null);
+
+  // Get normalized banking data
+  const displayBankingData = useMemo(() => {
+    const data = bankingData && bankingData.length > 0 ? bankingData : dummyBankingData;
+
+    // Normalize the data to ensure consistent structure
+    return data.map((bank) => ({
+      ...bank,
+      // Use _id if available, otherwise use id, otherwise generate a unique key
+      uniqueId: bank._id || bank.id || `bank-${Math.random().toString(36).substr(2, 9)}`,
+      // Ensure currency is uppercase for consistency
+      currency: (bank.currency || "PULA").toUpperCase()
+    }));
+  }, [bankingData]);
+
+  // Initialize selected bank account when displayBankingData changes
+  useEffect(() => {
+    if (displayBankingData.length > 0) {
+      // Set initial bank account based on selected currency
+      const initialBankAccount =
+        displayBankingData.find((bank) => bank.currency === selectedCurrency) ||
+        displayBankingData[0];
+      setSelectedBankAccount(initialBankAccount);
+    }
+  }, [displayBankingData, selectedCurrency]);
+
+  // Update selected bank account when currency changes
+  useEffect(() => {
+    if (displayBankingData.length > 0) {
+      const bankForCurrency = displayBankingData.find((bank) => bank.currency === selectedCurrency);
+      if (bankForCurrency) {
+        setSelectedBankAccount(bankForCurrency);
+      }
+    }
+  }, [selectedCurrency, displayBankingData]);
+
   const handleCustomerDataChange = (field, value) => {
     setCustomerData((prev) => ({
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleCurrencyChange = (currency) => {
+    setSelectedCurrency(currency);
+  };
+
+  const handleBankAccountChange = (uniqueId) => {
+    const selectedBank = displayBankingData.find((bank) => bank.uniqueId === uniqueId);
+    if (selectedBank) {
+      setSelectedBankAccount(selectedBank);
+      setSelectedCurrency(selectedBank.currency);
+    }
+  };
+
+  // Calculate vehicle price based on selected currency
+  const getVehiclePrice = () => {
+    if (selectedCurrency === "PULA") {
+      return car?.actual_price_bwp || "1200";
+    } else {
+      return car?.actual_price_zmw || "15000";
+    }
+  };
+
+  // Calculate total price
+  const getTotalPrice = () => {
+    const vehiclePrice = parseInt(getVehiclePrice()) || 0;
+    const transport = 200;
+    return vehiclePrice + transport;
+  };
+
+  // Get currency symbol
+  const getCurrencySymbol = () => {
+    return selectedCurrency === "PULA" ? "P" : "ZK";
   };
 
   const handle_generate_invoice = async () => {
@@ -180,6 +283,9 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
 
     try {
       setIsGenerating(true);
+
+      const currentBankAccount = selectedBankAccount || displayBankingData[0];
+
       const payload = {
         company: {
           name: companyData?.name || dummyCompanyData.name,
@@ -192,7 +298,8 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
           reference:
             car?.details?.stock_no ||
             car?.chassis_number ||
-            "REF" + Math.floor(100000 + Math.random() * 900000)
+            "REF" + Math.floor(100000 + Math.random() * 900000),
+          currency: selectedCurrency
         },
         customer: {
           name: customerData.name,
@@ -201,12 +308,13 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
           address: customerData.address
         },
         banking: {
-          bankName: bankingData?.bankName || dummyBankingData.bankName,
-          accountName: bankingData?.accountName || dummyBankingData.accountName,
-          accountNumber: bankingData?.accountNumber || dummyBankingData.accountNumber,
-          branchCode: bankingData?.branchCode || dummyBankingData.branchCode,
-          swiftCode: bankingData?.swiftCode || dummyBankingData.swiftCode,
-          address: bankingData?.address || dummyBankingData.address
+          bankName: currentBankAccount.bankName,
+          accountName: currentBankAccount.accountName,
+          accountNumber: currentBankAccount.accountNumber,
+          branchCode: currentBankAccount.branchCode,
+          swiftCode: currentBankAccount.swiftCode,
+          address: currentBankAccount.address,
+          currency: currentBankAccount.currency
         },
         vehicle: {
           carId: car?._id || car?.car_index_id || "68bd6331a4ab7c5b68df10eb",
@@ -225,9 +333,10 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
           carrierDetails: car?.details?.transmission || "Automatic"
         },
         price: {
-          vehiclePrice: car?.actual_price_bwp || "1200",
+          vehiclePrice: getVehiclePrice(),
           transport: "200",
-          total: (parseInt(car?.actual_price_bwp || 1200) + 200).toString()
+          total: getTotalPrice().toString(),
+          currency: selectedCurrency
         }
       };
 
@@ -290,6 +399,8 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
         bondStore: "",
         address: ""
       });
+      // Reset to default currency
+      setSelectedCurrency("PULA");
     }
   };
 
@@ -298,8 +409,6 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
     return new Date().toISOString().split("T")[0];
   };
 
-  // Determine which banking data to display
-  const displayBankingData = bankingData || dummyBankingData;
   const displayCompanyData = companyData || dummyCompanyData;
 
   return (
@@ -317,6 +426,35 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
         {!showModifyDetails ? (
           <>
             <div className="bg-white text-black p-6 rounded-lg">
+              {/* Currency and Bank Account Selection */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Select Currency</label>
+                  <select
+                    value={selectedCurrency}
+                    onChange={(e) => handleCurrencyChange(e.target.value)}
+                    className="w-full p-2 border rounded"
+                  >
+                    <option value="PULA">PULA (BWP)</option>
+                    <option value="ZMW">Zambian Kwacha (ZMW)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Select Bank Account</label>
+                  <select
+                    value={selectedBankAccount?.uniqueId || ""}
+                    onChange={(e) => handleBankAccountChange(e.target.value)}
+                    className="w-full p-2 border rounded"
+                  >
+                    {displayBankingData.map((bank) => (
+                      <option key={bank.uniqueId} value={bank.uniqueId}>
+                        {bank.accountName} - {bank.currency}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               {/* Logo and Header */}
               <div className="flex justify-between items-start">
                 <div className="flex items-center">
@@ -339,6 +477,7 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
                     Document Number {Math.floor(100000000 + Math.random() * 900000000).toString()}
                   </p>
                   <p>Reference {car?.details?.stock_no || car?.chassis_number || "A80503080"}</p>
+                  <p className="font-semibold mt-2">Currency: {selectedCurrency}</p>
                 </div>
               </div>
 
@@ -399,34 +538,38 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
                 <div className="border-r border-gray-400/40"></div>
 
                 <div className="w-[45%] m-2">
-                  <h2 className="font-bold text-lg mb-4">Banking Details - PULA ACCOUNT</h2>
-                  <div className="space-y-2">
-                    <div className="flex items-start">
-                      <h2 className="font-bold min-w-fit">Bank name: </h2>
-                      <p className="ml-2">{displayBankingData.bankName}</p>
+                  <h2 className="font-bold text-lg mb-4">
+                    Banking Details - {selectedCurrency} ACCOUNT
+                  </h2>
+                  {selectedBankAccount && (
+                    <div className="space-y-2">
+                      <div className="flex items-start">
+                        <h2 className="font-bold min-w-fit">Bank name: </h2>
+                        <p className="ml-2">{selectedBankAccount.bankName}</p>
+                      </div>
+                      <div className="flex items-start">
+                        <h2 className="font-bold min-w-fit">Beneficiary Account name:</h2>
+                        <p className="ml-2">{selectedBankAccount.accountName}</p>
+                      </div>
+                      <div className="flex">
+                        <h2 className="min-w-fit font-bold">Account Number:</h2>
+                        <p className="ml-2">{selectedBankAccount.accountNumber}</p>
+                      </div>
+                      <div className="flex">
+                        <h2 className="min-w-fit font-bold">Branch Code:</h2>
+                        <p className="ml-2">{selectedBankAccount.branchCode}</p>
+                      </div>
+                      <div className="flex">
+                        <h2 className="min-w-fit font-bold">SWIFT Code:</h2>
+                        <p className="ml-2">{selectedBankAccount.swiftCode}</p>
+                      </div>
+                      <div className="flex">
+                        <h2 className="min-w-fit font-bold">Beneficiary address:</h2>
+                        <p className="ml-2">{selectedBankAccount.address}</p>
+                      </div>
                     </div>
-                    <div className="flex items-start">
-                      <h2 className="font-bold min-w-fit">Beneficiary Account name:</h2>
-                      <p className="ml-2">{displayBankingData.accountName}</p>
-                    </div>
-                    <div className="flex">
-                      <h2 className="min-w-fit font-bold">Account Number:</h2>
-                      <p className="ml-2">{displayBankingData.accountNumber}</p>
-                    </div>
-                    <div className="flex">
-                      <h2 className="min-w-fit font-bold">Branch Code:</h2>
-                      <p className="ml-2">{displayBankingData.branchCode}</p>
-                    </div>
-                    <div className="flex">
-                      <h2 className="min-w-fit font-bold">SWIFT Code:</h2>
-                      <p className="ml-2">{displayBankingData.swiftCode}</p>
-                    </div>
-                    <div className="flex">
-                      <h2 className="min-w-fit font-bold">Beneficiary address:</h2>
-                      <p className="ml-2">{displayBankingData.address}</p>
-                    </div>
-                  </div>
-                  {!bankingData && (
+                  )}
+                  {(!bankingData || bankingData.length === 0) && (
                     <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded">
                       <p className="text-yellow-700 text-sm">
                         <strong>Note:</strong> Using default banking details. To customize, please
@@ -507,23 +650,25 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
 
               {/* Price Table */}
               <div className="my-6">
-                <h2 className="font-bold text-lg mb-2">Vehicle Price</h2>
+                <h2 className="font-bold text-lg mb-2">Vehicle Price ({selectedCurrency})</h2>
                 <table className="w-full border-collapse border border-gray-400/40">
                   <tbody>
                     <tr>
                       <td className="border border-gray-400/40 p-2 font-semibold">Vehicle Price</td>
                       <td className="border border-gray-400/40 p-2 text-right">
-                        P {car?.actual_price_bwp || "1200"}
+                        {getCurrencySymbol()} {getVehiclePrice()}
                       </td>
                     </tr>
                     <tr>
                       <td className="border border-gray-400/40 p-2 font-semibold">Transport</td>
-                      <td className="border border-gray-400/40 p-2 text-right">P 200</td>
+                      <td className="border border-gray-400/40 p-2 text-right">
+                        {getCurrencySymbol()} 200
+                      </td>
                     </tr>
                     <tr className="bg-red-100">
                       <td className="border border-gray-400/40 p-2 font-bold">Total</td>
                       <td className="border border-gray-400/40 p-2 text-right font-bold">
-                        P {(parseInt(car?.actual_price_bwp || 1200) + 200).toLocaleString()}
+                        {getCurrencySymbol()} {getTotalPrice().toLocaleString()}
                       </td>
                     </tr>
                   </tbody>
@@ -537,6 +682,9 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
                 <p className="font-semibold">
                   The Reference number should be mentioned as reference on bank slip/TT or EFT in
                   order to ensure there are no delays in allocation your payment.
+                </p>
+                <p className="font-semibold mt-2">
+                  Currency: {selectedCurrency} | Account: {selectedBankAccount?.accountName}
                 </p>
               </div>
 
@@ -558,8 +706,8 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
                   </li>
                   <li>Credit card payments will have attract a further 2% transaction fee</li>
                   <li>
-                    Should you pay and decide to cancel your order you will be charged PULA 200 as
-                    cancellation fee.
+                    Should you pay and decide to cancel your order you will be charged{" "}
+                    {getCurrencySymbol()} 200 as cancellation fee.
                   </li>
                   <li>
                     The Pictures and Information given are to the best of our ability in the event
@@ -608,7 +756,8 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate 
               carId: car?.car_index_id || car?._id,
               carName: car?.name,
               company: car?.car_company,
-              status: car?.status || "unsold"
+              status: car?.status || "unsold",
+              sold_currency: car?.sold_currency || "bwp"
             }}
             invoiceDetails={generatedInvoiceData}
             onSave={handleSaveDetails}

@@ -290,7 +290,7 @@ export function CarSection({ isExpanded }) {
 
         setProfileData({
           companyData: storedCompanyData || null,
-          bankingData: storedBankingData?.[0] || null,
+          bankingData: storedBankingData || null,
           loading: false
         });
       } else {
