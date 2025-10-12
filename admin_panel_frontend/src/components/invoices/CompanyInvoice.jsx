@@ -20,6 +20,7 @@ import { File } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { ButtonLoader } from "@/components";
+import { checkPermission } from "@/helper/commonHelper";
 
 function ModifyDetails({ carDetails, invoiceDetails, onSave, onClose, selectedCurrency }) {
   const [status, setStatus] = useState(carDetails.status || "pending");
@@ -169,7 +170,9 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate,
   const [generatedInvoiceData, setGeneratedInvoiceData] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-
+  const hasInvoiceEditPermission = () => {
+    return checkPermission("invoices", "edit");
+  };
   // State for dynamic data
   const [customerData, setCustomerData] = useState({
     name: "",
@@ -236,6 +239,16 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate,
 
   const handle_generate_invoice = async () => {
     // Validate customer data
+    if (!hasInvoiceEditPermission()) {
+      toast.error("You don't have permission to edit invoices");
+      return;
+    }
+
+    // If disabled due to car status, show appropriate message
+    if (disabled) {
+      toast.error("Cannot generate invoice for sold car");
+      return;
+    }
     if (
       !customerData.name ||
       !customerData.number ||
@@ -387,6 +400,7 @@ export function CompanyInvoice({ car, companyData, bankingData, onInvoiceUpdate,
             if (car.status === "sold") {
               e.preventDefault();
               e.stopPropagation();
+              toast.error("Invoice cannot be generated for sold cars")
               return;
             }
             setIsDialogOpen(true);

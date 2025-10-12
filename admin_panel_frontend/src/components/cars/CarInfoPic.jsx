@@ -13,7 +13,8 @@ import {
 import { Badge } from "../ui/badge";
 import { toPng } from "html-to-image";
 import { FaWhatsapp } from "react-icons/fa";
-
+import { toast } from "sonner";
+import { checkPermission } from "@/helper/commonHelper";
 export function CarInfoPic({ car }) {
   const [open, setOpen] = useState(false);
   const cardRef = useRef(null);
@@ -28,6 +29,10 @@ export function CarInfoPic({ car }) {
   };
 
   const handleDownloadImage = async (imageType = "png") => {
+    if(!checkPermission("cars","download")){
+      toast.error("You don't have permission to download")
+      return;
+    }
     if (!cardRef.current) return;
 
     try {
