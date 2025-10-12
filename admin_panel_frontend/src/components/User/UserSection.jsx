@@ -7,7 +7,7 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
+  TableRow
 } from "@/components/ui/table";
 import { SquarePen, Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
@@ -22,6 +22,8 @@ import { ConfirmDialog } from "@/components/custom_ui/confirm-dialog";
 import { toast } from "sonner";
 import SearchLoader from "@/components/custom_ui/SearchLoader"; // Import the SearchLoader
 import { useRouter } from "next/navigation";
+import { CrudDetailsHoverCard } from "..";
+import { checkPermission } from "@/helper/commonHelper";
 
 export function UserSection({ isExpanded }) {
   const [add_or_update_user, set_add_or_update_user] = useState(false);
@@ -47,9 +49,9 @@ export function UserSection({ isExpanded }) {
       const payload = {
         search: debouncedSearchTerm,
         limit: itemsPerPage,
-        page: currentPage,
+        page: currentPage
       };
-      const response = await getAllUsers(payload,router);
+      const response = await getAllUsers(payload, router);
       console.log(response, "foiewjfoij");
       if (response.data.status) {
         setUsers(response.data.data.users);
@@ -83,23 +85,35 @@ export function UserSection({ isExpanded }) {
   };
 
   const handleEditUser = (userId) => {
+    if (!checkPermission("users", "edit")) {
+      toast.error("You don't have permission to edit users");
+      return;
+    }
     setCurrentUserId(userId);
     set_add_or_update_user(true);
   };
 
   const handleAddUser = () => {
+    if (!checkPermission("users", "edit")) {
+      toast.error("You don't have permission to create users");
+      return;
+    }
     setCurrentUserId(null);
     set_add_or_update_user(true);
   };
 
   const handleDeleteUser = async (userId) => {
+    if (!checkPermission("users", "delete")) {
+      toast.error("You don't have permission to delete users");
+      return;
+    }
     setUserToDelete(userId);
     setDeleteConfirmOpen(true);
   };
 
   const confirmDelete = async () => {
     try {
-      const response = await deleteUser(userToDelete,router);
+      const response = await deleteUser(userToDelete, router);
       if (response.data.status) {
         toast.success("User deleted successfully");
         fetchUsers();
@@ -115,6 +129,28 @@ export function UserSection({ isExpanded }) {
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
+  };
+
+  // Function to generate random light color
+  const getRandomLightColor = () => {
+    const lightColors = [
+      "bg-blue-100 text-blue-800",
+      "bg-purple-100 text-purple-800",
+      "bg-pink-100 text-pink-800",
+      "bg-indigo-100 text-indigo-800",
+      "bg-teal-100 text-teal-800",
+      "bg-orange-100 text-orange-800",
+      "bg-cyan-100 text-cyan-800",
+      "bg-amber-100 text-amber-800"
+    ];
+    return lightColors[Math.floor(Math.random() * lightColors.length)];
+  };
+
+  const getRoleBadgeClass = (roleName) => {
+    if (roleName?.toLowerCase() === "super user") {
+      return "bg-green-100 text-green-800 border-green-200";
+    }
+    return getRandomLightColor();
   };
 
   const skeletonRows = Array.from({ length: itemsPerPage }, (_, i) => (
@@ -143,6 +179,11 @@ export function UserSection({ isExpanded }) {
     </TableRow>
   ));
 
+  // Check permissions for UI elements
+  const canCreateUser = checkPermission("users", "edit");
+  const canEditUser = checkPermission("users", "edit");
+  const canDeleteUser = checkPermission("users", "delete");
+
   return (
     <div className="w-full h-full">
       <SecondaryHeader
@@ -153,80 +194,72 @@ export function UserSection({ isExpanded }) {
         onButtonClick={handleAddUser}
         onMobileButtonClick={handleAddUser}
         onSearch={handleSearch}
+        showButton={canCreateUser} // Only show button if user has create permission
       />
 
       {/* Show search loader when searching */}
-      {isSearching && (
-        // <div className="flex justify-center items-center p-8">
-          <SearchLoader />
-        // </div>
-      )}
+      {isSearching && <SearchLoader />}
 
-      {/* Only show content when not searching */}
-      {/* {!isSearching && ( */}
-        <>
-          <div className="px-1 flex justify-between items-center mt-4">
-            <div className="text-sm text-muted-foreground">
-              {loading ? (
-                <Skeleton className="h-5 w-40 bg-border rounded-md" />
-              ) : (
-                totalUsers > 0 ? (
-                  <Badge className="bg-hoverBg">
-                    Showing {(currentPage - 1) * itemsPerPage + 1}-
-                    {Math.min(currentPage * itemsPerPage, totalUsers)} of{" "}
-                    {totalUsers} Users
-                  </Badge>
-                ) : (
-                  <Badge className="bg-hoverBg">No Users Found</Badge>
-                )
-              )}
-            </div>
+      <>
+        <div className="px-1 flex justify-between items-center mt-4">
+          <div className="text-sm text-muted-foreground">
+            {loading ? (
+              <Skeleton className="h-5 w-40 bg-border rounded-md" />
+            ) : totalUsers > 0 ? (
+              <Badge className="bg-hoverBg">
+                Showing {(currentPage - 1) * itemsPerPage + 1}-
+                {Math.min(currentPage * itemsPerPage, totalUsers)} of {totalUsers} Users
+              </Badge>
+            ) : (
+              <Badge className="bg-hoverBg">No Users Found</Badge>
+            )}
           </div>
+        </div>
 
-          <div className="mx-1 mt-6 rounded-md max-w-[99vw] border overflow-x-auto bg-tableBg">
-            <Table className="min-w-[800px] lg:min-w-full">
-              <TableCaption className="mb-2">
-                A list of system users
-              </TableCaption>
-              <TableHeader className="bg-hoverBg">
-                <TableRow>
-                  <TableHead className="w-[60px]">Image</TableHead>
-                  <TableHead className="w-[200px]">Name</TableHead>
-                  <TableHead className="w-[250px]">Email</TableHead>
-                  <TableHead className="w-[150px]">Role</TableHead>
-                  <TableHead className="w-[120px] text-right">
-                    Actions
-                  </TableHead>
-                  <TableHead className="w-[150px]">Last Updated</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading
-                  ? skeletonRows
-                  : users.map((user) => (
-                      <TableRow key={user._id}>
-                        <TableCell>
-                          {user.image ? (
-                            <img
-                              src={user.image}
-                              alt={user.name}
-                              className="h-10 w-10 rounded-full object-cover"
-                            />
-                          ) : (
-                            <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
-                              {user.name.charAt(0).toUpperCase()}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {user.name}
-                        </TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{user.role?.name}</Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end space-x-2">
+        <div className="mx-1 mt-6 rounded-md max-w-[99vw] border overflow-x-auto bg-tableBg">
+          <Table className="min-w-[800px] lg:min-w-full">
+            <TableCaption className="mb-2">A list of system users</TableCaption>
+            <TableHeader className="bg-hoverBg">
+              <TableRow>
+                <TableHead className="w-[60px]">Image</TableHead>
+                <TableHead className="w-[200px]">Name</TableHead>
+                <TableHead className="w-[250px]">Email</TableHead>
+                <TableHead className="w-[150px]">Role</TableHead>
+                <TableHead className="w-[180px] text-center">History</TableHead>
+                <TableHead className="w-[120px] text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading
+                ? skeletonRows
+                : users.map((user) => (
+                    <TableRow key={user._id}>
+                      <TableCell>
+                        {user.image ? (
+                          <img
+                            src={user.image}
+                            alt={user.name}
+                            className="h-10 w-10 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                            {user.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="font-medium">{user.name}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={getRoleBadgeClass(user.role?.name)}>
+                          {user.role?.name}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <CrudDetailsHoverCard car={user}></CrudDetailsHoverCard>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end space-x-2">
+                          {canEditUser && (
                             <Button
                               onClick={() => handleEditUser(user._id)}
                               variant="ghost"
@@ -234,6 +267,8 @@ export function UserSection({ isExpanded }) {
                             >
                               <SquarePen className="h-4 w-4" />
                             </Button>
+                          )}
+                          {canDeleteUser && (
                             <Button
                               onClick={() => handleDeleteUser(user._id)}
                               variant="ghost"
@@ -241,26 +276,29 @@ export function UserSection({ isExpanded }) {
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
-                          </div>
-                        </TableCell>
-                        <TableCell>{formatDate(user.updatedAt)}</TableCell>
-                      </TableRow>
-                    ))}
-              </TableBody>
-            </Table>
+                          )}
+                          {/* Show message if no action permissions */}
+                          {!canEditUser && !canDeleteUser && (
+                            <span className="text-xs text-muted-foreground">No actions</span>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+            </TableBody>
+          </Table>
+        </div>
+        {totalPages > 0 && (
+          <div className="flex justify-between items-center mt-4">
+            <CustomPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              className="justify-end"
+            />
           </div>
-          {totalPages > 0 && (
-            <div className="flex justify-between items-center mt-4">
-              <CustomPagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-                className="justify-end"
-              />
-            </div>
-          )}
-        </>
-      {/* )} */}
+        )}
+      </>
       {add_or_update_user && (
         <AddOrUpdateUserForm
           open={add_or_update_user}

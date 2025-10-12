@@ -7,7 +7,7 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
+  TableRow
 } from "@/components/ui/table";
 import { SquarePen } from "lucide-react";
 import { Button } from "../ui/button";
@@ -18,8 +18,11 @@ import React, { useState, useEffect, useCallback } from "react";
 import { get_all_roles } from "@/services/roles/roleServices";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/useDebounce";
-import SearchLoader from "@/components/custom_ui/SearchLoader"; // Import the SearchLoader
+import SearchLoader from "@/components/custom_ui/SearchLoader";
 import { useRouter } from "next/navigation";
+import { CrudDetailsHoverCard } from "..";
+import { checkPermission } from "@/helper/commonHelper";
+import { toast } from "sonner";
 
 export function RoleSection({ isExpanded }) {
   const [add_or_update_role, set_add_or_update_role] = useState(false);
@@ -38,13 +41,13 @@ export function RoleSection({ isExpanded }) {
 
   const fetchRoles = useCallback(async () => {
     try {
-      setIsSearching(isInitial == false ? true : false); // Set isSearching based on whether there's a search term
+      setIsSearching(isInitial == false ? true : false);
       const payload = {
         search: debouncedSearchTerm,
         limit: itemsPerPage,
-        page: currentPage,
+        page: currentPage
       };
-      const response = await get_all_roles(payload,router);
+      const response = await get_all_roles(payload, router);
       if (response.data.status) {
         setRoles(response.data.data.roles);
         const pagination_data = response.data.data.pagination;
@@ -57,7 +60,7 @@ export function RoleSection({ isExpanded }) {
       console.error("Error fetching roles:", error);
     } finally {
       setLoading(false);
-      setIsSearching(false); // Reset isSearching after fetch completes
+      setIsSearching(false);
     }
   }, [debouncedSearchTerm, currentPage, itemsPerPage]);
 
@@ -77,11 +80,21 @@ export function RoleSection({ isExpanded }) {
   };
 
   const handleEditRole = (roleId) => {
+    // Check permission for edit operation
+    if (!checkPermission("roles", "edit")) {
+      toast.error("You don't have permission to edit roles");
+      return;
+    }
     setCurrentRoleId(roleId);
     set_add_or_update_role(true);
   };
 
   const handleAddRole = () => {
+    // Check permission for create operation
+    if (!checkPermission("roles", "edit")) {
+      toast.error("You don't have permission to create roles");
+      return;
+    }
     setCurrentRoleId(null);
     set_add_or_update_role(true);
   };
@@ -115,13 +128,8 @@ export function RoleSection({ isExpanded }) {
 
   return (
     <div className="w-full h-full">
-      {isSearching && (
-        // <div className="flex justify-center items-center p-8">
-        <SearchLoader />
-        // </div>
-      )}
+      {isSearching && <SearchLoader />}
       <SecondaryHeader
-
         title="Roles"
         searchPlaceholder="Search Roles"
         buttonText="Create New Role"
@@ -137,8 +145,7 @@ export function RoleSection({ isExpanded }) {
           ) : totalProducts > 0 ? (
             <Badge className="bg-hoverBg">
               Showing {(currentPage - 1) * itemsPerPage + 1}-
-              {Math.min(currentPage * itemsPerPage, totalProducts)} of{" "}
-              {totalProducts} Roles
+              {Math.min(currentPage * itemsPerPage, totalProducts)} of {totalProducts} Roles
             </Badge>
           ) : (
             <Badge className="bg-hoverBg">No Roles Found</Badge>
@@ -148,19 +155,15 @@ export function RoleSection({ isExpanded }) {
 
       <div className="mx-1 mt-6 rounded-md max-w-[99vw] border overflow-x-auto bg-tableBg">
         <Table className="min-w-[800px] lg:min-w-full">
-          <TableCaption className="mb-2">
-            A list of available user roles
-          </TableCaption>
+          <TableCaption className="mb-2">A list of available user roles</TableCaption>
           <TableHeader className="bg-hoverBg">
             <TableRow>
               <TableHead className="w-[200px]">Role Name</TableHead>
               <TableHead className="w-[300px]">Description</TableHead>
               <TableHead className="w-[100px] text-center">Users</TableHead>
-              <TableHead className="w-[120px] text-center">
-                Permissions
-              </TableHead>
+              <TableHead className="w-[120px] text-center">Permissions</TableHead>
+              <TableHead className="w-[150px]">History</TableHead>
               <TableHead className="w-[100px] text-right">Actions</TableHead>
-              <TableHead className="w-[150px]">Last Updated</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -168,15 +171,14 @@ export function RoleSection({ isExpanded }) {
               ? skeletonRows
               : roles.map((roleData) => (
                   <TableRow key={roleData?._id}>
-                    <TableCell className="font-medium">
-                      {roleData?.name}
-                    </TableCell>
+                    <TableCell className="font-medium">{roleData?.name}</TableCell>
                     <TableCell className="text-muted-foreground">
                       {roleData?.description ?? "No description"}
                     </TableCell>
                     <TableCell className="text-center">0</TableCell>
-                    <TableCell className="text-center">
-                      {roleData?.totalPermissionNo}
+                    <TableCell className="text-center">{roleData?.totalPermissionNo}</TableCell>
+                    <TableCell>
+                      <CrudDetailsHoverCard car={roleData}></CrudDetailsHoverCard>
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
@@ -187,7 +189,6 @@ export function RoleSection({ isExpanded }) {
                         <SquarePen className="h-4 w-4" />
                       </Button>
                     </TableCell>
-                    <TableCell>{formatDate(roleData?.updatedAt)}</TableCell>
                   </TableRow>
                 ))}
           </TableBody>

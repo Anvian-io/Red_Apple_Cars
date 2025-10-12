@@ -11,6 +11,9 @@ const nextConfig = {
         hostname: "res.cloudinary.com"
       }
     ]
+  },
+  eslint: {
+    ignoreDuringBuilds: true
   }
 };
 

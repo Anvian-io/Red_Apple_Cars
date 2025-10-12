@@ -1,51 +1,95 @@
 import {
     createNotification,
+    getallNotifications,
     getUserNotifications,
-    markAsRead,
-    markAllAsRead,
-    deleteNotification
+    updateUserNotification,
+    createNotificationForUsers
 } from "../../utils/notificationHelper.js";
 import { asyncHandler, sendResponse, statusType } from "../../utils/index.js";
 
-// Get user notifications
+// Get all notifications (admin/system)
 export const getNotifications = asyncHandler(async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
 
-    const result = await getUserNotifications(req.user._id, page, limit);
+    const result = await getallNotifications(page, limit);
 
     return sendResponse(res, true, result, "Notifications fetched successfully", statusType.OK);
 });
 
-// Mark notification as read
-export const readNotification = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+// Get notifications for specific user
+export const getUserNotificationList = asyncHandler(async (req, res) => {
+    const user_id = req.user._id; // Assuming user is authenticated and user ID is available
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
 
-    const notification = await markAsRead(id, req.user._id);
+    const result = await getUserNotifications(user_id, page, limit);
 
-    if (!notification) {
-        return sendResponse(res, false, null, "Notification not found", statusType.NOT_FOUND);
-    }
-
-    return sendResponse(res, true, notification, "Notification marked as read", statusType.OK);
+    return sendResponse(
+        res,
+        true,
+        result,
+        "User notifications fetched successfully",
+        statusType.OK
+    );
 });
 
-// Mark all notifications as read
-export const readAllNotifications = asyncHandler(async (req, res) => {
-    const result = await markAllAsRead(req.user._id);
+// Update user notification (mark as read)
+export const updateUserNotificationStatus = asyncHandler(async (req, res) => {
+    const user_id = req.user._id;
+    // const { notificationId } = req.body;
 
-    return sendResponse(res, true, result, "All notifications marked as read", statusType.OK);
+    // if (!notificationId) {
+    //     return sendResponse(
+    //         res,
+    //         false,
+    //         null,
+    //         "Notification ID is required",
+    //         statusType.BAD_REQUEST
+    //     );
+    // }
+
+    await updateUserNotification(user_id);
+
+    return sendResponse(res, true, null, "Notification updated successfully", statusType.OK);
 });
 
-// Delete notification
-export const removeNotification = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+// Mark all user notifications as read
+export const markAllNotificationsAsRead = asyncHandler(async (req, res) => {
+    const user_id = req.user._id;
 
-    const notification = await deleteNotification(id, req.user._id);
+    await updateUserNotification(user_id);
 
-    if (!notification) {
-        return sendResponse(res, false, null, "Notification not found", statusType.NOT_FOUND);
+    return sendResponse(res, true, null, "All notifications marked as read", statusType.OK);
+});
+
+// Create notification (admin)
+export const createNewNotification = asyncHandler(async (req, res) => {
+    const { title, message, type, userIds, category } = req.body;
+
+    if (!title || !message || !type) {
+        return sendResponse(
+            res,
+            false,
+            null,
+            "Title, message and type are required",
+            statusType.BAD_REQUEST
+        );
     }
 
-    return sendResponse(res, true, null, "Notification deleted successfully", statusType.OK);
+    const notification = await createNotificationForUsers({
+        title,
+        message,
+        type,
+        userIds,
+        category
+    });
+
+    return sendResponse(
+        res,
+        true,
+        notification,
+        "Notification created successfully",
+        statusType.CREATED
+    );
 });

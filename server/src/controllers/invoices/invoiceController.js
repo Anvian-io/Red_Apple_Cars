@@ -236,13 +236,29 @@ export const deleteInvoice = asyncHandler(async (req, res) => {
 });
 
 export const update_invoice_car_details = asyncHandler(async (req, res) => {
-    const { carId, invoice_index_id, status, invoiceStatus, paymentStatus, payment_type } = req.body;
+    const {
+        carId,
+        invoice_index_id,
+        status,
+        invoiceStatus,
+        paymentStatus,
+        payment_type,
+        sold_currency
+    } = req.body;
 
-    // Update car status
-    let carStatusValue = status;
+    // Update car status and sold_currency
+    let carUpdateData = {};
 
-    if (carStatusValue !== undefined) {
-        await Car.findOneAndUpdate({ car_index_id: carId }, { status: carStatusValue });
+    if (status !== undefined) {
+        carUpdateData.status = status;
+    }
+
+    if (sold_currency !== undefined) {
+        carUpdateData.sold_currency = sold_currency;
+    }
+
+    if (Object.keys(carUpdateData).length > 0) {
+        await Car.findOneAndUpdate({ car_index_id: carId }, carUpdateData);
     }
 
     // Update invoice status + payment (using string values directly)

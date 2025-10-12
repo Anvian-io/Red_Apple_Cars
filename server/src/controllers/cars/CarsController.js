@@ -11,7 +11,6 @@ import mongoose from "mongoose";
 import ExcelJS from "exceljs";
 import { sendNotificationToClients } from "../notifications/notificationRoute.js";
 
-
 // Create or Update Car
 export const createOrUpdateCar = asyncHandler(async (req, res) => {
     const {
@@ -330,7 +329,7 @@ export const createOrUpdateCar = asyncHandler(async (req, res) => {
         await createNotification({
             title: `Car ${action}`,
             message: `Car ${action} by ${Role.name}: ${req.user.name}`,
-            type: action,
+            type: action
         });
 
         sendNotificationToClients("notification_update");
@@ -387,8 +386,10 @@ export const getAllCars = asyncHandler(async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const search = req.query.search || "";
     const status = req.query.status || "";
-    const website_state = req.query.website_state || "";
+    const website_state = req.query.website_state;
     const skip = (page - 1) * limit;
+    const brand = req.query.brand;
+    const name = req.query.name;
 
     // Build filter
     const filter = {};
@@ -400,7 +401,19 @@ export const getAllCars = asyncHandler(async (req, res) => {
         ];
     }
     if (status) filter.status = status;
-    if (website_state) filter.website_state = website_state;
+    if (website_state !== undefined && website_state !== "") {
+        if (typeof website_state === "boolean") {
+            filter.website_state = website_state;
+        } else if (website_state === "true" || website_state === "false") {
+            filter.website_state = website_state === "true";
+        }
+    }
+    if (brand) {
+        filter.car_company = { $regex: brand, $options: "i" };
+    }
+    if (name) {
+        filter.name = { $regex: name, $options: "i" };
+    }
 
     // Get cars with related data using aggregation
     const cars = await Car.aggregate([
@@ -505,20 +518,111 @@ export const getAllCars = asyncHandler(async (req, res) => {
 export const getAllZambiaCars = asyncHandler(async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || "";
+    const status = req.query.status || "";
     const skip = (page - 1) * limit;
+    const brand = req.query.brand;
+    const name = req.query.name;
 
+    // Build filter - website_state is always true for Zambia cars
     const filter = { website_state: true };
+    
+    if (search) {
+        filter.$or = [
+            { name: { $regex: search, $options: "i" } },
+            { car_company: { $regex: search, $options: "i" } },
+            { description: { $regex: search, $options: "i" } }
+        ];
+    }
+    if (status) filter.status = status;
+    if (brand) {
+        filter.car_company = { $regex: brand, $options: "i" };
+    }
+    if (name) {
+        filter.name = { $regex: name, $options: "i" };
+    }
 
-    const cars = await Car.find(filter)
-        .populate("created_by", "name email")
-        .populate("updated_by", "name email")
-        .sort({ updatedAt: -1 })
-        .skip(skip)
-        .limit(limit);
+    // Get cars with aggregation pipeline (same as getAllCars)
+    const cars = await Car.aggregate([
+        { $match: filter },
+        {
+            $lookup: {
+                from: "cardetails",
+                localField: "_id",
+                foreignField: "car_id",
+                as: "details"
+            }
+        },
+        {
+            $lookup: {
+                from: "carmoreinfos",
+                localField: "_id",
+                foreignField: "car_id",
+                as: "moreInfo"
+            }
+        },
+        {
+            $lookup: {
+                from: "carimages",
+                localField: "_id",
+                foreignField: "car_id",
+                as: "images"
+            }
+        },
+        // Modified lookup for created_by with projection
+        {
+            $lookup: {
+                from: "users",
+                let: { createdById: "$created_by" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ["$_id", "$$createdById"] }
+                        }
+                    },
+                    {
+                        $project: {
+                            name: 1,
+                            _id: 1
+                        }
+                    }
+                ],
+                as: "created_by"
+            }
+        },
+        // Modified lookup for updated_by with projection
+        {
+            $lookup: {
+                from: "users",
+                let: { updatedById: "$updated_by" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ["$_id", "$$updatedById"] }
+                        }
+                    },
+                    {
+                        $project: {
+                            name: 1,
+                            _id: 1
+                        }
+                    }
+                ],
+                as: "updated_by"
+            }
+        },
+        { $unwind: { path: "$created_by", preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: "$updated_by", preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: "$details", preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: "$moreInfo", preserveNullAndEmptyArrays: true } },
+        { $sort: { updatedAt: -1 } },
+        { $skip: skip },
+        { $limit: limit }
+    ]);
 
     // Format with Zambia currency (ZMW)
     const formattedCars = cars.map((car) => ({
-        ...car.toObject(),
+        ...car,
         real_price: car.real_price_zmw,
         actual_price: car.actual_price_zmw,
         currency: "ZMW"
@@ -548,20 +652,111 @@ export const getAllZambiaCars = asyncHandler(async (req, res) => {
 export const getAllBotswanaCars = asyncHandler(async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.searchTerm || "";
+    const status = req.query.status || "";
     const skip = (page - 1) * limit;
+    const brand = req.query.brand;
+    const name = req.query.name;
 
+    // Build filter - website_state is always true for Botswana cars
     const filter = { website_state: true };
+    
+    if (search) {
+        filter.$or = [
+            { name: { $regex: search, $options: "i" } },
+            { car_company: { $regex: search, $options: "i" } },
+            { description: { $regex: search, $options: "i" } }
+        ];
+    }
+    if (status) filter.status = status;
+    if (brand) {
+        filter.car_company = { $regex: brand, $options: "i" };
+    }
+    if (name) {
+        filter.name = { $regex: name, $options: "i" };
+    }
 
-    const cars = await Car.find(filter)
-        .populate("created_by", "name email")
-        .populate("updated_by", "name email")
-        .sort({ updatedAt: -1 })
-        .skip(skip)
-        .limit(limit);
+    // Get cars with aggregation pipeline (same as getAllCars)
+    const cars = await Car.aggregate([
+        { $match: filter },
+        {
+            $lookup: {
+                from: "cardetails",
+                localField: "_id",
+                foreignField: "car_id",
+                as: "details"
+            }
+        },
+        {
+            $lookup: {
+                from: "carmoreinfos",
+                localField: "_id",
+                foreignField: "car_id",
+                as: "moreInfo"
+            }
+        },
+        {
+            $lookup: {
+                from: "carimages",
+                localField: "_id",
+                foreignField: "car_id",
+                as: "images"
+            }
+        },
+        // Modified lookup for created_by with projection
+        {
+            $lookup: {
+                from: "users",
+                let: { createdById: "$created_by" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ["$_id", "$$createdById"] }
+                        }
+                    },
+                    {
+                        $project: {
+                            name: 1,
+                            _id: 1
+                        }
+                    }
+                ],
+                as: "created_by"
+            }
+        },
+        // Modified lookup for updated_by with projection
+        {
+            $lookup: {
+                from: "users",
+                let: { updatedById: "$updated_by" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ["$_id", "$$updatedById"] }
+                        }
+                    },
+                    {
+                        $project: {
+                            name: 1,
+                            _id: 1
+                        }
+                    }
+                ],
+                as: "updated_by"
+            }
+        },
+        { $unwind: { path: "$created_by", preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: "$updated_by", preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: "$details", preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: "$moreInfo", preserveNullAndEmptyArrays: true } },
+        { $sort: { updatedAt: -1 } },
+        { $skip: skip },
+        { $limit: limit }
+    ]);
 
     // Format with Botswana currency (BWP)
     const formattedCars = cars.map((car) => ({
-        ...car.toObject(),
+        ...car,
         real_price: car.real_price_bwp,
         actual_price: car.actual_price_bwp,
         currency: "BWP"
@@ -711,9 +906,66 @@ export const deleteOtherImage = asyncHandler(async (req, res) => {
 
 export const exportCarsToExcel = asyncHandler(async (req, res) => {
     try {
-        // Fetch all cars with their related data
+        // Function to strip HTML tags
+        const stripHtmlTags = (html) => {
+            if (!html) return "";
+            return html.replace(/<[^>]*>/g, "");
+        };
+
+        // Function to decode HTML entities
+        const decodeHtmlEntities = (text) => {
+            if (!text) return "";
+            return text
+                .replace(/&amp;/g, "&")
+                .replace(/&lt;/g, "<")
+                .replace(/&gt;/g, ">")
+                .replace(/&quot;/g, '"')
+                .replace(/&#39;/g, "'")
+                .replace(/&nbsp;/g, " ");
+        };
+
+        // Extract filter parameters from request
+        const search = req.query.search || "";
+        const status = req.query.status || "";
+        const website_state = req.query.website_state;
+        const brand = req.query.brand;
+        const name = req.query.name;
+
+        // Build filter (same logic as getAllCars)
+        const filter = {};
+
+        if (search) {
+            filter.$or = [
+                { name: { $regex: search, $options: "i" } },
+                { car_company: { $regex: search, $options: "i" } },
+                { description: { $regex: search, $options: "i" } }
+            ];
+        }
+
+        if (status) filter.status = status;
+
+        // Handle website_state filter - it can be boolean or string "true"/"false"
+        if (website_state !== undefined && website_state !== "") {
+            if (typeof website_state === "boolean") {
+                filter.website_state = website_state;
+            } else if (website_state === "true" || website_state === "false") {
+                filter.website_state = website_state === "true";
+            }
+        }
+
+        if (brand) {
+            filter.car_company = { $regex: brand, $options: "i" };
+        }
+
+        if (name) {
+            filter.name = { $regex: name, $options: "i" };
+        }
+
+        console.log("Excel Export Filter:", filter);
+
+        // Fetch all cars with their related data USING THE FILTER
         const cars = await Car.aggregate([
-            { $match: { website_state: true } },
+            { $match: filter },
             { $sort: { createdAt: -1 } },
             {
                 $lookup: {
@@ -741,123 +993,276 @@ export const exportCarsToExcel = asyncHandler(async (req, res) => {
             }
         ]);
 
+        // If no cars found with filters, return appropriate message
+        if (cars.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No cars found matching the specified filters"
+            });
+        }
+
         // Create a new workbook
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet("Cars Inventory");
 
-        // Define columns with custom widths
+        // Prepare filter information for display
+        const appliedFilters = [];
+        if (search) appliedFilters.push({ name: "Search", value: search });
+        if (status) appliedFilters.push({ name: "Status", value: status });
+        if (website_state !== undefined && website_state !== "") {
+            appliedFilters.push({
+                name: "Website State",
+                value:
+                    typeof website_state === "boolean"
+                        ? website_state
+                            ? "Active"
+                            : "Inactive"
+                        : website_state === "true"
+                        ? "Active"
+                        : "Inactive"
+            });
+        }
+        if (brand) appliedFilters.push({ name: "Brand", value: brand });
+        if (name) appliedFilters.push({ name: "Name", value: name });
+
+        // If no filters applied, show "All Cars"
+        if (appliedFilters.length === 0) {
+            appliedFilters.push({ name: "Filters", value: "All Cars" });
+        }
+
+        // Add Filters header
+        const filtersHeaderRow = worksheet.addRow(["Filters"]);
+        worksheet.mergeCells(`A${filtersHeaderRow.number}:B${filtersHeaderRow.number}`);
+
+        // Style Filters header
+        filtersHeaderRow.font = {
+            bold: true,
+            size: 14,
+            color: { argb: "FFFFFF" }
+        };
+        filtersHeaderRow.fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "2F75B5" } // Darker blue for distinction
+        };
+        filtersHeaderRow.alignment = {
+            vertical: "middle",
+            horizontal: "center"
+        };
+        filtersHeaderRow.height = 25;
+
+        // Add filter rows
+        appliedFilters.forEach((filter) => {
+            const filterRow = worksheet.addRow([filter.name, filter.value]);
+
+            // Style filter name cell
+            worksheet.getCell(`A${filterRow.number}`).font = {
+                bold: true,
+                color: { argb: "2F75B5" }
+            };
+            worksheet.getCell(`A${filterRow.number}`).fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "DDEBF7" } // Light blue background
+            };
+            worksheet.getCell(`A${filterRow.number}`).border = {
+                top: { style: "thin" },
+                left: { style: "thin" },
+                bottom: { style: "thin" },
+                right: { style: "thin" }
+            };
+
+            // Style filter value cell
+            worksheet.getCell(`B${filterRow.number}`).font = {
+                color: { argb: "000000" }
+            };
+            worksheet.getCell(`B${filterRow.number}`).fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "F2F2F2" } // Light gray background
+            };
+            worksheet.getCell(`B${filterRow.number}`).border = {
+                top: { style: "thin" },
+                left: { style: "thin" },
+                bottom: { style: "thin" },
+                right: { style: "thin" }
+            };
+        });
+
+        // Add empty row for spacing
+        worksheet.addRow([]);
+
+        // Define columns without headers (we'll add the header row manually)
         worksheet.columns = [
-            { header: "Car Index ID", key: "car_index_id", width: 15 },
-            { header: "Name", key: "name", width: 25 },
-            { header: "Description", key: "description", width: 30 },
-            { header: "Company", key: "car_company", width: 20 },
-            { header: "Real Price (BWP)", key: "real_price_bwp", width: 18 },
-            { header: "Actual Price (BWP)", key: "actual_price_bwp", width: 18 },
-            { header: "Real Price (ZMW)", key: "real_price_zmw", width: 18 },
-            { header: "Actual Price (ZMW)", key: "actual_price_zmw", width: 18 },
-            { header: "Main Image", key: "main_image", width: 50 },
-            // { header: "All Images", key: "all_images", width: 100 },
-            { header: "Website State", key: "website_state", width: 15 },
-            { header: "Status", key: "status", width: 12 },
-            { header: "Year", key: "year", width: 10 },
-            { header: "Engine Type", key: "engine_type", width: 15 },
-            { header: "Engine Size", key: "engine_size", width: 15 },
-            { header: "Transmission", key: "transmission", width: 15 },
-            { header: "Color", key: "color", width: 15 },
-            { header: "Fuel", key: "fuel", width: 12 },
-            { header: "Mileage", key: "mileage", width: 15 },
-            { header: "Drive", key: "drive", width: 12 },
-            { header: "Option", key: "option", width: 20 },
-            { header: "Location", key: "location", width: 20 },
-            { header: "Condition", key: "condition", width: 15 },
-            { header: "Duty", key: "duty", width: 15 },
-            { header: "Stock No", key: "stock_no", width: 15 },
-            { header: "TP", key: "tp", width: 12 },
-            { header: "Cost", key: "cost", width: 12 },
-            { header: "Duty Cost", key: "duty_cost", width: 15 },
-            { header: "Total Cost", key: "t_cost", width: 15 },
-            { header: "Exchange Rate", key: "exr", width: 15 },
-            { header: "K Price", key: "k_price", width: 15 },
-            { header: "Sold Price", key: "sold_price", width: 15 },
-            { header: "Discount", key: "discount", width: 12 },
-            { header: "Profit", key: "profit", width: 12 },
-            { header: "Commission", key: "comm", width: 12 },
-            { header: "Net Profit", key: "net_profit", width: 15 },
-            { header: "Sold Date", key: "sold_date", width: 15 },
-            { header: "Sold By", key: "sold_by", width: 20 },
-            { header: "Customer Name", key: "customer_name", width: 25 },
-            { header: "Customer Address", key: "customer_address", width: 30 },
-            { header: "Customer Phone", key: "customer_phone_no", width: 20 },
-            { header: "Created At", key: "createdAt", width: 20 },
-            { header: "Updated At", key: "updatedAt", width: 20 }
+            { key: "car_index_id", width: 15 },
+            { key: "name", width: 25 },
+            { key: "description", width: 50 },
+            { key: "car_company", width: 20 },
+            { key: "real_price_bwp", width: 18 },
+            { key: "actual_price_bwp", width: 18 },
+            { key: "real_price_zmw", width: 18 },
+            { key: "actual_price_zmw", width: 18 },
+            { key: "main_image", width: 50 },
+            { key: "website_state", width: 15 },
+            { key: "status", width: 12 },
+            { key: "year", width: 10 },
+            { key: "engine_type", width: 15 },
+            { key: "engine_size", width: 15 },
+            { key: "transmission", width: 15 },
+            { key: "color", width: 15 },
+            { key: "fuel", width: 12 },
+            { key: "mileage", width: 15 },
+            { key: "drive", width: 12 },
+            { key: "option", width: 20 },
+            { key: "location", width: 20 },
+            { key: "condition", width: 15 },
+            { key: "duty", width: 15 },
+            { key: "stock_no", width: 15 },
+            { key: "tp", width: 12 },
+            { key: "cost", width: 12 },
+            { key: "duty_cost", width: 15 },
+            { key: "total_cost", width: 15 },
+            { key: "exchange_rate", width: 15 },
+            { key: "k_price", width: 15 },
+            { key: "sold_price", width: 15 },
+            { key: "discount", width: 12 },
+            { key: "profit", width: 12 },
+            { key: "commission", width: 12 },
+            { key: "net_profit", width: 15 },
+            { key: "sold_date", width: 15 },
+            { key: "sold_by", width: 20 },
+            { key: "customer_name", width: 25 },
+            { key: "customer_address", width: 30 },
+            { key: "customer_phone", width: 20 },
+            { key: "createdAt", width: 20 },
+            { key: "updatedAt", width: 20 }
         ];
 
-        // Style the header row
-        worksheet.getRow(1).font = { bold: true, color: { argb: "FFFFFF" } };
-        worksheet.getRow(1).fill = {
+        // Define column headers separately
+        const columnHeaders = [
+            "Car Index ID",
+            "Name",
+            "Description",
+            "Company",
+            "Real Price (BWP)",
+            "Actual Price (BWP)",
+            "Real Price (ZMW)",
+            "Actual Price (ZMW)",
+            "Main Image",
+            "Website State",
+            "Status",
+            "Year",
+            "Engine Type",
+            "Engine Size",
+            "Transmission",
+            "Color",
+            "Fuel",
+            "Mileage",
+            "Drive",
+            "Option",
+            "Location",
+            "Condition",
+            "Duty",
+            "Stock No",
+            "TP",
+            "Cost",
+            "Duty Cost",
+            "Total Cost",
+            "Exchange Rate",
+            "K Price",
+            "Sold Price",
+            "Discount",
+            "Profit",
+            "Commission",
+            "Net Profit",
+            "Sold Date",
+            "Sold By",
+            "Customer Name",
+            "Customer Address",
+            "Customer Phone",
+            "Created At",
+            "Updated At"
+        ];
+
+        // Add the header row for cars data manually
+        const carsHeaderRow = worksheet.addRow(columnHeaders);
+
+        // Style the cars header row
+        carsHeaderRow.font = {
+            bold: true,
+            color: { argb: "FFFFFF" }
+        };
+        carsHeaderRow.fill = {
             type: "pattern",
             pattern: "solid",
             fgColor: { argb: "4472C4" }
         };
 
         // Add data rows
-        // Add data rows
         for (let index = 0; index < cars.length; index++) {
             const car = cars[index];
+
+            // Process description to remove HTML tags and decode entities
+            let cleanDescription = "";
+            if (car.description) {
+                cleanDescription = decodeHtmlEntities(stripHtmlTags(car.description));
+                cleanDescription = cleanDescription.replace(/\s+/g, " ").trim();
+            }
 
             const row = worksheet.addRow({
                 car_index_id: car.car_index_id || "",
                 name: car.name || "",
-                description: car.description || "",
+                description: cleanDescription,
                 car_company: car.car_company || "",
                 real_price_bwp: car.real_price_bwp || 0,
                 actual_price_bwp: car.actual_price_bwp || 0,
                 real_price_zmw: car.real_price_zmw || 0,
                 actual_price_zmw: car.actual_price_zmw || 0,
-                main_image: "", // We'll embed the actual image here
-                // all_images: car.images ? car.images.map((img) => img.image_url).join(", ") : "",
+                main_image: car.main_image || "",
                 website_state: car.website_state ? "Yes" : "No",
                 status: car.status || "",
-                year: car.details?.year || "",
-                engine_type: car.details?.engine_type || "",
-                engine_size: car.details?.engine_size || "",
-                transmission: car.details?.transmission || "",
-                color: car.details?.color || "",
-                fuel: car.details?.fuel || "",
-                mileage: car.details?.mileage || "",
-                drive: car.details?.drive || "",
-                option: car.details?.option || "",
-                location: car.details?.location || "",
-                condition: car.details?.condition || "",
-                duty: car.details?.duty || "",
-                stock_no: car.details?.stock_no || "",
-                tp: car.moreInfo?.Tp || "",
-                cost: car.moreInfo?.cost || "",
-                duty_cost: car.moreInfo?.duty || "",
-                t_cost: car.moreInfo?.t_cost || "",
-                exr: car.moreInfo?.exr || "",
-                k_price: car.moreInfo?.k_price || "",
-                sold_price: car.moreInfo?.sold_price || "",
-                discount: car.moreInfo?.discount || "",
-                profit: car.moreInfo?.profit || "",
-                comm: car.moreInfo?.comm || "",
-                net_profit: car.moreInfo?.net_profit || "",
-                sold_date: car.moreInfo?.sold_date
-                    ? new Date(car.moreInfo.sold_date).toLocaleDateString()
+                year: car.details?.[0]?.year || "",
+                engine_type: car.details?.[0]?.engine_type || "",
+                engine_size: car.details?.[0]?.engine_size || "",
+                transmission: car.details?.[0]?.transmission || "",
+                color: car.details?.[0]?.color || "",
+                fuel: car.details?.[0]?.fuel || "",
+                mileage: car.details?.[0]?.mileage || "",
+                drive: car.details?.[0]?.drive || "",
+                option: car.details?.[0]?.option || "",
+                location: car.details?.[0]?.location || "",
+                condition: car.details?.[0]?.condition || "",
+                duty: car.details?.[0]?.duty || "",
+                stock_no: car.details?.[0]?.stock_no || "",
+                tp: car.moreInfo?.[0]?.Tp || "",
+                cost: car.moreInfo?.[0]?.cost || "",
+                duty_cost: car.moreInfo?.[0]?.duty || "",
+                total_cost: car.moreInfo?.[0]?.t_cost || "",
+                exchange_rate: car.moreInfo?.[0]?.exr || "",
+                k_price: car.moreInfo?.[0]?.k_price || "",
+                sold_price: car.moreInfo?.[0]?.sold_price || "",
+                discount: car.moreInfo?.[0]?.discount || "",
+                profit: car.moreInfo?.[0]?.profit || "",
+                commission: car.moreInfo?.[0]?.comm || "",
+                net_profit: car.moreInfo?.[0]?.net_profit || "",
+                sold_date: car.moreInfo?.[0]?.sold_date
+                    ? new Date(car.moreInfo[0].sold_date).toLocaleDateString()
                     : "",
-                sold_by: car.moreInfo?.sold_by || "",
-                customer_name: car.moreInfo?.customer_name || "",
-                customer_address: car.moreInfo?.customer_address || "",
-                customer_phone_no: car.moreInfo?.customer_phone_no || "",
+                sold_by: car.moreInfo?.[0]?.sold_by || "",
+                customer_name: car.moreInfo?.[0]?.customer_name || "",
+                customer_address: car.moreInfo?.[0]?.customer_address || "",
+                customer_phone: car.moreInfo?.[0]?.customer_phone_no || "",
                 createdAt: car.createdAt ? new Date(car.createdAt).toLocaleDateString() : "",
                 updatedAt: car.updatedAt ? new Date(car.updatedAt).toLocaleDateString() : ""
             });
 
+            // Set description cell to wrap text for better readability
+            const descriptionCell = `C${row.number}`;
+            worksheet.getCell(descriptionCell).alignment = { wrapText: true };
+
             // Embed main image if available
-            // console.log(car.all_images);
             if (car.main_image) {
                 try {
-                    // console.log(car.main_image)
                     const response = await fetch(car.main_image);
                     if (!response.ok) throw new Error("Image fetch failed");
 
@@ -869,6 +1274,7 @@ export const exportCarsToExcel = asyncHandler(async (req, res) => {
                         extension: ext
                     });
 
+                    // Adjust row number for image placement (accounting for filter rows)
                     worksheet.addImage(imageId, {
                         tl: { col: 8, row: row.number - 1 },
                         ext: { width: 120, height: 80 }
@@ -879,8 +1285,8 @@ export const exportCarsToExcel = asyncHandler(async (req, res) => {
                     console.warn(`Failed to embed image for car ${car.car_index_id}:`, err.message);
                 }
             }
-            // console.log(car.images,'fowiehfho')
-            // Optional: Alternate row color
+
+            // Alternate row color
             if (index % 2 === 0) {
                 row.fill = {
                     type: "pattern",
@@ -890,23 +1296,35 @@ export const exportCarsToExcel = asyncHandler(async (req, res) => {
             }
         }
 
-        // Auto-filter for all columns
+        // Calculate the cars header row number (after filters + spacing)
+        const carsHeaderRowNumber = appliedFilters.length + 3; // +1 for filters header, +1 for empty row
+
+        // Auto-filter for all columns (starting from cars header row)
         worksheet.autoFilter = {
-            from: { row: 1, column: 1 },
-            to: { row: 1, column: worksheet.columnCount }
+            from: { row: carsHeaderRowNumber, column: 1 },
+            to: { row: carsHeaderRowNumber, column: worksheet.columnCount }
         };
 
-        // Freeze the header row
-        worksheet.views = [{ state: "frozen", xSplit: 0, ySplit: 1 }];
+        // Freeze the cars header row and filter section
+        worksheet.views = [
+            {
+                state: "frozen",
+                xSplit: 0,
+                ySplit: carsHeaderRowNumber // Freeze at cars header row
+            }
+        ];
 
         // Set response headers for Excel file download
         res.setHeader(
             "Content-Type",
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         );
+
+        // Create filename with timestamp and filters info
+        const timestamp = new Date().toISOString().split("T")[0];
         res.setHeader(
             "Content-Disposition",
-            `attachment; filename=cars-inventory-${Date.now()}.xlsx`
+            `attachment; filename=cars-inventory-${timestamp}.xlsx`
         );
 
         // Write workbook to response

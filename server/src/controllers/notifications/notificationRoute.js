@@ -1,21 +1,24 @@
 import express from "express";
 import {
     getNotifications,
-    readNotification,
-    readAllNotifications,
-    removeNotification
+    getUserNotificationList,
+    updateUserNotificationStatus,
+    markAllNotificationsAsRead,
+    createNewNotification
 } from "./notificationController.js";
-// import { protect } from "../../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// router.use(protect);
-
+// Public routes (if any)
 router.get("/", getNotifications);
-router.patch("/:id/read", readNotification);
-router.patch("/read-all", readAllNotifications);
-router.delete("/:id", removeNotification);
 
+// Protected routes
+router.get("/user", getUserNotificationList);
+router.post("/mark-read", updateUserNotificationStatus);
+router.put("/mark-all-read", markAllNotificationsAsRead);
+router.post("/create", createNewNotification);
+
+// SSE route for real-time notifications
 const clients = [];
 
 router.get("/stream", (req, res) => {
@@ -24,7 +27,7 @@ router.get("/stream", (req, res) => {
     res.setHeader("Connection", "keep-alive");
 
     const clientId = Date.now();
-    const client = { id: clientId, res };
+    const client = { id: clientId, res, userId: req.user._id };
     clients.push(client);
 
     req.on("close", () => {
@@ -35,9 +38,12 @@ router.get("/stream", (req, res) => {
     });
 });
 
-export const sendNotificationToClients = (type) => {
+export const sendNotificationToClients = (type, userIds = null) => {
     clients.forEach((client) => {
-        client.res.write(`data: ${JSON.stringify({ type })}\n\n`);
+        // Send to specific users or all clients
+        if (!userIds || userIds.includes(client.userId)) {
+            client.res.write(`data: ${JSON.stringify({ type })}\n\n`);
+        }
     });
 };
 

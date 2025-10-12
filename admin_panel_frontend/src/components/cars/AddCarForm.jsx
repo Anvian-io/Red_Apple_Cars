@@ -312,8 +312,8 @@ export function AddCarForm({ open, onOpenChange, onCarCreated, carData }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="text-text sm:max-w-3xl max-h-[90vh] overflow-y-auto bg-cardBg">
-        <DialogHeader>
+      <DialogContent className="text-text sm:max-w-3xl max-h-[90vh] bg-cardBg flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>{isEditing ? "Edit Car" : "Add New Car"}</DialogTitle>
           <DialogDescription>
             {isEditing
@@ -323,15 +323,21 @@ export function AddCarForm({ open, onOpenChange, onCarCreated, carData }) {
         </DialogHeader>
 
         <FormProvider {...methods}>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-3 mb-4">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full flex flex-col flex-1 min-h-0"
+          >
+            {/* Fixed Tabs Header */}
+            <TabsList className="grid grid-cols-3 gap-2 mb-4 flex-shrink-0 bg-cardBg">
               <TabsTrigger value="car">Car Information</TabsTrigger>
               <TabsTrigger value="details">Car Details</TabsTrigger>
               <TabsTrigger value="moreInfo">More Information</TabsTrigger>
             </TabsList>
 
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <TabsContent value="car" className="space-y-4">
+            {/* Scrollable Form Content */}
+            <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto">
+              <TabsContent value="car" className="space-y-4 h-full">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Car Name</Label>
@@ -836,7 +842,8 @@ export function AddCarForm({ open, onOpenChange, onCarCreated, carData }) {
                 </div>
               </TabsContent>
 
-              <div className="flex justify-end gap-3 mt-6">
+              {/* Fixed buttons at the bottom */}
+              <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border sticky bottom-0 bg-cardBg">
                 <Button
                   type="button"
                   variant="outline"

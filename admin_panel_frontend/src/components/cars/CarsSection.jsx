@@ -56,15 +56,17 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { getProfile } from "@/services/profile/profileServices";
+import { checkPermission } from "@/helper/commonHelper";
 
 // Column Visibility Component
 function ColumnVisibility({ columnVisibility, setColumnVisibility }) {
   const [open, setOpen] = useState(false);
 
   const columns = [
-    { id: "sr", label: "SR", defaultVisible: true },
-    { id: "id", label: "ID", defaultVisible: true },
-    { id: "name", label: "Name", defaultVisible: true },
+    { id: "sr", label: "SR", defaultVisible: true, fixed: true },
+    { id: "id", label: "ID", defaultVisible: true, fixed: true },
+    { id: "name", label: "Name", defaultVisible: true, fixed: true },
     { id: "description", label: "Description", defaultVisible: true },
     { id: "brand", label: "Brand", defaultVisible: true },
     { id: "realPriceBWP", label: "Real Price (BWP)", defaultVisible: true },
@@ -80,7 +82,7 @@ function ColumnVisibility({ columnVisibility, setColumnVisibility }) {
     { id: "carStatus", label: "Car Status", defaultVisible: true },
     { id: "websiteState", label: "Website State", defaultVisible: true },
     { id: "history", label: "History", defaultVisible: true },
-    { id: "actions", label: "Actions", defaultVisible: true }
+    { id: "actions", label: "Actions", defaultVisible: true, fixed: true }
   ];
 
   return (
@@ -113,8 +115,12 @@ function ColumnVisibility({ columnVisibility, setColumnVisibility }) {
                     [column.id]: checked
                   })
                 }
+                disabled={column.fixed}
               />
-              <Label htmlFor={column.id}>{column.label}</Label>
+              <Label htmlFor={column.id} className={column.fixed ? "text-muted-foreground" : ""}>
+                {column.label}
+                {column.fixed && " (Fixed)"}
+              </Label>
             </div>
           ))}
         </div>
@@ -231,6 +237,15 @@ export function CarSection({ isExpanded }) {
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [moreInfoDialogOpen, setMoreInfoDialogOpen] = useState(false);
   const [selectedCar, setSelectedCar] = useState(null);
+
+  // State for profile data
+  const [profileData, setProfileData] = useState({
+    companyData: null,
+    bankingData: null,
+    loading: true
+  });
+
+  // Initialize column visibility with fixed columns always visible
   const [columnVisibility, setColumnVisibility] = useState({
     sr: true,
     id: true,
@@ -252,6 +267,7 @@ export function CarSection({ isExpanded }) {
     history: true,
     actions: true
   });
+
   const [filters, setFilters] = useState({
     name: "",
     brand: "",
@@ -259,7 +275,40 @@ export function CarSection({ isExpanded }) {
     websiteState: "all"
   });
   const router = useRouter();
+
+  // Permission check function
+  const hasPermission = (operation) => {
+    return checkPermission("cars", operation);
+  };
+
+  // Apply debouncing to all filter fields and search term
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const debouncedFilters = useDebounce(filters, 500);
+
+  // Fetch profile data only once when component mounts (on page reload)
+  const fetchProfileData = useCallback(async () => {
+    try {
+      setProfileData((prev) => ({ ...prev, loading: true }));
+      const response = await getProfile(router);
+      if (response.data.status) {
+        const storedCompanyData = response.data.data.company;
+        const storedBankingData = response.data.data.banks?.filter((d) => d.isActive == true);
+
+        setProfileData({
+          companyData: storedCompanyData || null,
+          bankingData: storedBankingData || null,
+          loading: false
+        });
+      } else {
+        toast.error("Failed to fetch profile data");
+        setProfileData((prev) => ({ ...prev, loading: false }));
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      toast.error("Failed to fetch profile data");
+      setProfileData((prev) => ({ ...prev, loading: false }));
+    }
+  }, [router]);
 
   const fetchCars = useCallback(async () => {
     try {
@@ -268,11 +317,16 @@ export function CarSection({ isExpanded }) {
         search: debouncedSearchTerm,
         limit: itemsPerPage,
         page: currentPage,
-        ...(filters.name && { name: filters.name }),
-        ...(filters.brand && { brand: filters.brand }),
-        ...(filters.status !== "all" && { status: filters.status }),
-        ...(filters.websiteState !== "all" && { website_state: filters.websiteState === "active" })
+        ...(debouncedFilters.name && { name: debouncedFilters.name }),
+        ...(debouncedFilters.brand && { brand: debouncedFilters.brand }),
+        ...(debouncedFilters.status !== "all" && { status: debouncedFilters.status }),
+        ...(debouncedFilters.websiteState !== "all" && {
+          website_state: debouncedFilters.websiteState === "active"
+        })
       };
+
+      console.log("Fetching cars with payload:", payload); // Debug log
+
       const response = await getAllCars(payload, router);
       if (response.data.status) {
         setCars(response.data.data.cars);
@@ -281,6 +335,8 @@ export function CarSection({ isExpanded }) {
         setTotalCars(pagination_data.totalCars);
         setCurrentPage(pagination_data.currentPage);
         setTotalPages(pagination_data.totalPages);
+      } else {
+        toast.error(response.data.message || "Failed to fetch cars");
       }
     } catch (error) {
       console.error("Error fetching cars:", error);
@@ -289,26 +345,52 @@ export function CarSection({ isExpanded }) {
       setLoading(false);
       setIsSearching(false);
     }
-  }, [debouncedSearchTerm, currentPage, itemsPerPage, router, filters]);
+  }, [debouncedSearchTerm, debouncedFilters, currentPage, itemsPerPage, router, isInitial]);
 
+  // Effect to fetch cars when search, filters, or pagination changes
   useEffect(() => {
-    setLoading(isInitial === true);
-    fetchCars();
-    setIsInitial(false);
-  }, [fetchCars]);
+    if (!isInitial) {
+      fetchCars();
+    }
+  }, [debouncedSearchTerm, debouncedFilters, currentPage, itemsPerPage, isInitial, fetchCars]);
+
+  // Load profile data and cars on component mount
+  useEffect(() => {
+    const loadInitialData = async () => {
+      setLoading(true);
+      await fetchProfileData();
+      await fetchCars();
+      setIsInitial(false);
+    };
+
+    loadInitialData();
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   const handleSearch = (term) => {
+    console.log("Search term:", term); // Debug log
     setSearchTerm(term);
     setCurrentPage(1);
   };
 
   const applyFilters = () => {
+    // Reset all filters
+    setFilters({
+      name: "",
+      brand: "",
+      status: "all",
+      websiteState: "all"
+    });
+    setSearchTerm("");
     setCurrentPage(1);
-    fetchCars();
   };
 
-  // Handle Excel export
+  // Handle Excel export with permission check
   const handleExportToExcel = async () => {
+    if (!hasPermission("download")) {
+      toast.error("You don't have permission to download Excel files in Cars page");
+      return;
+    }
+
     try {
       toast.info("Preparing Excel export...");
 
@@ -317,7 +399,9 @@ export function CarSection({ isExpanded }) {
         ...(filters.name && { name: filters.name }),
         ...(filters.brand && { brand: filters.brand }),
         ...(filters.status !== "all" && { status: filters.status }),
-        ...(filters.websiteState !== "all" && { website_state: filters.websiteState === "active" })
+        ...(filters.websiteState !== "all" && {
+          website_state: filters.websiteState === "active"
+        })
       };
 
       await exportCarsToExcel(payload, router);
@@ -341,12 +425,20 @@ export function CarSection({ isExpanded }) {
   };
 
   const handleEditCar = (carId) => {
+    if (!hasPermission("edit")) {
+      toast.error("You don't have permission to edit cars");
+      return;
+    }
     const carToEdit = cars.find((car) => car._id === carId);
     setCurrentCarData(carToEdit);
     setAddOrUpdateCar(true);
   };
 
   const handleAddCar = () => {
+    if (!hasPermission("edit")) {
+      toast.error("You don't have permission to add cars");
+      return;
+    }
     setCurrentCarData(null);
     setAddOrUpdateCar(true);
   };
@@ -366,6 +458,10 @@ export function CarSection({ isExpanded }) {
   };
 
   const handleDeleteClick = (car) => {
+    if (!hasPermission("delete")) {
+      toast.error("You don't have permission to delete cars");
+      return;
+    }
     setCarToDelete(car);
     setDeleteDialogOpen(true);
   };
@@ -386,6 +482,11 @@ export function CarSection({ isExpanded }) {
       setDeleteDialogOpen(false);
       setCarToDelete(null);
     }
+  };
+
+  // Handle invoice update callback
+  const handleInvoiceUpdate = () => {
+    fetchCars(); // Refresh cars data after invoice update
   };
 
   const skeletonRows = Array.from({ length: itemsPerPage }, (_, i) => (
@@ -619,9 +720,16 @@ export function CarSection({ isExpanded }) {
                     )}
                     {columnVisibility.invoice && (
                       <TableCell className="text-center">
-                        <CompanyInvoice car={car} />
+                        <CompanyInvoice
+                          car={car}
+                          companyData={profileData.companyData}
+                          bankingData={profileData.bankingData}
+                          onInvoiceUpdate={fetchCars}
+                          disabled={car.status === "sold"} // 👈 Disable when sold
+                        />
                       </TableCell>
                     )}
+
                     {columnVisibility.carInfoImg && (
                       <TableCell className="text-center">
                         <CarInfoPic car={car} />
@@ -690,6 +798,7 @@ export function CarSection({ isExpanded }) {
                             variant="ghost"
                             size="icon"
                             title="Edit car"
+                            // disabled={!hasPermission("edit")}
                           >
                             <SquarePen className="h-4 w-4" />
                           </Button>
@@ -699,6 +808,7 @@ export function CarSection({ isExpanded }) {
                             size="icon"
                             className="text-red-500 hover:text-red-700 hover:bg-red-50"
                             title="Delete car"
+                            // disabled={!hasPermission("delete")}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -751,6 +861,7 @@ export function CarSection({ isExpanded }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
       {/* Car Details Dialog */}
       <CarDetailsDialog
         open={detailsDialogOpen}

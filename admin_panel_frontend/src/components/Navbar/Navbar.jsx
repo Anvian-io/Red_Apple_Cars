@@ -93,6 +93,10 @@ export function Navbar({ children }) {
     return () => evtSource.close();
   }, []);
 
+  const handleNotification = async()=>{
+    router.push('/all-notifications')
+  }
+
   return (
     <div className="h-screen bg-background text-text">
       <div className="flex h-full">
@@ -171,7 +175,7 @@ export function Navbar({ children }) {
               >
                 {theme === "dark" ? "Light Mode" : "Dark Mode"}
               </span>
-            </Button>
+            </Button> 
           </div>
         </nav>
 
@@ -241,6 +245,14 @@ export function Navbar({ children }) {
                 <span className="ml-3 whitespace-nowrap">
                   {theme === "dark" ? "Light Mode" : "Dark Mode"}
                 </span>
+              </Button>
+              <Button
+                onClick={handleThemeChange}
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start px-3 py-3 h-auto text-text hover:text-hoverText hover:bg-secondaryBg"
+              >
+                Notifications
               </Button>
             </div>
           </nav>

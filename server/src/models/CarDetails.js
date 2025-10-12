@@ -10,35 +10,35 @@ const carDetailSchema = new mongoose.Schema(
         },
         year: {
             type: Number,
-            required: true
+            required: false
         },
         engine_type: {
             type: String,
-            required: true
+            required: false
         },
         engine_size: {
             type: String,
-            required: true
+            required: false
         },
         transmission: {
             type: String,
-            required: true
+            required: false
         },
         color: {
             type: String,
-            required: true
+            required: false
         },
         fuel: {
             type: String,
-            required: true
+            required: false
         },
         mileage: {
             type: String,
-            required: true
+            required: false
         },
         drive: {
             type: String,
-            required: true
+            required: false
         },
         option: {
             type: String,
@@ -46,19 +46,19 @@ const carDetailSchema = new mongoose.Schema(
         },
         location: {
             type: String,
-            required: true
+            required: false
         },
         condition: {
             type: String,
-            required: true
+            required: false
         },
         duty: {
             type: String,
-            required: true
+            required: false
         },
         stock_no: {
             type: String,
-            required: true,
+            required: false,
         }
     },
     { timestamps: true }

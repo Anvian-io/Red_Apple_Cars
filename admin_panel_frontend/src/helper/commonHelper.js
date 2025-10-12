@@ -73,6 +73,42 @@ export const apiClient = {
     );
   },
 
+  put: async (url, data, headers = {}) => {
+    if (data instanceof FormData) {
+      delete headers["Content-Type"];
+    } else if (!headers["Content-Type"]) {
+      headers["Content-Type"] = "application/json";
+    }
+
+    return handleRequest(() =>
+      axios.put(`${base_url}${url}`, data, {
+        headers: {
+          ...headers,
+          Authorization: `Bearer ${getAccessToken()}` // ✅ attach token
+        },
+        withCredentials: true
+      })
+    );
+  },
+
+  patch: async (url, data, headers = {}) => {
+    if (data instanceof FormData) {
+      delete headers["Content-Type"];
+    } else if (!headers["Content-Type"]) {
+      headers["Content-Type"] = "application/json";
+    }
+
+    return handleRequest(() =>
+      axios.patch(`${base_url}${url}`, data, {
+        headers: {
+          ...headers,
+          Authorization: `Bearer ${getAccessToken()}` // ✅ attach token
+        },
+        withCredentials: true
+      })
+    );
+  },
+
   delete: async (url, headers = {}) =>
     handleRequest(() =>
       axios.delete(`${base_url}${url}`, {
@@ -82,7 +118,7 @@ export const apiClient = {
         },
         withCredentials: true
       })
-    ),
+    )
 };
 
 export const apiClientEvents = {
@@ -129,4 +165,22 @@ export const handleApiResponse = (response, router) => {
   return response;
 };
 
-export { asyncHandler, getCookie };
+// Helper function to check permissions
+const checkPermission = (page, operation) => {
+  if (typeof window === "undefined") return false;
+
+  try {
+    const permissionsStr = localStorage.getItem("permissions");
+    if (!permissionsStr) return false;
+
+    const permissions = JSON.parse(permissionsStr);
+    return permissions.some(
+      (permission) => permission.page === page && permission.operation === operation
+    );
+  } catch (error) {
+    console.error("Error checking permissions:", error);
+    return false;
+  }
+};
+
+export { asyncHandler, getCookie,checkPermission };
