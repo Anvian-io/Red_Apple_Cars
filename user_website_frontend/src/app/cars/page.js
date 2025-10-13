@@ -38,7 +38,7 @@ const Page = () => {
                         return {
                             id: car._id,
                             name: car.name,
-                            price: `$${car.real_price_bwp.toLocaleString()}`,
+                            price: `P ${car.real_price_bwp.toLocaleString()}`,
                             numericPrice: car.real_price_bwp,
                             year: car.details.year,
                             mileage: car.details.mileage,
@@ -375,8 +375,8 @@ const Page = () => {
               [&::-webkit-slider-thumb]:shadow-md"
                         />
                         <div className="flex justify-between text-xs text-[var(--text)]/60">
-                          <span>${minPrice.toLocaleString()}</span>
-                          <span>${maxPrice.toLocaleString()}</span>
+                          <span>P {minPrice.toLocaleString()}</span>
+                          <span>P {maxPrice.toLocaleString()}</span>
                         </div>
                       </div>
                     </div>

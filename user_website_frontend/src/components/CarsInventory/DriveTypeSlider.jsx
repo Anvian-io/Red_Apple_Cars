@@ -87,7 +87,7 @@ const CarCard = ({ car }) => {
               Price
             </span>
             <span className="font-bold text-lg text-primary">
-              ${car.numericPrice.toLocaleString()}
+              P {car.numericPrice.toLocaleString()}
             </span>
           </div>
           <div className="flex flex-col items-end">
