@@ -27,10 +27,10 @@ const CarPage = () => {
           const mappedBasicCarDetails = {
             id: car._id,
             name: car.name,
-            real_price: `$${car.actual_price_bwp.toLocaleString()}`,
-            numeric_real_Price: car.actual_price_bwp,
-            sale_price: `$${car.real_price_bwp.toLocaleString()}`,
-            numeric_sale_Price: car.real_price_bwp,
+            real_price: `ZK ${car.actual_price_zmw.toLocaleString()}`,
+            numeric_real_Price: car.actual_price_zmw,
+            sale_price: `ZK ${car.real_price_zmw.toLocaleString()}`,
+            numeric_sale_Price: car.real_price_zmw,
             image: car.main_image,
             description: car.description,
             car_company: car.car_company,
@@ -247,7 +247,7 @@ const CarPage = () => {
                       Great Deal
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
-                      Save $
+                      Save ZK 
                       {(
                         basicCarDetails.numeric_sale_Price -
                         basicCarDetails.numeric_real_Price

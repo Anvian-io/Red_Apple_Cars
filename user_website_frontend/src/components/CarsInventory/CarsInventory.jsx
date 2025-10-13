@@ -20,8 +20,8 @@ export default function CarsInventory() {
           const mappedCars = response.data.data.cars.map(car => ({
             id: car._id,
             name: car.name,
-            price: `$${car.real_price_bwp.toLocaleString()}`,
-            numericPrice: car.real_price_bwp, // Add numeric price for filtering
+            price: `ZK ${car.real_price_zmw.toLocaleString()}`,
+            numericPrice: car.real_price_zmw, // Add numeric price for filtering
             year: car.details.year,
             mileage: car.details.mileage,
             fuel: car.details.fuel,

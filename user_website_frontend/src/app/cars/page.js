@@ -38,8 +38,8 @@ const Page = () => {
                         return {
                             id: car._id,
                             name: car.name,
-                            price: `$${car.real_price_bwp.toLocaleString()}`,
-                            numericPrice: car.real_price_bwp,
+                            price: `ZK ${car.real_price_zmw.toLocaleString()}`,
+                            numericPrice: car.real_price_zmw,
                             year: car.details.year,
                             mileage: car.details.mileage,
                             numericMileage,

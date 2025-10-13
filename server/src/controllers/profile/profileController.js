@@ -8,6 +8,7 @@ import role from "../../models/role.js";
 
 // Get Profile Data
 export const getProfile = asyncHandler(async (req, res) => {
+    console.log("user:- ",req.user._id);
     const company = await Company.findOne({ created_by: req.user._id });
     const banks = await Bank.find({ created_by: req.user._id }).sort({
         isActive: -1,

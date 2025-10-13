@@ -37,6 +37,7 @@ app.use("/api/users", userRoute);
 app.use("/api/carsWebsite", carsWebsiteRouter);
 app.use("/api/feedbackWebsite", feedbackWebsiteRoute);
 app.use("/api/suthakar", user);
+app.use("/api/profile", profileRouter);
 app.use(verifyJWT);
 app.use("/api/feedback", feedbackRoute);
 app.use("/api/cars", carsRouter);
@@ -44,7 +45,7 @@ app.use("/api/role", roleRouter);
 app.use("/api/user_management", userRouter);
 app.use("/api/notifications", notificationRouter);
 app.use("/api/invoice", invoiceRouter);
-app.use("/api/profile", profileRouter);
+
 app.use("/api/dashboard", dashboardRouter);
 // "http://localhost:8000/api/suthakar/name"
 

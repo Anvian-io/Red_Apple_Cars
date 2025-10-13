@@ -87,7 +87,7 @@ const CarCard = ({ car }) => {
               Price
             </span>
             <span className="font-bold text-lg text-primary">
-              ${car.numericPrice.toLocaleString()}
+              ZK {car.numericPrice.toLocaleString()}
             </span>
           </div>
           <div className="flex flex-col items-end">
@@ -393,9 +393,9 @@ export default function DriveTypeSlider({ allCars, driveTypes }) {
                 onChange={(e) => setPriceRange([0, parseInt(e.target.value)])}
               >
                 <option value={15000000}>Any Price</option>
-                <option value={10000}>Under $10k</option>
-                <option value={20000}>Under $20k</option>
-                <option value={30000}>Under $30k</option>
+                <option value={10000}>Under ZK 10k</option>
+                <option value={20000}>Under ZK 20k</option>
+                <option value={30000}>Under ZK 30k</option>
               </select>
             </div>
 
