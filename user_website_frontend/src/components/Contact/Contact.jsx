@@ -4,10 +4,30 @@ import { motion } from "framer-motion";
 import { MapPin, Phone, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "../Theme/ThemeProvider";
-
+import { useState,useEffect } from "react";
+import { getAllInfo } from "@/services/info/InfoService";
 export default function Contact() {
   const { theme } = useTheme();
-
+  const [info, setInfo] = useState({}); // store single object instead of array
+  
+  useEffect(() => {
+    const fetchInfo = async () => {
+      try {
+        const response = await getAllInfo({});
+        console.log("API Response for info:", response);
+  
+        if (response.data && response.data.status) {
+        
+          const companyInfo = response.data.data[0];
+          setInfo(companyInfo);
+        }
+      } catch (error) {
+        console.error("Error fetching info:", error);
+      }
+    };
+  
+    fetchInfo();
+  }, []);
   return (
     <section className="py-16 px-4 md:px-12 lg:px-20 bg-background text-text">
       {/* Heading */}
@@ -49,7 +69,7 @@ export default function Contact() {
             <div>
               <h4 className="font-semibold text-lg">Address</h4>
               <p className="text-muted-foreground text-sm">
-                123 Luxury Drive, Beverly Hills, CA 90210
+                {info.address}
               </p>
             </div>
           </motion.div>
@@ -67,7 +87,7 @@ export default function Contact() {
             </div>
             <div>
               <h4 className="font-semibold text-lg">Phone</h4>
-              <p className="text-muted-foreground text-sm">(555) 123-4567</p>
+              <p className="text-muted-foreground text-sm">{info.phoneNumber}</p>
             </div>
           </motion.div>
 
@@ -84,7 +104,7 @@ export default function Contact() {
             </div>
             <div>
               <h4 className="font-semibold text-lg">Email</h4>
-              <p className="text-muted-foreground text-sm">info@luxedrive.com</p>
+              <p className="text-muted-foreground text-sm">{info.email}</p>
             </div>
           </motion.div>
         </div>

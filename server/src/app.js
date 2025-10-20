@@ -14,6 +14,7 @@ import notificationRouter from "./controllers/notifications/notificationRoute.js
 import user from "./controllers/website_services/websiteServicesRoute.js"
 import profileRouter from "./controllers/profile/profileRouter.js"
 import dashboardRouter from "./controllers/dashboard/dashboardRoutes.js"
+import getUserWebsiteDetails from "./controllers/profile/profileController.js"
 const app = express();
 
 app.use(
@@ -37,6 +38,7 @@ app.use("/api/users", userRoute);
 app.use("/api/carsWebsite", carsWebsiteRouter);
 app.use("/api/feedbackWebsite", feedbackWebsiteRoute);
 app.use("/api/suthakar", user);
+app.use("/api/profile/web", getUserWebsiteDetails);
 app.use(verifyJWT);
 app.use("/api/feedback", feedbackRoute);
 app.use("/api/cars", carsRouter);

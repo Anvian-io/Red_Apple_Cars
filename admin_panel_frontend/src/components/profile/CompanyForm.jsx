@@ -23,7 +23,8 @@ export function CompanyForm({ companyData, onCompanyUpdated }) {
     whatsappNumber: "",
     instagramUrl: "",
     facebookUrl: "",
-    twitterUrl: ""
+    twitterUrl: "",
+    email:""
   });
   const [logo, setLogo] = useState(null);
   const [logoPreview, setLogoPreview] = useState("");
@@ -36,6 +37,7 @@ export function CompanyForm({ companyData, onCompanyUpdated }) {
         vatNumber: companyData.vatNumber || "",
         address: companyData.address || "",
         phoneNumber: companyData.phoneNumber || "",
+        email: companyData.email || "",
         whatsappNumber: companyData.whatsappNumber || "",
         instagramUrl: companyData.instagramUrl || "",
         facebookUrl: companyData.facebookUrl || "",
@@ -102,6 +104,7 @@ export function CompanyForm({ companyData, onCompanyUpdated }) {
       submitData.append("vatNumber", formData.vatNumber);
       submitData.append("address", formData.address);
       submitData.append("phoneNumber", formData.phoneNumber);
+      submitData.append("email", formData.email);
       submitData.append("whatsappNumber", formData.whatsappNumber);
       submitData.append("instagramUrl", formData.instagramUrl);
       submitData.append("facebookUrl", formData.facebookUrl);
@@ -226,6 +229,16 @@ export function CompanyForm({ companyData, onCompanyUpdated }) {
                 value={formData.phoneNumber}
                 onChange={handleInputChange}
                 placeholder="Enter phone number"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">mail</Label>
+              <Input
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                placeholder="Enter mail"
               />
             </div>
 

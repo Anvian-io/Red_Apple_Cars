@@ -1,9 +1,40 @@
 "use client";
 
+import { getAllInfo } from "@/services/info/InfoService";
 import { motion } from "framer-motion";
 import { Facebook, Twitter, Instagram } from "lucide-react";
+import { useEffect,useState } from "react";
 
 export default function Footer() {
+  // const [address,SetAddress]=useState();
+  // const [facebookUrl,SetFacebookUrl]=useState();
+  // const [instagramUrl,SetinstagramUrl]=useState();
+  // const [phoneNumber,SetphoneNumber]=useState();
+  // const [twitterUrl,SettwitterUrl]=useState();
+  // const [whatsappNumber,SetwhatsappNumber]=useState();
+  // const [name,Setname]=useState();
+  // const [logo,Setlogo]=useState();
+  const [info, setInfo] = useState({}); // store single object instead of array
+
+useEffect(() => {
+  const fetchInfo = async () => {
+    try {
+      const response = await getAllInfo({});
+      console.log("API Response for info:", response);
+
+      if (response.data && response.data.status) {
+      
+        const companyInfo = response.data.data[0];
+        setInfo(companyInfo);
+      }
+    } catch (error) {
+      console.error("Error fetching info:", error);
+    }
+  };
+
+  fetchInfo();
+}, []);
+
   return (
     <footer className="bg-red-800 text-white py-12 px-6 md:px-20">
       {/* Top Section */}
@@ -15,7 +46,7 @@ export default function Footer() {
           viewport={{ once: true }}
           className="text-2xl md:text-3xl font-bold italic"
         >
-          RedAppleCars
+          {info.name}
         </motion.h2>
         <motion.p
           initial={{ opacity: 0 }}
@@ -31,13 +62,15 @@ export default function Footer() {
       {/* Social Icons */}
       <div className="flex justify-center gap-6 mb-10">
         {[
-          { icon: <Facebook className="w-6 h-6" />, link: "#" },
-          { icon: <Twitter className="w-6 h-6" />, link: "#" },
-          { icon: <Instagram className="w-6 h-6" />, link: "#" },
+          { icon: <Facebook className="w-6 h-6" />, link: `${info.facebookUrl}` },
+          { icon: <Twitter className="w-6 h-6" />, link: `${info.twitterUrl}` },
+          { icon: <Instagram className="w-6 h-6" />, link:`${info.instagramUrl}` },
         ].map((item, index) => (
           <motion.a
             key={index}
             href={item.link}
+            target="_blank"                     
+            rel="noopener noreferrer"  
             whileHover={{ scale: 1.2 }}
             whileTap={{ scale: 0.9 }}
             className="bg-white text-red-800 p-3 rounded-full shadow-md hover:bg-gray-100 transition"

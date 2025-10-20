@@ -23,6 +23,22 @@ export const getProfile = asyncHandler(async (req, res) => {
     );
 });
 
+
+
+
+export const getUserWebsiteDetails = asyncHandler(async(req,res)=>{
+    const company =await Company.find().select(
+    "address facebookUrl instagramUrl phoneNumber twitterUrl whatsappNumber name logo email"
+  );;
+    return sendResponse(
+        res,
+        true,
+        company,
+        "data fetched successfully",
+        statusType.SUCCESS
+    )
+})
+
 // Update Company Details
 export const updateCompany = asyncHandler(async (req, res) => {
     const {
@@ -34,7 +50,8 @@ export const updateCompany = asyncHandler(async (req, res) => {
         whatsappNumber,
         instagramUrl,
         facebookUrl,
-        twitterUrl
+        twitterUrl,
+        email
     } = req.body;
 
     if (!name || !regNumber) {
@@ -60,6 +77,7 @@ export const updateCompany = asyncHandler(async (req, res) => {
         company.instagramUrl = instagramUrl;
         company.facebookUrl = facebookUrl;
         company.twitterUrl = twitterUrl;
+        company.email = email;
         company.updated_by = req.user._id;
 
         // Handle logo upload if provided
@@ -95,6 +113,7 @@ export const updateCompany = asyncHandler(async (req, res) => {
             instagramUrl,
             facebookUrl,
             twitterUrl,
+            email,
             logo: logoUrl,
             created_by: req.user._id,
             updated_by: req.user._id
@@ -275,3 +294,5 @@ export const setActiveBank = asyncHandler(async (req, res) => {
         statusType.SUCCESS
     );
 });
+
+export default getUserWebsiteDetails;

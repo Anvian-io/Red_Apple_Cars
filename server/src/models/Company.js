@@ -40,6 +40,10 @@ const companySchema = new mongoose.Schema(
             type: String,
             trim: true
         },
+        email:{
+            type: String,
+            trim: true
+        },
         logo: {
             type: String // URL to the logo image
         },

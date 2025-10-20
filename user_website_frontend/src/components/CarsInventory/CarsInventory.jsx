@@ -34,7 +34,7 @@ export default function CarsInventory() {
           setCars(mappedCars);
           
           // Extract unique drive types from API response
-          const uniqueDriveTypes = [...new Set(response.data.data.map(car => car.details.drive))];
+          const uniqueDriveTypes = [...new Set(response.data.data.cars.map(car => car.details.drive))];
           setDriveTypes(uniqueDriveTypes);
         }
       } catch (error) {
